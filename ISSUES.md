@@ -44,4 +44,3 @@ Please use the pull request template and provide as much information as possible
 If any of those items are missing, your pull request will still get the `needs_triage` label but may end up being responded to slower than other pull requests that have a complete set of information.
 
 The `state:needs_triage` label will remain on your pull request until a person has looked at it.
-

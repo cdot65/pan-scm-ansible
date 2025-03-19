@@ -24,9 +24,14 @@ __metaclass__ = type
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ScmSpec  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
+    get_scm_client,
+)
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
+    serialize_response,
+)
 from pydantic import ValidationError
+
 from scm.config.security.anti_spyware_profile import AntiSpywareProfile
 from scm.exceptions import NotFoundError
 from scm.models.security.anti_spyware_profiles import (
@@ -34,7 +39,7 @@ from scm.models.security.anti_spyware_profiles import (
     AntiSpywareProfileUpdateModel,
 )
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: anti_spyware_profile
 
@@ -191,9 +196,9 @@ options:
 
 author:
     - Calvin Remsburg (@cdot65)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 ---
 - name: Manage Anti-Spyware Profiles in Strata Cloud Manager
   hosts: localhost
@@ -240,9 +245,9 @@ EXAMPLES = r'''
         name: "Custom-Spyware-Profile"
         folder: "Production"
         state: "absent"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 anti_spyware_profile:
     description: Details about the anti-spyware profile object.
     returned: when state is present
@@ -258,7 +263,7 @@ anti_spyware_profile:
             category: "spyware"
             packet_capture: "single-packet"
         folder: "Production"
-'''
+"""
 
 
 def build_profile_data(module_params):
@@ -271,7 +276,9 @@ def build_profile_data(module_params):
     Returns:
         dict: Filtered dictionary containing only relevant profile parameters
     """
-    return {k: v for k, v in module_params.items() if k not in ['provider', 'state'] and v is not None}
+    return {
+        k: v for k, v in module_params.items() if k not in ["provider", "state"] and v is not None
+    }
 
 
 def get_existing_profile(profile_api, profile_data):
@@ -287,10 +294,10 @@ def get_existing_profile(profile_api, profile_data):
     """
     try:
         existing = profile_api.fetch(
-            name=profile_data['name'],
-            folder=profile_data.get('folder'),
-            snippet=profile_data.get('snippet'),
-            device=profile_data.get('device'),
+            name=profile_data["name"],
+            folder=profile_data.get("folder"),
+            snippet=profile_data.get("snippet"),
+            device=profile_data.get("device"),
         )
         return True, existing
     except NotFoundError:
@@ -305,7 +312,7 @@ def main():
         argument_spec=ScmSpec.anti_spyware_profile_spec(),
         supports_check_mode=True,
         required_if=[
-            ('state', 'present', ['rules']),
+            ("state", "present", ["rules"]),
         ],
     )
 
@@ -319,7 +326,7 @@ def main():
             profile_data,
         )
 
-        if module.params['state'] == 'present':
+        if module.params["state"] == "present":
             if not exists:
                 # Validate using Pydantic
                 try:
@@ -345,7 +352,7 @@ def main():
                 if need_update:
                     # Prepare update data
                     update_data = profile_data.copy()
-                    update_data['id'] = str(existing_profile.id)
+                    update_data["id"] = str(existing_profile.id)
 
                     # Validate using Pydantic
                     try:
@@ -366,7 +373,7 @@ def main():
                         anti_spyware_profile=serialize_response(existing_profile),
                     )
 
-        elif module.params['state'] == 'absent':
+        elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
                     profile_api.delete(str(existing_profile.id))
@@ -377,5 +384,5 @@ def main():
         module.fail_json(msg=to_text(e))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

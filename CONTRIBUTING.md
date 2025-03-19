@@ -33,25 +33,25 @@ If you have not done so already, you'll need to fork the Strata Cloud Manager An
 We provide a `scripts/build.py` Typer application to help you manage the development environment. Here are some common commands you can use:
 
 - To build the collection:
-  
+
   ```sh
   python scripts/build.py build --force
   ```
 
 - To install the collection:
-  
+
   ```sh
   python scripts/build.py install --force --version "0.1.0"
   ```
 
 - To run linters:
-  
+
   ```sh
   python scripts/build.py lint
   ```
 
 - To run tests:
-  
+
   ```sh
   python scripts/build.py pytest
   ```
@@ -84,14 +84,14 @@ Here are a few things you can do to help the visibility of your change and incre
 
 - No issues when running linters/code checkers
   - Run linting using:
-    
+
     ```sh
     python scripts/build.py lint
     ```
 
 - No issues from unit tests
   - Run unit tests using:
-    
+
     ```sh
     python scripts/build.py pytest
     ```

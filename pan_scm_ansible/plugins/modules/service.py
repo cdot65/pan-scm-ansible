@@ -24,14 +24,19 @@ __metaclass__ = type
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ScmSpec  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
+    get_scm_client,
+)
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
+    serialize_response,
+)
 from pydantic import ValidationError
+
 from scm.config.objects.service import Service
 from scm.exceptions import NotFoundError
 from scm.models.objects.service import ServiceCreateModel, ServiceUpdateModel
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: service
 
@@ -145,9 +150,9 @@ options:
 
 author:
     - Calvin Remsburg (@cdot65)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 ---
 - name: Manage Service Objects in Strata Cloud Manager
   hosts: localhost
@@ -201,9 +206,9 @@ EXAMPLES = r'''
         name: "web-service"
         folder: "Texas"
         state: "absent"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 service:
     description: Details about the service object.
     returned: when state is present
@@ -217,7 +222,7 @@ service:
             override:
               timeout: 30
         folder: "Texas"
-'''
+"""
 
 
 def build_service_data(module_params):
@@ -230,35 +235,45 @@ def build_service_data(module_params):
     Returns:
         dict: Filtered dictionary containing only relevant service parameters
     """
-    service_data = {k: v for k, v in module_params.items() if k not in ['provider', 'state', 'protocol'] and v is not None}
+    service_data = {
+        k: v
+        for k, v in module_params.items()
+        if k not in ["provider", "state", "protocol"] and v is not None
+    }
 
     # Handle protocol separately to ensure proper structure
-    if 'protocol' in module_params and module_params['protocol']:
+    if "protocol" in module_params and module_params["protocol"]:
         protocol_data = {}
 
         # Handle TCP protocol
-        if 'tcp' in module_params['protocol'] and module_params['protocol']['tcp'] is not None and module_params['protocol']['tcp'].get('port'):
-
-            tcp_data = module_params['protocol']['tcp'].copy()
-            if 'override' in tcp_data and tcp_data['override']:
-                tcp_data['override'] = {
-                    'timeout': tcp_data['override'].get('timeout', 3600),
-                    'halfclose_timeout': tcp_data['override'].get('halfclose_timeout', 120),
-                    'timewait_timeout': tcp_data['override'].get('timewait_timeout', 15),
+        if (
+            "tcp" in module_params["protocol"]
+            and module_params["protocol"]["tcp"] is not None
+            and module_params["protocol"]["tcp"].get("port")
+        ):
+            tcp_data = module_params["protocol"]["tcp"].copy()
+            if "override" in tcp_data and tcp_data["override"]:
+                tcp_data["override"] = {
+                    "timeout": tcp_data["override"].get("timeout", 3600),
+                    "halfclose_timeout": tcp_data["override"].get("halfclose_timeout", 120),
+                    "timewait_timeout": tcp_data["override"].get("timewait_timeout", 15),
                 }
-            protocol_data['tcp'] = tcp_data
+            protocol_data["tcp"] = tcp_data
 
         # Handle UDP protocol
-        elif 'udp' in module_params['protocol'] and module_params['protocol']['udp'] is not None and module_params['protocol']['udp'].get('port'):
-
-            udp_data = module_params['protocol']['udp'].copy()
-            if 'override' in udp_data and udp_data['override']:
-                udp_data['override'] = {'timeout': udp_data['override'].get('timeout', 30)}
-            protocol_data['udp'] = udp_data
+        elif (
+            "udp" in module_params["protocol"]
+            and module_params["protocol"]["udp"] is not None
+            and module_params["protocol"]["udp"].get("port")
+        ):
+            udp_data = module_params["protocol"]["udp"].copy()
+            if "override" in udp_data and udp_data["override"]:
+                udp_data["override"] = {"timeout": udp_data["override"].get("timeout", 30)}
+            protocol_data["udp"] = udp_data
 
         # Only add protocol if we have valid data
         if protocol_data:
-            service_data['protocol'] = protocol_data
+            service_data["protocol"] = protocol_data
 
     return service_data
 
@@ -276,10 +291,10 @@ def get_existing_service(service_api, service_data):
     """
     try:
         existing = service_api.fetch(
-            name=service_data['name'],
-            folder=service_data.get('folder'),
-            snippet=service_data.get('snippet'),
-            device=service_data.get('device'),
+            name=service_data["name"],
+            folder=service_data.get("folder"),
+            snippet=service_data.get("snippet"),
+            device=service_data.get("device"),
         )
         return True, existing
     except NotFoundError:
@@ -294,9 +309,9 @@ def main():
         argument_spec=ScmSpec.service_spec(),
         supports_check_mode=True,
         required_if=[
-            ('state', 'present', ['protocol']),
+            ("state", "present", ["protocol"]),
         ],
-        required_one_of=[['folder', 'snippet', 'device']],
+        required_one_of=[["folder", "snippet", "device"]],
     )
 
     try:
@@ -311,7 +326,7 @@ def main():
             service_data,
         )
 
-        if module.params['state'] == 'present':
+        if module.params["state"] == "present":
             if not exists:
                 try:
                     ServiceCreateModel(**service_data)
@@ -331,22 +346,24 @@ def main():
                 need_update = False
 
                 # Update only the fields that are explicitly provided
-                if 'protocol' in service_data:
-                    protocol = service_data['protocol']
-                    if 'tcp' in protocol and protocol['tcp']:
-                        if 'port' in protocol['tcp']:
-                            if update_data['protocol']['tcp']['port'] != protocol['tcp']['port']:
-                                update_data['protocol']['tcp']['port'] = protocol['tcp']['port']
+                if "protocol" in service_data:
+                    protocol = service_data["protocol"]
+                    if "tcp" in protocol and protocol["tcp"]:
+                        if "port" in protocol["tcp"]:
+                            if update_data["protocol"]["tcp"]["port"] != protocol["tcp"]["port"]:
+                                update_data["protocol"]["tcp"]["port"] = protocol["tcp"]["port"]
                                 need_update = True
-                    elif 'udp' in protocol and protocol['udp']:
-                        if 'port' in protocol['udp']:
-                            if update_data['protocol']['udp']['port'] != protocol['udp']['port']:
-                                update_data['protocol']['udp']['port'] = protocol['udp']['port']
+                    elif "udp" in protocol and protocol["udp"]:
+                        if "port" in protocol["udp"]:
+                            if update_data["protocol"]["udp"]["port"] != protocol["udp"]["port"]:
+                                update_data["protocol"]["udp"]["port"] = protocol["udp"]["port"]
                                 need_update = True
 
                 # Handle other fields
-                for field in ['description', 'tag']:
-                    if field in service_data and service_data[field] != getattr(existing_service, field):
+                for field in ["description", "tag"]:
+                    if field in service_data and service_data[field] != getattr(
+                        existing_service, field
+                    ):
                         update_data[field] = service_data[field]
                         need_update = True
 
@@ -369,7 +386,7 @@ def main():
                         service=serialize_response(existing_service),
                     )
 
-        elif module.params['state'] == 'absent':
+        elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
                     service_api.delete(str(existing_service.id))
@@ -380,5 +397,5 @@ def main():
         module.fail_json(msg=to_text(e))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

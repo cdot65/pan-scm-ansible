@@ -12,6 +12,7 @@
 from traceback import format_exc
 
 from ansible.module_utils._text import to_native
+
 from scm.client import Scm
 from scm.exceptions import AuthenticationError
 
@@ -52,12 +53,12 @@ def get_scm_client(module):
             msg=f"Authentication failed: {to_native(e)}",
             error_code=getattr(
                 e,
-                'error_code',
+                "error_code",
                 None,
             ),
             http_status=getattr(
                 e,
-                'http_status_code',
+                "http_status_code",
                 None,
             ),
         )

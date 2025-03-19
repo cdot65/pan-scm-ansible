@@ -26,14 +26,19 @@ __metaclass__ = type
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ScmSpec  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
+    get_scm_client,
+)
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
+    serialize_response,
+)
 from pydantic import ValidationError
+
 from scm.config.objects.address_group import AddressGroup
 from scm.exceptions import NotFoundError
 from scm.models.objects.address_group import AddressGroupCreateModel, AddressGroupUpdateModel
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: address_group
 
@@ -120,9 +125,9 @@ options:
 
 author:
     - Calvin Remsburg (@cdot65)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create a static address group
   cdot65.scm.address_group:
     provider:
@@ -157,9 +162,9 @@ EXAMPLES = r'''
     name: "Test Address Group"
     folder: "Shared"
     state: "absent"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 address_group:
     description: Details about the address group object.
     returned: when state is present
@@ -171,7 +176,7 @@ address_group:
           - "test_network1"
           - "test_network2"
         folder: "Shared"
-'''
+"""
 
 
 def build_address_group_data(module_params):
@@ -184,7 +189,9 @@ def build_address_group_data(module_params):
     Returns:
         dict: Filtered dictionary containing only relevant address group parameters
     """
-    return {k: v for k, v in module_params.items() if k not in ['provider', 'state'] and v is not None}
+    return {
+        k: v for k, v in module_params.items() if k not in ["provider", "state"] and v is not None
+    }
 
 
 def get_existing_address_group(address_group_api, address_group_data):
@@ -200,10 +207,10 @@ def get_existing_address_group(address_group_api, address_group_data):
     """
     try:
         existing = address_group_api.fetch(
-            name=address_group_data['name'],
-            folder=address_group_data.get('folder'),
-            snippet=address_group_data.get('snippet'),
-            device=address_group_data.get('device'),
+            name=address_group_data["name"],
+            folder=address_group_data.get("folder"),
+            snippet=address_group_data.get("snippet"),
+            device=address_group_data.get("device"),
         )
         return True, existing
     except NotFoundError:
@@ -230,7 +237,7 @@ def main():
             address_group_data,
         )
 
-        if module.params['state'] == 'present':
+        if module.params["state"] == "present":
             if not exists:
                 # Validate using Pydantic
                 try:
@@ -250,19 +257,19 @@ def main():
                 need_update = False
                 # Implement comparison logic to determine if update is needed
                 # Compare existing attributes with desired attributes
-                if existing_address_group.description != address_group_data.get('description'):
+                if existing_address_group.description != address_group_data.get("description"):
                     need_update = True
-                if existing_address_group.tag != address_group_data.get('tag'):
+                if existing_address_group.tag != address_group_data.get("tag"):
                     need_update = True
-                if existing_address_group.static != address_group_data.get('static'):
+                if existing_address_group.static != address_group_data.get("static"):
                     need_update = True
-                if existing_address_group.dynamic != address_group_data.get('dynamic'):
+                if existing_address_group.dynamic != address_group_data.get("dynamic"):
                     need_update = True
 
                 if need_update:
                     # Prepare update data
                     update_data = address_group_data.copy()
-                    update_data['id'] = str(existing_address_group.id)
+                    update_data["id"] = str(existing_address_group.id)
                     # Validate using Pydantic
                     try:
                         address_group_update_model = AddressGroupUpdateModel(**update_data)
@@ -282,7 +289,7 @@ def main():
                         address_group=serialize_response(existing_address_group),
                     )
 
-        elif module.params['state'] == 'absent':
+        elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
                     address_group_api.delete(str(existing_address_group.id))
@@ -293,5 +300,5 @@ def main():
         module.fail_json(msg=to_text(e))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

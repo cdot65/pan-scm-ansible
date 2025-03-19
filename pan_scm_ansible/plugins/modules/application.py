@@ -24,14 +24,19 @@ __metaclass__ = type
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ScmSpec  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
+    get_scm_client,
+)
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
+    serialize_response,
+)
 from pydantic import ValidationError
+
 from scm.config.objects.application import Application
 from scm.exceptions import NotFoundError
 from scm.models.objects.application import ApplicationCreateModel, ApplicationUpdateModel
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: application
 
@@ -161,9 +166,9 @@ options:
 
 author:
     - Calvin Remsburg (@cdot65)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 ---
 - name: Manage Application Objects in Strata Cloud Manager
   hosts: localhost
@@ -186,7 +191,7 @@ EXAMPLES = r'''
         technology: "client-server"
         risk: 3
         description: "Custom database application"
-        ports: 
+        ports:
           - "tcp/1521"
         folder: "Texas"
         transfers_files: true
@@ -210,9 +215,9 @@ EXAMPLES = r'''
         name: "custom-app"
         folder: "Texas"
         state: "absent"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 application:
     description: Details about the application object.
     returned: when state is present
@@ -225,7 +230,7 @@ application:
         technology: "client-server"
         risk: 3
         folder: "Texas"
-'''
+"""
 
 
 def build_application_data(module_params):
@@ -238,7 +243,9 @@ def build_application_data(module_params):
     Returns:
         dict: Filtered dictionary containing only relevant application parameters
     """
-    return {k: v for k, v in module_params.items() if k not in ['provider', 'state'] and v is not None}
+    return {
+        k: v for k, v in module_params.items() if k not in ["provider", "state"] and v is not None
+    }
 
 
 def get_existing_application(application_api, application_data):
@@ -254,9 +261,9 @@ def get_existing_application(application_api, application_data):
     """
     try:
         existing = application_api.fetch(
-            name=application_data['name'],
-            folder=application_data.get('folder'),
-            snippet=application_data.get('snippet'),
+            name=application_data["name"],
+            folder=application_data.get("folder"),
+            snippet=application_data.get("snippet"),
         )
         return True, existing
     except NotFoundError:
@@ -271,7 +278,7 @@ def main():
         argument_spec=ScmSpec.application_spec(),
         supports_check_mode=True,
         required_if=[
-            ('state', 'present', ['category', 'subcategory', 'technology', 'risk']),
+            ("state", "present", ["category", "subcategory", "technology", "risk"]),
         ],
     )
 
@@ -285,7 +292,7 @@ def main():
             application_data,
         )
 
-        if module.params['state'] == 'present':
+        if module.params["state"] == "present":
             if not exists:
                 # Validate using Pydantic
                 try:
@@ -304,14 +311,17 @@ def main():
                 # Compare and update if needed
                 need_update = False
                 for key, value in application_data.items():
-                    if hasattr(existing_application, key) and getattr(existing_application, key) != value:
+                    if (
+                        hasattr(existing_application, key)
+                        and getattr(existing_application, key) != value
+                    ):
                         need_update = True
                         break
 
                 if need_update:
                     # Prepare update data
                     update_data = application_data.copy()
-                    update_data['id'] = str(existing_application.id)
+                    update_data["id"] = str(existing_application.id)
 
                     # Validate using Pydantic
                     try:
@@ -332,7 +342,7 @@ def main():
                         application=serialize_response(existing_application),
                     )
 
-        elif module.params['state'] == 'absent':
+        elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
                     application_api.delete(str(existing_application.id))
@@ -343,5 +353,5 @@ def main():
         module.fail_json(msg=to_text(e))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

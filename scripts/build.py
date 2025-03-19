@@ -77,6 +77,7 @@ def build(
         ),
     )
 
+
 def _build_command(
     *,
     force: bool,
@@ -91,6 +92,7 @@ def _build_command(
     if path:
         command += f" --output-path {path}"
     return command
+
 
 @app.command()
 def install(
@@ -108,6 +110,7 @@ def install(
         ),
     )
 
+
 def _install_command(
     *,
     force: bool,
@@ -120,7 +123,6 @@ def _install_command(
     if help:
         command += " --help"
     return command
-
 
 
 @app.command()

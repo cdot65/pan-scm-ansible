@@ -24,14 +24,22 @@ __metaclass__ = type
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ScmSpec  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
+    get_scm_client,
+)
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
+    serialize_response,
+)
 from pydantic import ValidationError
+
 from scm.config.objects.application_group import ApplicationGroup
 from scm.exceptions import NotFoundError
-from scm.models.objects.application_group import ApplicationGroupCreateModel, ApplicationGroupUpdateModel
+from scm.models.objects.application_group import (
+    ApplicationGroupCreateModel,
+    ApplicationGroupUpdateModel,
+)
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: application_group
 
@@ -100,9 +108,9 @@ options:
 
 author:
     - Calvin Remsburg (@cdot65)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 ---
 - name: Manage Application Groups in Strata Cloud Manager
   hosts: localhost
@@ -143,9 +151,9 @@ EXAMPLES = r'''
         name: "web-apps"
         folder: "Texas"
         state: "absent"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 application_group:
     description: Details about the application group object.
     returned: when state is present
@@ -157,7 +165,7 @@ application_group:
           - "ssl"
           - "web-browsing"
         folder: "Texas"
-'''
+"""
 
 
 def build_application_group_data(module_params):
@@ -170,7 +178,9 @@ def build_application_group_data(module_params):
     Returns:
         dict: Filtered dictionary containing only relevant application group parameters
     """
-    return {k: v for k, v in module_params.items() if k not in ['provider', 'state'] and v is not None}
+    return {
+        k: v for k, v in module_params.items() if k not in ["provider", "state"] and v is not None
+    }
 
 
 def get_existing_application_group(application_group_api, application_group_data):
@@ -186,10 +196,10 @@ def get_existing_application_group(application_group_api, application_group_data
     """
     try:
         existing = application_group_api.fetch(
-            name=application_group_data['name'],
-            folder=application_group_data.get('folder'),
-            snippet=application_group_data.get('snippet'),
-            device=application_group_data.get('device'),
+            name=application_group_data["name"],
+            folder=application_group_data.get("folder"),
+            snippet=application_group_data.get("snippet"),
+            device=application_group_data.get("device"),
         )
         return True, existing
     except NotFoundError:
@@ -203,7 +213,7 @@ def main():
     module = AnsibleModule(
         argument_spec=ScmSpec.application_group_spec(),
         supports_check_mode=True,
-        required_if=[('state', 'present', ['members'])],
+        required_if=[("state", "present", ["members"])],
     )
 
     try:
@@ -216,7 +226,7 @@ def main():
             application_group_data,
         )
 
-        if module.params['state'] == 'present':
+        if module.params["state"] == "present":
             if not exists:
                 # Validate using Pydantic
                 try:
@@ -234,13 +244,15 @@ def main():
             else:
                 # Compare and update if needed
                 need_update = False
-                if sorted(existing_group.members) != sorted(application_group_data.get('members', [])):
+                if sorted(existing_group.members) != sorted(
+                    application_group_data.get("members", [])
+                ):
                     need_update = True
 
                 if need_update:
                     # Prepare update data
                     update_data = application_group_data.copy()
-                    update_data['id'] = str(existing_group.id)
+                    update_data["id"] = str(existing_group.id)
 
                     # Validate using Pydantic
                     try:
@@ -249,7 +261,9 @@ def main():
                         module.fail_json(msg=str(e))
 
                     if not module.check_mode:
-                        result = application_group_api.update(app_group=application_group_update_model)
+                        result = application_group_api.update(
+                            app_group=application_group_update_model
+                        )
                         module.exit_json(
                             changed=True,
                             application_group=serialize_response(result),
@@ -261,7 +275,7 @@ def main():
                         application_group=serialize_response(existing_group),
                     )
 
-        elif module.params['state'] == 'absent':
+        elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
                     application_group_api.delete(str(existing_group.id))
@@ -272,5 +286,5 @@ def main():
         module.fail_json(msg=to_text(e))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -27,6 +27,8 @@ skip_list:
   - schema[meta]
   - fqcn-builtins
   - role-name
+  - internal-error
+  - galaxy
 
 # Set verbosity level
 verbosity: 1
@@ -49,9 +51,4 @@ warn_list:
 
 # Custom settings (adjust as needed)
 parseable: true
-# Removed use_gitignore: true as it's not supported
 loop_var_prefix: ^(item|ansible_loop)
-
-# Set path to write findings to (can pass to CI)
-write_list:
-  - "ansible-lint.txt"

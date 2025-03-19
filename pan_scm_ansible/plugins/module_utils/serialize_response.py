@@ -33,10 +33,10 @@ def serialize_response(response: Any) -> Union[Dict, Any]:
         >>> serialize_response(response)
         {'id': '123e4567-e89b-12d3-a456-426614174000', ...}
     """
-    if hasattr(response, 'model_dump'):
+    if hasattr(response, "model_dump"):
         data = response.model_dump()
         # Convert UUID to string
-        if 'id' in data and data['id']:
-            data['id'] = str(data['id'])
+        if "id" in data and data["id"]:
+            data["id"] = str(data["id"])
         return data
     return response

@@ -24,12 +24,17 @@ __metaclass__ = type
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ScmSpec  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
+    get_scm_client,
+)
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
+    serialize_response,
+)
+
 from scm.config.objects.address import Address
 from scm.exceptions import NotFoundError
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: address_group
 
@@ -113,9 +118,9 @@ options:
 
 author:
     - Calvin Remsburg (@cdot65)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 ---
 - name: Manage Address Objects in Strata Cloud Manager
   hosts: localhost
@@ -176,9 +181,9 @@ EXAMPLES = r'''
         - "Test_Address_FQDN"
         - "Test_Address_Range"
         - "Test_Address_Netmask"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 address:
     description: Details about the address object.
     returned: when state is present
@@ -188,7 +193,7 @@ address:
         name: "Test Address"
         fqdn: "test_network2.example.com"
         folder: "Shared"
-'''
+"""
 
 
 def build_address_data(module_params):
@@ -201,7 +206,9 @@ def build_address_data(module_params):
     Returns:
         dict: Filtered dictionary containing only relevant address parameters
     """
-    return {k: v for k, v in module_params.items() if k not in ['provider', 'state'] and v is not None}
+    return {
+        k: v for k, v in module_params.items() if k not in ["provider", "state"] and v is not None
+    }
 
 
 def get_existing_address(address_api, address_data):
@@ -217,10 +224,10 @@ def get_existing_address(address_api, address_data):
     """
     try:
         existing = address_api.fetch(
-            name=address_data['name'],
-            folder=address_data.get('folder'),
-            snippet=address_data.get('snippet'),
-            device=address_data.get('device'),
+            name=address_data["name"],
+            folder=address_data.get("folder"),
+            snippet=address_data.get("snippet"),
+            device=address_data.get("device"),
         )
         return True, existing
     except NotFoundError:
@@ -246,7 +253,7 @@ def main():
             address_data,
         )
 
-        if module.params['state'] == 'present':
+        if module.params["state"] == "present":
             if not exists:
                 if not module.check_mode:
                     result = address_api.create(data=address_data)
@@ -269,7 +276,7 @@ def main():
                     address=serialize_response(existing_address),
                 )
 
-        elif module.params['state'] == 'absent':
+        elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
                     address_api.delete(str(existing_address.id))
@@ -280,5 +287,5 @@ def main():
         module.fail_json(msg=to_text(e))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

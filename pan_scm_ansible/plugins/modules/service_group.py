@@ -24,14 +24,19 @@ __metaclass__ = type
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ScmSpec  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
+    get_scm_client,
+)
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
+    serialize_response,
+)
 from pydantic import ValidationError
+
 from scm.config.objects.service_group import ServiceGroup
 from scm.exceptions import NotFoundError
 from scm.models.objects.service_group import ServiceGroupCreateModel, ServiceGroupUpdateModel
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: service_group
 
@@ -105,9 +110,9 @@ options:
 
 author:
     - Calvin Remsburg (@cdot65)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 ---
 - name: Manage Service Group Objects in Strata Cloud Manager
   hosts: localhost
@@ -153,9 +158,9 @@ EXAMPLES = r'''
         name: "web-services"
         folder: "Texas"
         state: "absent"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 service_group:
     description: Details about the service group object.
     returned: when state is present
@@ -168,7 +173,7 @@ service_group:
           - "HTTPS"
           - "SSH"
         folder: "Texas"
-'''
+"""
 
 
 def build_service_group_data(module_params):
@@ -181,7 +186,9 @@ def build_service_group_data(module_params):
     Returns:
         dict: Filtered dictionary containing only relevant service group parameters
     """
-    return {k: v for k, v in module_params.items() if k not in ['provider', 'state'] and v is not None}
+    return {
+        k: v for k, v in module_params.items() if k not in ["provider", "state"] and v is not None
+    }
 
 
 def get_existing_service_group(service_group_api, service_group_data):
@@ -197,10 +204,10 @@ def get_existing_service_group(service_group_api, service_group_data):
     """
     try:
         existing = service_group_api.fetch(
-            name=service_group_data['name'],
-            folder=service_group_data.get('folder'),
-            snippet=service_group_data.get('snippet'),
-            device=service_group_data.get('device'),
+            name=service_group_data["name"],
+            folder=service_group_data.get("folder"),
+            snippet=service_group_data.get("snippet"),
+            device=service_group_data.get("device"),
         )
         return True, existing
     except NotFoundError:
@@ -215,7 +222,7 @@ def main():
         argument_spec=ScmSpec.service_group_spec(),
         supports_check_mode=True,
         required_if=[
-            ('state', 'present', ['members']),
+            ("state", "present", ["members"]),
         ],
     )
 
@@ -229,7 +236,7 @@ def main():
             service_group_data,
         )
 
-        if module.params['state'] == 'present':
+        if module.params["state"] == "present":
             if not exists:
                 # Validate using Pydantic
                 try:
@@ -247,15 +254,17 @@ def main():
             else:
                 # Compare and update if needed
                 need_update = False
-                if set(existing_service_group.members) != set(service_group_data.get('members', [])):
+                if set(existing_service_group.members) != set(
+                    service_group_data.get("members", [])
+                ):
                     need_update = True
-                if existing_service_group.tag != service_group_data.get('tag'):
+                if existing_service_group.tag != service_group_data.get("tag"):
                     need_update = True
 
                 if need_update:
                     # Prepare update data
                     update_data = service_group_data.copy()
-                    update_data['id'] = str(existing_service_group.id)
+                    update_data["id"] = str(existing_service_group.id)
 
                     # Validate using Pydantic
                     try:
@@ -276,7 +285,7 @@ def main():
                         service_group=serialize_response(existing_service_group),
                     )
 
-        elif module.params['state'] == 'absent':
+        elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
                     service_group_api.delete(str(existing_service_group.id))
@@ -287,5 +296,5 @@ def main():
         module.fail_json(msg=to_text(e))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
