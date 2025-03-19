@@ -18,11 +18,16 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ansible-lint yamllint
+          pip install ansible ansible-lint yamllint
           pip install poetry
           poetry install
+      - name: Build and install collection
+        run: |
+          ansible-galaxy collection build
+          ansible-galaxy collection install *.tar.gz -p ./collections
       - name: Lint code
         run: |
+          export ANSIBLE_COLLECTIONS_PATHS=$PWD/collections:$ANSIBLE_COLLECTIONS_PATHS
           ansible-lint
           yamllint .
 
