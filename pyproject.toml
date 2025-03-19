@@ -14,7 +14,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "~3.11"
+python = ">=3.11,<3.13"
 ansible-core = "^2.18.0"
 
 [tool.poetry.group.dev.dependencies]

@@ -1,0 +1,132 @@
+site_name: Palo Alto Networks Strata Cloud Manager Ansible Collection
+site_description: Ansible Collection to manage Palo Alto Networks Strata Cloud Manager configurations
+site_url: https://cdot65.github.io/pan-scm-ansible-collection/
+repo_url: https://github.com/cdot65/pan-scm-ansible-collection
+repo_name: cdot65/pan-scm-ansible-collection
+site_dir: site
+copyright: Copyright &copy; 2023-2025 Calvin Remsburg
+
+theme:
+  name: material
+  logo: images/logo.svg
+  favicon: images/logo.svg
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.instant
+    - navigation.tracking
+    - navigation.footer
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+  - termynal
+  - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+          selection:
+            docstring_style: google
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+
+# Explicitly set the layout for home page with customizations
+not_in_nav: |
+  index.md
+  STYLE_GUIDE.md
+
+extra_css:
+  - css/termynal.css
+  - css/custom.css
+
+extra_javascript:
+  - js/termynal.js
+  - js/custom.js
+
+# Define the navigation menu
+nav:
+  - Home: index.md
+  - About:
+      - Introduction: about/introduction.md
+      - Installation: about/installation.md
+      - Getting Started: about/getting-started.md
+      - Troubleshooting: about/troubleshooting.md
+      - Contributing: about/contributing.md
+      - Release Notes: about/release-notes.md
+      - License: about/license.md
+  - Collection Documentation:
+      - Overview: collection/index.md
+      - Modules:
+          - Overview: collection/modules/index.md
+          - Address: collection/modules/address.md
+          - Address Group: collection/modules/address_group.md
+          - Anti-Spyware Profile: collection/modules/anti_spyware_profile.md
+          - Application: collection/modules/application.md
+          - Application Group: collection/modules/application_group.md
+          - BGP Routing: collection/modules/bgp_routing.md
+          - IKE Crypto Profile: collection/modules/ike_crypto_profile.md
+          - IKE Gateway: collection/modules/ike_gateway.md
+          - IPSec Crypto Profile: collection/modules/ipsec_crypto_profile.md
+          - IPSec Tunnel: collection/modules/ipsec_tunnel.md
+          - Network Locations: collection/modules/network_locations.md
+          - Remote Networks: collection/modules/remote_networks.md
+          - Security Profiles Group: collection/modules/security_profiles_group.md
+          - Security Rule: collection/modules/security_rule.md
+          - Security Zone: collection/modules/security_zone.md
+          - Service: collection/modules/service.md
+          - Service Connections: collection/modules/service_connections.md
+          - Service Group: collection/modules/service_group.md
+          - Tag: collection/modules/tag.md
+      - Roles:
+          - Overview: collection/roles/index.md
+          - Bootstrap: collection/roles/bootstrap.md
+          - Deploy Configuration: collection/roles/deploy_config.md
+      - Plugins:
+          - Inventory: collection/plugins/inventory.md
+          - Lookup: collection/plugins/lookup.md
+  - User Guide:
+      - Getting Started: guide/getting-started.md
+      - Authentication: guide/authentication.md
+      - Using Modules: guide/using-modules.md
+      - Using Roles: guide/using-roles.md
+      - Playbook Examples: guide/playbook-examples.md
+      - Advanced Topics: guide/advanced-topics.md
+  - Development:
+      - Contributing: development/contributing.md
+      - Testing: development/testing.md
+      - Release Process: development/release-process.md
