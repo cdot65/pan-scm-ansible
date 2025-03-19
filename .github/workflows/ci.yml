@@ -55,7 +55,7 @@ jobs:
           pip install poetry
           poetry install
       - name: Build collection
-        run: ansible-galaxy collection build
+        run: ansible-galaxy collection build pan_scm_ansible
       - name: Install collection
         run: ansible-galaxy collection install *.tar.gz -p ./collections --force
       - name: Run sanity tests
@@ -84,7 +84,7 @@ jobs:
           pip install poetry
           poetry install
       - name: Build collection
-        run: ansible-galaxy collection build
+        run: ansible-galaxy collection build pan_scm_ansible
       - name: Install collection
         run: ansible-galaxy collection install *.tar.gz -p ./collections --force
       - name: Run integration tests
