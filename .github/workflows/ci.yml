@@ -26,12 +26,8 @@ jobs:
           mkdir -p collections/ansible_collections
           ansible-galaxy collection build pan_scm_ansible
           ansible-galaxy collection install *.tar.gz -p ./collections --force
-          ansible --version
-          ls -la ./collections/ansible_collections
       - name: Lint code
         run: |
-          # Check if collection was installed properly
-          find ./collections -type d | sort
           # Only run yamllint for now, skip ansible-lint until module resolution is fixed
           echo "Skipping ansible-lint due to module resolution issues"
           yamllint .
@@ -112,9 +108,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install mkdocs-material "mkdocstrings[python]>=0.18" mkdocs-autorefs termynal mkdocs-termynal
+          pip install mkdocs-material mkdocstrings-python mkdocs-autorefs termynal
       - name: Build documentation
-        run: mkdocs build
+        run: mkdocs build --verbose
       - name: Deploy documentation
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
