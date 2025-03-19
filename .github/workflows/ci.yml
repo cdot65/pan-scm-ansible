@@ -56,16 +56,35 @@ jobs:
           poetry install
       - name: Build collection
         run: ansible-galaxy collection build pan_scm_ansible
-      - name: Install collection
-        run: ansible-galaxy collection install *.tar.gz -p ./collections --force
-      - name: Run sanity tests
+      - name: Install collection and dependencies
+        run: |
+          ansible-galaxy collection install *.tar.gz -p ./collections --force
+          cd ./collections/ansible_collections/cdot65/scm
+          pip install -r ../../../../pan_scm_ansible/requirements.txt
+          # Fix for module imports in test environment
+          touch __init__.py
+          cd ../../../../
+      - name: Create sanity ignore directory
+        run: |
+          mkdir -p ./collections/ansible_collections/cdot65/scm/tests/sanity
+          cp pan_scm_ansible/tests/sanity/ignore-2.18.txt ./collections/ansible_collections/cdot65/scm/tests/sanity/
+      - name: Create setup script for test containers
+        run: |
+          cat > setup_test_container.sh << 'EOF'
+          #!/bin/bash
+          # Script to prepare test container with required dependencies
+          pip install pan-scm-sdk>=0.3.22
+          EOF
+          chmod +x setup_test_container.sh
+      - name: Run sanity tests with ignore file
         run: |
           cd ./collections/ansible_collections/cdot65/scm
-          ansible-test sanity --docker -v
+          export PYTHONPATH=$(pwd)
+          ansible-test sanity --docker -v --docker-setup-file ../../../../setup_test_container.sh
       - name: Run unit tests
         run: |
           cd ./collections/ansible_collections/cdot65/scm
-          ansible-test units --docker -v
+          ansible-test units --docker -v --docker-setup-file ../../../../setup_test_container.sh
   
   integration-tests:
     runs-on: ubuntu-latest
@@ -85,12 +104,31 @@ jobs:
           poetry install
       - name: Build collection
         run: ansible-galaxy collection build pan_scm_ansible
-      - name: Install collection
-        run: ansible-galaxy collection install *.tar.gz -p ./collections --force
+      - name: Install collection and dependencies
+        run: |
+          ansible-galaxy collection install *.tar.gz -p ./collections --force
+          cd ./collections/ansible_collections/cdot65/scm
+          pip install -r ../../../../pan_scm_ansible/requirements.txt
+          # Fix for module imports in test environment
+          touch __init__.py
+          cd ../../../../
+      - name: Create sanity ignore directory
+        run: |
+          mkdir -p ./collections/ansible_collections/cdot65/scm/tests/sanity
+          cp pan_scm_ansible/tests/sanity/ignore-2.18.txt ./collections/ansible_collections/cdot65/scm/tests/sanity/
+      - name: Create setup script for test containers
+        run: |
+          cat > setup_test_container.sh << 'EOF'
+          #!/bin/bash
+          # Script to prepare test container with required dependencies
+          pip install pan-scm-sdk>=0.3.22
+          EOF
+          chmod +x setup_test_container.sh
       - name: Run integration tests
         run: |
           cd ./collections/ansible_collections/cdot65/scm
-          ansible-test integration --docker -v
+          export PYTHONPATH=$(pwd)
+          ansible-test integration --docker -v --docker-setup-file ../../../../setup_test_container.sh
         env:
           PAN_SCM_USERNAME: ${{ secrets.PAN_SCM_USERNAME }}
           PAN_SCM_PASSWORD: ${{ secrets.PAN_SCM_PASSWORD }}
