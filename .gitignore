@@ -22,6 +22,7 @@ __pycache__
 /*.egg-info
 *.py[c,o]
 /.eggs
+poetry.lock
 
 # Testing
 .cache
