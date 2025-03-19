@@ -26,11 +26,14 @@ jobs:
           mkdir -p collections/ansible_collections
           ansible-galaxy collection build pan_scm_ansible
           ansible-galaxy collection install *.tar.gz -p ./collections --force
+          ansible --version
+          ls -la ./collections/ansible_collections
       - name: Lint code
         run: |
-          export ANSIBLE_COLLECTIONS_PATH=$PWD/collections:$ANSIBLE_COLLECTIONS_PATH
-          export ANSIBLE_LIBRARY=$PWD/collections/ansible_collections/cdot65/scm/plugins/modules
-          ansible-lint --offline --parseable --profile=min
+          # Check if collection was installed properly
+          find ./collections -type d | sort
+          # Run linting with proper configuration
+          ANSIBLE_CONFIG=$PWD/ansible.cfg ansible-lint --project-dir $PWD
           yamllint .
 
   build-and-test:
