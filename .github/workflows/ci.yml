@@ -41,7 +41,7 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        ansible-version: ['2.13', '2.14', '2.15', 'latest']
+        ansible-version: ['2.15', '2.16', '2.17', 'latest']
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
@@ -52,9 +52,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ "${{ matrix.ansible-version }}" == "latest" ]; then
-            pip install ansible
+            pip install ansible-core
           else
-            pip install ansible~=${{ matrix.ansible-version }}.0
+            pip install ansible-core~=${{ matrix.ansible-version }}.0
           fi
           pip install poetry
           poetry install
@@ -84,7 +84,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ansible
+          pip install ansible-core
           pip install poetry
           poetry install
       - name: Build collection
