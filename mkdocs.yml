@@ -41,11 +41,12 @@ plugins:
   - termynal
   - autorefs
   - mkdocstrings:
+      default_handler: python
       handlers:
         python:
+          paths: [pan_scm_ansible]
           options:
             show_source: false
-          selection:
             docstring_style: google
 
 markdown_extensions:
