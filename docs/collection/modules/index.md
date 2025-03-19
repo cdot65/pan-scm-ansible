@@ -21,7 +21,10 @@ The modules are organized into these categories:
 | [`application_group`](application_group.md) | Manage application groups | Object | 
 | [`anti_spyware_profile`](anti_spyware_profile.md) | Manage anti-spyware security profiles | Security |
 | [`bgp_routing`](bgp_routing.md) | Manage BGP routing configurations | Network |
+| [`ike_crypto_profile`](ike_crypto_profile.md) | Manage IKE crypto profiles | Network |
 | [`ike_gateway`](ike_gateway.md) | Manage IKE gateways | Network |
+| [`ipsec_crypto_profile`](ipsec_crypto_profile.md) | Manage IPSec crypto profiles | Network |
+| [`ipsec_tunnel`](ipsec_tunnel.md) | Manage IPSec tunnels | Network |
 | [`network_locations`](network_locations.md) | Manage network locations | Deployment |
 | [`remote_networks`](remote_networks.md) | Manage remote networks | Deployment |
 | [`security_rule`](security_rule.md) | Manage security rules | Security |
