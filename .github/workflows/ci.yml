@@ -25,11 +25,12 @@ jobs:
         run: |
           mkdir -p collections/ansible_collections
           ansible-galaxy collection build pan_scm_ansible
-          ansible-galaxy collection install *.tar.gz -p ./collections
+          ansible-galaxy collection install *.tar.gz -p ./collections --force
       - name: Lint code
         run: |
           export ANSIBLE_COLLECTIONS_PATH=$PWD/collections:$ANSIBLE_COLLECTIONS_PATH
-          ansible-lint
+          export ANSIBLE_LIBRARY=$PWD/collections/ansible_collections/cdot65/scm/plugins/modules
+          ansible-lint --offline --parseable --profile=min
           yamllint .
 
   build-and-test:
@@ -57,7 +58,7 @@ jobs:
       - name: Build collection
         run: ansible-galaxy collection build
       - name: Install collection
-        run: ansible-galaxy collection install *.tar.gz -p ./collections
+        run: ansible-galaxy collection install *.tar.gz -p ./collections --force
       - name: Run sanity tests
         run: |
           cd ./collections/ansible_collections/cdot65/scm
@@ -86,7 +87,7 @@ jobs:
       - name: Build collection
         run: ansible-galaxy collection build
       - name: Install collection
-        run: ansible-galaxy collection install *.tar.gz -p ./collections
+        run: ansible-galaxy collection install *.tar.gz -p ./collections --force
       - name: Run integration tests
         run: |
           cd ./collections/ansible_collections/cdot65/scm
