@@ -1,0 +1,46 @@
+---
+- name: Manage Anti-Spyware Profiles in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    - name: Create anti-spyware profile
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "Custom-Spyware-Profile"
+        description: "Custom anti-spyware profile"
+        cloud_inline_analysis: true
+        rules:
+          - name: "Block-Critical-Threats"
+            severity: [ "critical" ]
+            category: "spyware"
+            packet_capture: "single-packet"
+        folder: "Production"
+        state: "present"
+
+    - name: Update anti-spyware profile
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "Custom-Spyware-Profile"
+        description: "Updated anti-spyware profile"
+        rules:
+          - name: "Block-Critical-Threats"
+            severity: [ "critical", "high" ]
+            category: "spyware"
+            packet_capture: "extended-capture"
+        folder: "Production"
+        state: "present"
+
+    - name: Remove anti-spyware profile
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "Custom-Spyware-Profile"
+        folder: "Production"
+        state: "absent"

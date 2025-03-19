@@ -3,18 +3,20 @@ authors:
   - Calvin Remsburg <calvin@cdot.io>
 description: Ansible Collection for managing SCM with pan-scm-sdk.
 dependencies: {}
-documentation: https://github.com/cdot65/pan-scm-ansible-collection/blob/main/pan_scm_ansible_collection/README.md
-homepage: https://github.com/cdot65/pan-scm-ansible-collection/
-issues: https://github.com/cdot65/pan-scm-ansible-collection/issues
+documentation: https://github.com/cdot65/pan-scm-ansible/blob/main/pan_scm_ansible/README.md
+homepage: https://github.com/cdot65/pan-scm-ansible/
+issues: https://github.com/cdot65/pan-scm-ansible/issues
 license:
   - MIT
 namespace: cdot65
 name: scm
-repository: https://github.com/cdot65/pan-scm-ansible-collection
+repository: https://github.com/cdot65/pan-scm-ansible
 readme: README.md
 tags:
   - stratacloudmanager
   - firewall
+  - sase
+  - prismaaccess
   - networksecurity
   - cybersecurity
   - infrastructure

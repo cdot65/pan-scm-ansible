@@ -83,7 +83,7 @@ def _build_command(
     help: bool,
     path: str = "dist",
 ) -> str:
-    command = "ansible-galaxy collection build ./pan_scm_ansible_collection"
+    command = "ansible-galaxy collection build ./pan_scm_ansible"
     if force:
         command += " --force"
     if help:
@@ -99,7 +99,7 @@ def install(
     help: bool = False,
     version: str,
 ) -> None:
-    """Run ansible-galaxy collection install ./dist/pan_scm_ansible_collection-*.tar.gz."""
+    """Run ansible-galaxy collection install ./dist/pan_scm_ansible-*.tar.gz."""
     _run(
         _install_command(
             force=force,
@@ -151,7 +151,7 @@ def _pytest_command(
     if profile:
         command += " --profile --profile-svg"
     if coverage:
-        command += " --cov=pan_scm_ansible_collection --cov-fail-under=70 --cov-report=term-missing"
+        command += " --cov=pan_scm_ansible --cov-fail-under=70 --cov-report=term-missing"
     if threaded:
         command += " -n auto"
     return command
@@ -218,7 +218,7 @@ def _project_base_files(glob: str) -> Iterable[Path]:
 
 
 def _project_paths(glob: str) -> Iterable[Path]:
-    for base_dir in ("pan_scm_ansible_collection", "tests", "scripts"):
+    for base_dir in ("pan_scm_ansible", "tests", "scripts"):
         base_path = _repo_path().joinpath(base_dir)
         if not base_path.exists():
             message = f"{base_path=} does not exist"
