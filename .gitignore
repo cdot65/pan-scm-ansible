@@ -38,9 +38,13 @@ testem.log
 
 # Mac OS X
 *.DS_Store
+CLAUDE.md
+.CLAUDE
+site
 
 # VSCode
 .vscode/
+tmp_test/
 
 # Pycharm
 .idea/
@@ -73,3 +77,4 @@ venv/*
 
 # Ansible module tests
 /dist/*.tar.gz
+*.tar.gz
