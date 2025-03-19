@@ -38,6 +38,9 @@ testem.log
 
 # Mac OS X
 *.DS_Store
+CLAUDE.md
+.CLAUDE
+site
 
 # VSCode
 .vscode/

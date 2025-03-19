@@ -23,7 +23,8 @@ jobs:
           poetry install
       - name: Build and install collection
         run: |
-          ansible-galaxy collection build
+          mkdir -p collections/ansible_collections
+          ansible-galaxy collection build pan_scm_ansible
           ansible-galaxy collection install *.tar.gz -p ./collections
       - name: Lint code
         run: |
