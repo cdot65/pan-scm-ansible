@@ -28,7 +28,7 @@ jobs:
           ansible-galaxy collection install *.tar.gz -p ./collections
       - name: Lint code
         run: |
-          export ANSIBLE_COLLECTIONS_PATHS=$PWD/collections:$ANSIBLE_COLLECTIONS_PATHS
+          export ANSIBLE_COLLECTIONS_PATH=$PWD/collections:$ANSIBLE_COLLECTIONS_PATH
           ansible-lint
           yamllint .
 
