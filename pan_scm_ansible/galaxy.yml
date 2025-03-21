@@ -2,8 +2,6 @@
 authors:
   - Calvin Remsburg <calvin@cdot.io>
 description: Ansible Collection for managing SCM with pan-scm-sdk.
-dependencies: 
-  "pan-scm-sdk": ">=0.3.22"
 documentation: https://github.com/cdot65/pan-scm-ansible/blob/main/pan_scm_ansible/README.md
 homepage: https://github.com/cdot65/pan-scm-ansible/
 issues: https://github.com/cdot65/pan-scm-ansible/issues

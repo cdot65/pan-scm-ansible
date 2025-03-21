@@ -44,7 +44,8 @@ plugins:
       default_handler: python
       handlers:
         python:
-          paths: [pan_scm_ansible]
+          paths:
+            - pan_scm_ansible
           options:
             show_source: false
             docstring_style: google
