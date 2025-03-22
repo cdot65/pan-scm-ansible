@@ -23,42 +23,59 @@ class ServiceSpec:
 
     @staticmethod
     def spec() -> Dict[str, Any]:
-        """Returns Ansible module spec for service objects."""
+        """
+        Returns Ansible module spec for service objects.
+
+        This method defines the structure and requirements for service related
+        parameters in SCM modules, aligning with the Pydantic models in the SCM SDK.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the module specification with
+                         parameter definitions and their requirements.
+        """
         return dict(
             name=dict(
                 type="str",
                 required=True,
+                description="The name of the service (max 63 chars, must match pattern: ^[a-zA-Z0-9_ \\.-]+$).",
             ),
             protocol=dict(
                 type="dict",
                 required=False,
+                description="Protocol configuration (TCP or UDP). Exactly one of 'tcp' or 'udp' must be provided.",
                 options=dict(
                     tcp=dict(
                         type="dict",
                         required=False,
+                        description="TCP protocol configuration with port information.",
                         options=dict(
                             port=dict(
                                 type="str",
                                 required=True,
+                                description="TCP port(s) for the service (e.g., '80' or '80,443,8080').",
                             ),
                             override=dict(
                                 type="dict",
                                 required=False,
+                                description="Override settings for TCP timeouts.",
                                 options=dict(
                                     timeout=dict(
                                         type="int",
                                         required=False,
                                         default=3600,
+                                        description="Connection timeout in seconds.",
                                     ),
                                     halfclose_timeout=dict(
                                         type="int",
                                         required=False,
                                         default=120,
+                                        description="Half-close timeout in seconds.",
                                     ),
                                     timewait_timeout=dict(
                                         type="int",
                                         required=False,
                                         default=15,
+                                        description="Time-wait timeout in seconds.",
                                     ),
                                 ),
                             ),
@@ -67,19 +84,23 @@ class ServiceSpec:
                     udp=dict(
                         type="dict",
                         required=False,
+                        description="UDP protocol configuration with port information.",
                         options=dict(
                             port=dict(
                                 type="str",
                                 required=True,
+                                description="UDP port(s) for the service (e.g., '53' or '67,68').",
                             ),
                             override=dict(
                                 type="dict",
                                 required=False,
+                                description="Override settings for UDP timeouts.",
                                 options=dict(
                                     timeout=dict(
                                         type="int",
                                         required=False,
                                         default=30,
+                                        description="Connection timeout in seconds.",
                                     ),
                                 ),
                             ),
@@ -90,45 +111,55 @@ class ServiceSpec:
             description=dict(
                 type="str",
                 required=False,
+                description="Description of the service (max 1023 chars).",
             ),
             tag=dict(
                 type="list",
                 elements="str",
                 required=False,
+                description="List of tags associated with the service (max 64 chars each).",
             ),
             folder=dict(
                 type="str",
                 required=False,
+                description="The folder in which the service is defined (max 64 chars).",
             ),
             snippet=dict(
                 type="str",
                 required=False,
+                description="The snippet in which the service is defined (max 64 chars).",
             ),
             device=dict(
                 type="str",
                 required=False,
+                description="The device in which the service is defined (max 64 chars).",
             ),
             provider=dict(
                 type="dict",
                 required=True,
+                description="Authentication credentials for connecting to SCM.",
                 options=dict(
                     client_id=dict(
                         type="str",
                         required=True,
+                        description="Client ID for authentication with SCM.",
                     ),
                     client_secret=dict(
                         type="str",
                         required=True,
                         no_log=True,
+                        description="Client secret for authentication with SCM.",
                     ),
                     tsg_id=dict(
                         type="str",
                         required=True,
+                        description="Tenant Service Group ID.",
                     ),
                     log_level=dict(
                         type="str",
                         required=False,
                         default="INFO",
+                        description="Log level for the SDK (DEBUG, INFO, WARNING, ERROR, CRITICAL).",
                     ),
                 ),
             ),
@@ -136,5 +167,6 @@ class ServiceSpec:
                 type="str",
                 choices=["present", "absent"],
                 required=True,
+                description="Desired state of the service object.",
             ),
         )
