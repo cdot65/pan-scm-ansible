@@ -1,0 +1,13 @@
+---
+- name: Test Module Loading
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Run test module
+      cdot65.scm.test_module:
+        message: "Hello, world!"
+      register: test_result
+
+    - name: Display test result
+      debug:
+        var: test_result

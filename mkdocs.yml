@@ -1,8 +1,8 @@
 site_name: Palo Alto Networks Strata Cloud Manager Ansible Collection
 site_description: Ansible Collection to manage Palo Alto Networks Strata Cloud Manager configurations
-site_url: https://cdot65.github.io/pan-scm-ansible-collection/
-repo_url: https://github.com/cdot65/pan-scm-ansible-collection
-repo_name: cdot65/pan-scm-ansible-collection
+site_url: https://cdot65.github.io/pan-scm-ansible/
+repo_url: https://github.com/cdot65/pan-scm-ansible
+repo_name: cdot65/pan-scm-ansible
 site_dir: site
 copyright: Copyright &copy; 2023-2025 Calvin Remsburg
 

@@ -15,7 +15,7 @@
 Ansible module for managing address group objects in SCM.
 
 This module provides functionality to create, update, and delete address group objects
-in the SCM (Security Control Manager) system. It handles both static and dynamic address groups
+in the SCM (Strata Cloud Manager) system. It handles both static and dynamic address groups
 and supports check mode operations.
 """
 
@@ -25,7 +25,7 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ScmSpec  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.address_group import AddressGroupSpec  # noqa: F401
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
     get_scm_client,
 )
@@ -222,7 +222,7 @@ def main():
     Main execution path for the address group object module.
     """
     module = AnsibleModule(
-        argument_spec=ScmSpec.address_group_spec(),
+        argument_spec=AddressGroupSpec.spec(),
         supports_check_mode=True,
     )
 

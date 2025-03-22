@@ -1,19 +1,21 @@
 # Contributing
 
-We welcome contributions to the Palo Alto Networks SCM Ansible Collection! This guide outlines the process for contributing and developing the collection.
+We welcome contributions to the Palo Alto Networks SCM Ansible Collection! This guide outlines the process for
+contributing and developing the collection.
 
 ## Code of Conduct
 
-All contributors are expected to adhere to our project's code of conduct. Please be respectful and constructive in your communications and contributions.
+All contributors are expected to adhere to our project's code of conduct. Please be respectful and constructive in your
+communications and contributions.
 
 ## Getting Started
 
-1. **Fork the Repository**: Create a fork of the [repository](https://github.com/cdot65/pan-scm-ansible-collection) on GitHub.
+1. **Fork the Repository**: Create a fork of the [repository](https://github.com/cdot65/pan-scm-ansible) on GitHub.
 
 2. **Clone Your Fork**:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/pan-scm-ansible-collection.git
-   cd pan-scm-ansible-collection
+   git clone https://github.com/YOUR-USERNAME/pan-scm-ansible.git
+   cd pan-scm-ansible
    ```
 
 3. **Set Up Development Environment**:
@@ -80,7 +82,7 @@ Update documentation to reflect your changes:
    git add .
    git commit -m "feat: add support for X"
    ```
-   
+
    We follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages.
 
 2. **Push to Your Fork**:
@@ -113,7 +115,7 @@ When adding a new module:
 
 ## Reporting Bugs
 
-If you find a bug, please [open an issue](https://github.com/cdot65/pan-scm-ansible-collection/issues/new) with:
+If you find a bug, please [open an issue](https://github.com/cdot65/pan-scm-ansible/issues/new) with:
 
 - A clear description of the issue
 - Steps to reproduce
@@ -123,7 +125,7 @@ If you find a bug, please [open an issue](https://github.com/cdot65/pan-scm-ansi
 
 ## Feature Requests
 
-For feature requests, [open an issue](https://github.com/cdot65/pan-scm-ansible-collection/issues/new) describing:
+For feature requests, [open an issue](https://github.com/cdot65/pan-scm-ansible/issues/new) describing:
 
 - The feature you'd like to see
 - Use cases for the feature

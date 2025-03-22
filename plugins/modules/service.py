@@ -13,7 +13,7 @@
 Ansible module for managing service objects in SCM.
 
 This module provides functionality to create, update, and delete service objects
-in the SCM (Security Control Manager) system. It handles TCP and UDP services
+in the SCM (Strata Cloud Manager) system. It handles TCP and UDP services
 and supports check mode operations.
 """
 
@@ -23,7 +23,7 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ScmSpec  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.service import ServiceSpec  # noqa: F401
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
     get_scm_client,
 )
@@ -247,9 +247,9 @@ def build_service_data(module_params):
 
         # Handle TCP protocol
         if (
-            "tcp" in module_params["protocol"]
-            and module_params["protocol"]["tcp"] is not None
-            and module_params["protocol"]["tcp"].get("port")
+                "tcp" in module_params["protocol"]
+                and module_params["protocol"]["tcp"] is not None
+                and module_params["protocol"]["tcp"].get("port")
         ):
             tcp_data = module_params["protocol"]["tcp"].copy()
             if "override" in tcp_data and tcp_data["override"]:
@@ -262,9 +262,9 @@ def build_service_data(module_params):
 
         # Handle UDP protocol
         elif (
-            "udp" in module_params["protocol"]
-            and module_params["protocol"]["udp"] is not None
-            and module_params["protocol"]["udp"].get("port")
+                "udp" in module_params["protocol"]
+                and module_params["protocol"]["udp"] is not None
+                and module_params["protocol"]["udp"].get("port")
         ):
             udp_data = module_params["protocol"]["udp"].copy()
             if "override" in udp_data and udp_data["override"]:
@@ -306,7 +306,7 @@ def main():
     Main execution path for the service object module.
     """
     module = AnsibleModule(
-        argument_spec=ScmSpec.service_spec(),
+        argument_spec=ServiceSpec.spec(),
         supports_check_mode=True,
         required_if=[
             ("state", "present", ["protocol"]),
@@ -362,7 +362,7 @@ def main():
                 # Handle other fields
                 for field in ["description", "tag"]:
                     if field in service_data and service_data[field] != getattr(
-                        existing_service, field
+                            existing_service, field
                     ):
                         update_data[field] = service_data[field]
                         need_update = True

@@ -83,14 +83,17 @@ Enable debug mode to get detailed information:
 ## Common Error Messages
 
 ### "Error 403: Forbidden"
+
 - You don't have permission to perform this operation
 - Check your role assignment in SCM
 
 ### "Error 404: Not Found"
+
 - The API endpoint or resource doesn't exist
 - Check folder paths, object names, and API versions
 
 ### "Error 400: Bad Request"
+
 - The request data is invalid
 - Check required parameters and data formats
 
@@ -112,11 +115,11 @@ If you see errors about missing methods or unexpected behavior:
 
 If you're still experiencing issues:
 
-1. Check the [GitHub Issues](https://github.com/cdot65/pan-scm-ansible-collection/issues) for similar problems and solutions
+1. Check the [GitHub Issues](https://github.com/cdot65/pan-scm-ansible/issues) for similar problems and solutions
 2. Submit a detailed bug report with:
-   - Collection version (`ansible-galaxy collection list`)
-   - SDK version (`pip show pan-scm-sdk`)
-   - Python version (`python --version`)
-   - Ansible version (`ansible --version`)
-   - Full error output (with `-vvv` flag)
-   - Steps to reproduce the issue
+    - Collection version (`ansible-galaxy collection list`)
+    - SDK version (`pip show pan-scm-sdk`)
+    - Python version (`python --version`)
+    - Ansible version (`ansible --version`)
+    - Full error output (with `-vvv` flag)
+    - Steps to reproduce the issue

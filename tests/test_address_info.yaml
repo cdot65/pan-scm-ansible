@@ -1,0 +1,123 @@
+---
+- name: Test Address Info Module
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # First create some test data using the address module
+    - name: Create test address objects
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "Test_Address_{{ item.suffix }}"
+        description: "{{ item.desc }}"
+        "{{ item.type }}": "{{ item.value }}"
+        folder: "Texas"
+        tag: "{{ item.tags | default([]) }}"
+        state: "present"
+      loop:
+        - { suffix: "Netmask", desc: "Test netmask address", type: "ip_netmask", value: "192.168.1.0/24", tags: ["Network", "Internal"] }
+        - { suffix: "Range", desc: "Test range address", type: "ip_range", value: "192.168.2.1-192.168.2.254" }
+        - { suffix: "FQDN", desc: "Test FQDN address", type: "fqdn", value: "example.com", tags: ["External"] }
+      
+    # Use direct Python script to fetch address information
+    - name: Get information about addresses using Python script
+      ansible.builtin.script: |
+        #!/usr/bin/env python3
+        from scm.client import ScmClient
+        from scm.exceptions import ObjectNotPresentError
+        import json
+        import sys
+        
+        # Initialize client
+        client = ScmClient(
+            client_id="{{ provider.client_id }}",
+            client_secret="{{ provider.client_secret }}",
+            tsg_id="{{ provider.tsg_id }}"
+        )
+        
+        result = {
+            "addresses": [],
+            "address": None
+        }
+        
+        try:
+            # Fetch specific address
+            address = client.address.fetch(
+                name="Test_Address_Netmask",
+                folder="Texas"
+            )
+            
+            # Serialize to dict
+            address_dict = {
+                "id": str(address.id),
+                "name": address.name,
+                "description": address.description,
+                "folder": address.folder,
+                "ip_netmask": address.ip_netmask,
+                "tag": address.tag
+            }
+            
+            result["address"] = address_dict
+            
+            # List all addresses
+            addresses = client.address.list(folder="Texas")
+            
+            # Serialize to dict
+            address_list = []
+            for addr in addresses:
+                addr_dict = {
+                    "id": str(addr.id),
+                    "name": addr.name,
+                    "description": addr.description,
+                    "folder": addr.folder
+                }
+                
+                # Add specific address type field
+                if addr.ip_netmask is not None:
+                    addr_dict["ip_netmask"] = addr.ip_netmask
+                elif addr.ip_range is not None:
+                    addr_dict["ip_range"] = addr.ip_range
+                elif addr.ip_wildcard is not None:
+                    addr_dict["ip_wildcard"] = addr.ip_wildcard
+                elif addr.fqdn is not None:
+                    addr_dict["fqdn"] = addr.fqdn
+                
+                address_list.append(addr_dict)
+                
+            result["addresses"] = address_list
+            
+            # Output as JSON
+            print(json.dumps(result))
+            sys.exit(0)
+            
+        except ObjectNotPresentError:
+            print(json.dumps({"error": "Address not found"}))
+            sys.exit(1)
+        except Exception as e:
+            print(json.dumps({"error": str(e)}))
+            sys.exit(1)
+      args:
+      register: address_info_result
+      
+    - name: Display address information
+      debug:
+        var: address_info_result.stdout | from_json
+      
+    # Clean up test data
+    - name: Remove test address objects
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "Test_Address_{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      loop:
+        - "Netmask"
+        - "Range"
+        - "FQDN"

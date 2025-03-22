@@ -39,8 +39,8 @@ To install the collection from source:
 1. Clone the GitHub repository:
 
    ```bash
-   git clone https://github.com/cdot65/pan-scm-ansible-collection.git
-   cd pan-scm-ansible-collection
+   git clone https://github.com/cdot65/pan-scm-ansible.git
+   cd pan-scm-ansible
    ```
 
 2. Build and install the collection:
@@ -57,8 +57,8 @@ For development purposes, you can install the collection in development mode:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/cdot65/pan-scm-ansible-collection.git
-   cd pan-scm-ansible-collection
+   git clone https://github.com/cdot65/pan-scm-ansible.git
+   cd pan-scm-ansible
    ```
 
 2. Install the Python dependencies:
@@ -86,4 +86,5 @@ You should see the collection listed with its installed version.
 
 ## Next Steps
 
-After installation, proceed to the [Getting Started](getting-started.md) guide to configure authentication and run your first SCM Ansible playbook.
+After installation, proceed to the [Getting Started](getting-started.md) guide to configure authentication and run your
+first SCM Ansible playbook.

@@ -13,7 +13,7 @@
 Ansible module for managing anti-spyware profile objects in SCM.
 
 This module provides functionality to create, update, and delete anti-spyware profile objects
-in the SCM (Security Control Manager) system. It handles various profile attributes
+in the SCM (Strata Cloud Manager) system. It handles various profile attributes
 and supports check mode operations.
 """
 
@@ -23,7 +23,8 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ScmSpec  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.anti_spyware_profile import \
+    AntiSpywareProfileSpec  # noqa: F401
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
     get_scm_client,
 )
@@ -309,7 +310,7 @@ def main():
     Main execution path for the anti-spyware profile module.
     """
     module = AnsibleModule(
-        argument_spec=ScmSpec.anti_spyware_profile_spec(),
+        argument_spec=AntiSpywareProfileSpec.spec(),
         supports_check_mode=True,
         required_if=[
             ("state", "present", ["rules"]),

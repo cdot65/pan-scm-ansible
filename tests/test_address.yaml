@@ -39,6 +39,7 @@
         folder: "Texas"
         state: "present"
 
+    # First test just the regular CRUD operations
     - name: Update the address object with new description
       cdot65.scm.address:
         provider: "{{ provider }}"

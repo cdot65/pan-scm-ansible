@@ -10,10 +10,10 @@
 # All rights reserved.
 
 """
-Ansible module for managing tag objects in SCM.
+Ansible module for managing service group objects in SCM.
 
-This module provides functionality to create, update, and delete tag objects
-in the SCM (Security Control Manager) system. It handles tag attributes
+This module provides functionality to create, update, and delete service group objects
+in the SCM (Strata Cloud Manager) system. It handles service group members
 and supports check mode operations.
 """
 
@@ -23,7 +23,7 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ScmSpec  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.service_group import ServiceGroupSpec  # noqa: F401
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
     get_scm_client,
 )
@@ -32,53 +32,49 @@ from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response impo
 )
 from pydantic import ValidationError
 
-from scm.config.objects.tag import Tag
+from scm.config.objects.service_group import ServiceGroup
 from scm.exceptions import NotFoundError
-from scm.models.objects.tag import TagCreateModel, TagUpdateModel
+from scm.models.objects.service_group import ServiceGroupCreateModel, ServiceGroupUpdateModel
 
 DOCUMENTATION = r"""
 ---
-module: tag
+module: service_group
 
-short_description: Manage tag objects in SCM.
+short_description: Manage service group objects in SCM.
 
 version_added: "0.1.0"
 
 description:
-    - Manage tag objects within Strata Cloud Manager (SCM).
-    - Supports creation, modification, and deletion of tag objects.
-    - Ensures proper validation of tag attributes including color values.
+    - Manage service group objects within Strata Cloud Manager (SCM).
+    - Supports creation, modification, and deletion of service group objects.
+    - Ensures proper validation of service group members.
     - Ensures that exactly one of 'folder', 'snippet', or 'device' is provided.
 
 options:
     name:
-        description: The name of the tag.
+        description: The name of the service group.
         required: true
         type: str
-    color:
-        description: Color associated with the tag.
+    members:
+        description: List of service objects that are members of this group.
+        required: true
+        type: list
+        elements: str
+    tag:
+        description: List of tags associated with the service group.
         required: false
-        type: str
-        choices:
-            - Azure Blue
-            - Black
-            - Blue
-            - Blue Gray
-            # ... (list all colors from the Colors enum)
-    comments:
-        description: Comments for the tag.
-        required: false
-        type: str
+        type: list
+        elements: str
     folder:
-        description: The folder where the tag is stored.
+        description: The folder in which the resource is defined.
         required: false
         type: str
     snippet:
-        description: The configuration snippet for the tag.
+        description: The snippet in which the resource is defined.
         required: false
         type: str
     device:
-        description: The device where the tag is configured.
+        description: The device in which the resource is defined.
         required: false
         type: str
     provider:
@@ -105,7 +101,7 @@ options:
                 type: str
                 default: "INFO"
     state:
-        description: Desired state of the tag object.
+        description: Desired state of the service group object.
         required: true
         type: str
         choices:
@@ -118,7 +114,7 @@ author:
 
 EXAMPLES = r"""
 ---
-- name: Manage Tag Objects in Strata Cloud Manager
+- name: Manage Service Group Objects in Strata Cloud Manager
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -130,76 +126,88 @@ EXAMPLES = r"""
       tsg_id: "{{ tsg_id }}"
       log_level: "INFO"
   tasks:
-    - name: Create a new tag
-      cdot65.scm.tag:
+    - name: Create a service group
+      cdot65.scm.service_group:
         provider: "{{ provider }}"
-        name: "Production"
-        color: "Blue"
-        comments: "Production environment tag"
+        name: "web-services"
+        members:
+          - "HTTP"
+          - "HTTPS"
+          - "SSH"
+        folder: "Texas"
+        tag:
+          - "Web"
+          - "Automation"
+        state: "present"
+
+    - name: Update service group members
+      cdot65.scm.service_group:
+        provider: "{{ provider }}"
+        name: "web-services"
+        members:
+          - "HTTP"
+          - "HTTPS"
+          - "SSH"
+          - "FTP"
         folder: "Texas"
         state: "present"
 
-    - name: Update tag color
-      cdot65.scm.tag:
+    - name: Remove service group
+      cdot65.scm.service_group:
         provider: "{{ provider }}"
-        name: "Production"
-        color: "Red"
-        folder: "Texas"
-        state: "present"
-
-    - name: Remove tag
-      cdot65.scm.tag:
-        provider: "{{ provider }}"
-        name: "Production"
+        name: "web-services"
         folder: "Texas"
         state: "absent"
 """
 
 RETURN = r"""
-tag:
-    description: Details about the tag object.
+service_group:
+    description: Details about the service group object.
     returned: when state is present
     type: dict
     sample:
         id: "123e4567-e89b-12d3-a456-426655440000"
-        name: "Production"
-        color: "Blue"
+        name: "web-services"
+        members:
+          - "HTTP"
+          - "HTTPS"
+          - "SSH"
         folder: "Texas"
 """
 
 
-def build_tag_data(module_params):
+def build_service_group_data(module_params):
     """
-    Build tag data dictionary from module parameters.
+    Build service group data dictionary from module parameters.
 
     Args:
         module_params (dict): Dictionary of module parameters
 
     Returns:
-        dict: Filtered dictionary containing only relevant tag parameters
+        dict: Filtered dictionary containing only relevant service group parameters
     """
     return {
         k: v for k, v in module_params.items() if k not in ["provider", "state"] and v is not None
     }
 
 
-def get_existing_tag(tag_api, tag_data):
+def get_existing_service_group(service_group_api, service_group_data):
     """
-    Attempt to fetch an existing tag object.
+    Attempt to fetch an existing service group object.
 
     Args:
-        tag_api: Tag API instance
-        tag_data (dict): Tag parameters to search for
+        service_group_api: ServiceGroup API instance
+        service_group_data (dict): Service group parameters to search for
 
     Returns:
-        tuple: (bool, object) indicating if tag exists and the tag object if found
+        tuple: (bool, object) indicating if service group exists and the service group object if found
     """
     try:
-        existing = tag_api.fetch(
-            name=tag_data["name"],
-            folder=tag_data.get("folder"),
-            snippet=tag_data.get("snippet"),
-            device=tag_data.get("device"),
+        existing = service_group_api.fetch(
+            name=service_group_data["name"],
+            folder=service_group_data.get("folder"),
+            snippet=service_group_data.get("snippet"),
+            device=service_group_data.get("device"),
         )
         return True, existing
     except NotFoundError:
@@ -208,74 +216,79 @@ def get_existing_tag(tag_api, tag_data):
 
 def main():
     """
-    Main execution path for the tag object module.
+    Main execution path for the service group object module.
     """
     module = AnsibleModule(
-        argument_spec=ScmSpec.tag_spec(),
+        argument_spec=ServiceGroupSpec.spec(),
         supports_check_mode=True,
+        required_if=[
+            ("state", "present", ["members"]),
+        ],
     )
 
     try:
         client = get_scm_client(module)
-        tag_api = Tag(client)
+        service_group_api = ServiceGroup(client)
 
-        tag_data = build_tag_data(module.params)
-        exists, existing_tag = get_existing_tag(
-            tag_api,
-            tag_data,
+        service_group_data = build_service_group_data(module.params)
+        exists, existing_service_group = get_existing_service_group(
+            service_group_api,
+            service_group_data,
         )
 
         if module.params["state"] == "present":
             if not exists:
                 # Validate using Pydantic
                 try:
-                    TagCreateModel(**tag_data)
+                    ServiceGroupCreateModel(**service_group_data)
                 except ValidationError as e:
                     module.fail_json(msg=str(e))
 
                 if not module.check_mode:
-                    result = tag_api.create(data=tag_data)
+                    result = service_group_api.create(data=service_group_data)
                     module.exit_json(
                         changed=True,
-                        tag=serialize_response(result),
+                        service_group=serialize_response(result),
                     )
                 module.exit_json(changed=True)
             else:
                 # Compare and update if needed
                 need_update = False
-                for key, value in tag_data.items():
-                    if hasattr(existing_tag, key) and getattr(existing_tag, key) != value:
-                        need_update = True
-                        break
+                if set(existing_service_group.members) != set(
+                        service_group_data.get("members", [])
+                ):
+                    need_update = True
+                if existing_service_group.tag != service_group_data.get("tag"):
+                    need_update = True
 
                 if need_update:
                     # Prepare update data
-                    update_data = tag_data.copy()
-                    update_data["id"] = str(existing_tag.id)
+                    update_data = service_group_data.copy()
+                    update_data["id"] = str(existing_service_group.id)
 
                     # Validate using Pydantic
                     try:
-                        tag_update_model = TagUpdateModel(**update_data)
+                        service_group_update_model = ServiceGroupUpdateModel(**update_data)
                     except ValidationError as e:
                         module.fail_json(msg=str(e))
 
                     if not module.check_mode:
-                        result = tag_api.update(tag=tag_update_model)
+                        result = service_group_api.update(service_group=service_group_update_model)
                         module.exit_json(
                             changed=True,
-                            tag=serialize_response(result),
+                            service_group=serialize_response(result),
                         )
                     module.exit_json(changed=True)
                 else:
                     module.exit_json(
                         changed=False,
-                        tag=serialize_response(existing_tag),
+                        service_group=serialize_response(existing_service_group),
                     )
 
         elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
-                    tag_api.delete(str(existing_tag.id))
+                    service_group_api.delete(str(existing_service_group.id))
                 module.exit_json(changed=True)
             module.exit_json(changed=False)
 

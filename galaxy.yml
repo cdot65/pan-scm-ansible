@@ -23,7 +23,7 @@ tags:
   - panos
   - automation
   - networkautomation
-version: 0.1.0
+version: 0.2.0  # New version to avoid conflicts with previous builds
 build_ignore:
   - tools
   - setup.cfg

@@ -1,98 +1,127 @@
-# address
-
-Manage address objects in Palo Alto Networks Strata Cloud Manager.
+# Address
 
 ## Synopsis
 
-The `address` module allows you to create, update, and delete address objects in SCM.
-
-Address objects are used to identify hosts and networks in security rules, NAT policies, and other configuration objects.
-
-## Requirements
-
-- `pan-scm-sdk` Python package
-- Authentication credentials for Strata Cloud Manager
+Manage address objects in Strata Cloud Manager (SCM).
 
 ## Parameters
 
-| Parameter | Type | Required | Default | Choices | Description |
-|-----------|------|----------|---------|---------|-------------|
-| `name` | string | yes | | | Name of the address object |
-| `folder` | string | yes | | | SCM folder path where the address object is located |
-| `description` | string | no | | | Description for the address object |
-| `ip_netmask` | string | no | | | IPv4 or IPv6 address with CIDR (e.g., "192.168.1.1/32") |
-| `ip_range` | string | no | | | IP address range (e.g., "192.168.1.1-192.168.1.10") |
-| `fqdn` | string | no | | | Fully qualified domain name |
-| `tags` | list | no | | | List of tags to apply to the address object |
-| `state` | string | no | present | present, absent | Desired state of the address object |
-| `username` | string | no | | | SCM username (can use environment variable) |
-| `password` | string | no | | | SCM password (can use environment variable) |
-| `tenant` | string | no | | | SCM tenant ID (can use environment variable) |
+| Parameter              | Required | Type | Choices         | Default | Comments                                                             |
+|------------------------|----------|------|-----------------|---------|----------------------------------------------------------------------|
+| name                   | yes      | str  |                 |         | The name of the address object (max 63 chars).                       |
+| description            | no       | str  |                 |         | Description of the address object (max 1023 chars).                  |
+| tag                    | no       | list |                 |         | List of tags associated with the address object (max 64 chars each). |
+| fqdn                   | no       | str  |                 |         | Fully Qualified Domain Name (FQDN) of the address (max 255 chars).   |
+| ip_netmask             | no       | str  |                 |         | IP address with CIDR notation (e.g. "192.168.1.0/24").               |
+| ip_range               | no       | str  |                 |         | IP address range (e.g. "192.168.1.100-192.168.1.200").               |
+| ip_wildcard            | no       | str  |                 |         | IP wildcard mask format (e.g. "10.20.1.0/0.0.248.255").              |
+| folder                 | no       | str  |                 |         | The folder in which the resource is defined (max 64 chars).          |
+| snippet                | no       | str  |                 |         | The snippet in which the resource is defined (max 64 chars).         |
+| device                 | no       | str  |                 |         | The device in which the resource is defined (max 64 chars).          |
+| provider               | yes      | dict |                 |         | Authentication credentials.                                          |
+| provider.client_id     | yes      | str  |                 |         | Client ID for authentication.                                        |
+| provider.client_secret | yes      | str  |                 |         | Client secret for authentication.                                    |
+| provider.tsg_id        | yes      | str  |                 |         | Tenant Service Group ID.                                             |
+| provider.log_level     | no       | str  |                 | INFO    | Log level for the SDK.                                               |
+| state                  | yes      | str  | present, absent |         | Desired state of the address object.                                 |
 
-**Note**: You must specify exactly one of `ip_netmask`, `ip_range`, or `fqdn` for address objects.
+> **Note**:
+>
+> - Exactly one address type (`ip_netmask`, `ip_range`, `ip_wildcard`, or `fqdn`) must be provided when state is
+    present.
+> - Exactly one container type (`folder`, `snippet`, or `device`) must be provided.
+
+## Requirements
+
+- SCM Python SDK
 
 ## Examples
 
-### Create an IPv4 address object
+### Create an address object with ip_netmask
 
 ```yaml
-- name: Create an IPv4 address object
+- name: Create an address object with ip_netmask
   cdot65.scm.address:
-    name: "web-server"
-    folder: "SharedFolder"
-    description: "Web server address"
-    ip_netmask: "10.1.1.1/32"
-    tags:
-      - "web-servers"
-      - "production"
+    provider: "{{ provider }}"
+    name: "Test_Address_Netmask"
+    description: "An address object with ip_netmask"
+    ip_netmask: "192.168.1.0/24"
+    folder: "Texas"
+    tag: [ "Network", "Internal" ]
+    state: "present"
 ```
 
-### Create an IP range address object
+### Create an address object with ip_range
 
 ```yaml
-- name: Create an IP range address object
+- name: Create an address object with ip_range
   cdot65.scm.address:
-    name: "dhcp-pool"
-    folder: "SharedFolder" 
-    description: "DHCP address range"
-    ip_range: "10.1.1.100-10.1.1.200"
+    provider: "{{ provider }}"
+    name: "Test_Address_Range"
+    description: "An address object with ip_range"
+    ip_range: "192.168.2.1-192.168.2.254"
+    folder: "Texas"
+    state: "present"
 ```
 
-### Create an FQDN address object
+### Create an address object with ip_wildcard
 
 ```yaml
-- name: Create an FQDN address object
+- name: Create an address object with ip_wildcard
   cdot65.scm.address:
-    name: "company-website"
-    folder: "SharedFolder"
-    description: "Company website"
-    fqdn: "www.example.com"
+    provider: "{{ provider }}"
+    name: "Test_Address_Wildcard"
+    description: "An address object with ip_wildcard"
+    ip_wildcard: "10.20.1.0/0.0.248.255"
+    folder: "Texas"
+    state: "present"
+```
+
+### Create an address object with fqdn
+
+```yaml
+- name: Create an address object with fqdn
+  cdot65.scm.address:
+    provider: "{{ provider }}"
+    name: "Test_Address_FQDN"
+    description: "An address object with fqdn"
+    fqdn: "example.com"
+    folder: "Texas"
+    state: "present"
+```
+
+### Update an address object with new description and tags
+
+```yaml
+- name: Update an address object with new description and tags
+  cdot65.scm.address:
+    provider: "{{ provider }}"
+    name: "Test_Address_Netmask"
+    description: "Updated description for netmask address"
+    ip_netmask: "192.168.1.0/24"
+    folder: "Texas"
+    tag: [ "Network", "Internal", "Updated" ]
+    state: "present"
 ```
 
 ### Delete an address object
 
 ```yaml
-- name: Delete an address object
+- name: Delete address object
   cdot65.scm.address:
-    name: "old-server"
-    folder: "SharedFolder"
-    state: absent
+    provider: "{{ provider }}"
+    name: "Test_Address_FQDN"
+    folder: "Texas"
+    state: "absent"
 ```
 
 ## Return Values
 
-| Name | Description | Type | Sample |
-|------|-------------|------|--------|
-| `changed` | Whether changes were made | boolean | `true` |
-| `scm_object` | The SCM address object details | dictionary | `{"id": "123", "name": "web-server", "type": "IP_NETMASK", "value": "10.1.1.1/32"}` |
-| `response` | The raw API response | dictionary | `{"status": "success", "data": {...}}` |
+| Name    | Description                      | Type | Returned              | Sample                                                                                                                                                                                                                |
+|---------|----------------------------------|------|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| changed | Whether any changes were made    | bool | always                | true                                                                                                                                                                                                                  |
+| address | Details about the address object | dict | when state is present | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "Test_Address_Netmask", "description": "An address object with ip_netmask", "ip_netmask": "192.168.1.0/24", "folder": "Texas", "tag": ["Network", "Internal"]} |
 
-## Notes
+## Author
 
-- Address object names must be unique within a folder
-- For security best practices, use environment variables for authentication credentials
-- This module is idempotent; running it multiple times with the same parameters will result in the same state
-
-## Status
-
-This module is flagged as **stable**
+- Calvin Remsburg (@cdot65)
