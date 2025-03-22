@@ -21,20 +21,13 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec import ApplicationSpec  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
-    get_scm_client,
-)
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
-    serialize_response,
-)
-from pydantic import ValidationError
-
-from scm.config.objects.application import Application
-from scm.exceptions import NotFoundError
-from scm.models.objects.application import ApplicationCreateModel, ApplicationUpdateModel
+from ansible.module_utils.common.text.converters import to_text
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.application import ApplicationSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response
+from scm.exceptions import InvalidObjectError, NameNotUniqueError, ObjectNotPresentError
+from scm.models.objects import ApplicationUpdateModel
 
 DOCUMENTATION = r"""
 ---
@@ -248,106 +241,221 @@ def build_application_data(module_params):
     }
 
 
-def get_existing_application(application_api, application_data):
+def is_container_specified(application_data):
+    """
+    Check if exactly one container type (folder, snippet) is specified.
+
+    Args:
+        application_data (dict): Application parameters
+
+    Returns:
+        bool: True if exactly one container is specified, False otherwise
+    """
+    containers = [application_data.get(container) for container in ["folder", "snippet"]]
+    return sum(container is not None for container in containers) == 1
+
+
+def needs_update(existing, params):
+    """
+    Determine if the application object needs to be updated.
+
+    Args:
+        existing: Existing application object from the SCM API
+        params (dict): Application parameters with desired state from Ansible module
+
+    Returns:
+        (bool, dict): Tuple containing:
+            - bool: Whether an update is needed
+            - dict: Complete object data for update including all fields from the existing
+                   object with any modifications from the params
+    """
+    changed = False
+    
+    # Start with a fresh update model using all fields from existing object
+    update_data = {
+        "id": existing.id,
+        "name": existing.name
+    }
+    
+    # Add the container field (folder or snippet)
+    for container in ["folder", "snippet"]:
+        container_value = getattr(existing, container, None)
+        if container_value is not None:
+            update_data[container] = container_value
+    
+    # Add required application fields
+    required_fields = ["category", "subcategory", "technology", "risk"]
+    for field in required_fields:
+        current_value = getattr(existing, field, None)
+        update_data[field] = current_value
+        
+        # If user provided a new value, use it and check if it's different
+        if field in params and params[field] is not None:
+            if current_value != params[field]:
+                update_data[field] = params[field]
+                changed = True
+                
+    # Add optional text fields
+    optional_fields = ["description"]
+    for field in optional_fields:
+        current_value = getattr(existing, field, None)
+        update_data[field] = current_value
+        
+        # If user provided a new value, use it and check if it's different
+        if field in params and params[field] is not None:
+            if current_value != params[field]:
+                update_data[field] = params[field]
+                changed = True
+    
+    # Add optional list fields
+    list_fields = ["ports"]
+    for field in list_fields:
+        current_value = getattr(existing, field, None)
+        update_data[field] = current_value if current_value is not None else []
+        
+        # If user provided a new value, use it and check if it's different
+        if field in params and params[field] is not None:
+            if current_value != params[field]:
+                update_data[field] = params[field]
+                changed = True
+    
+    # Add boolean fields
+    boolean_fields = [
+        "evasive", "pervasive", "excessive_bandwidth_use", "used_by_malware",
+        "transfers_files", "has_known_vulnerabilities", "tunnels_other_apps",
+        "prone_to_misuse", "no_certifications"
+    ]
+    
+    for field in boolean_fields:
+        current_value = getattr(existing, field, False)
+        update_data[field] = current_value
+        
+        # If user provided a new value, use it and check if it's different
+        if field in params and params[field] is not None:
+            if current_value != params[field]:
+                update_data[field] = params[field]
+                changed = True
+
+    return changed, update_data
+
+
+def get_existing_application(client, application_data):
     """
     Attempt to fetch an existing application object.
 
     Args:
-        application_api: Application API instance
+        client: SCM client instance
         application_data (dict): Application parameters to search for
 
     Returns:
         tuple: (bool, object) indicating if application exists and the application object if found
     """
     try:
-        existing = application_api.fetch(
+        # Determine which container type is specified
+        container_type = None
+        for container in ["folder", "snippet"]:
+            if container in application_data and application_data[container] is not None:
+                container_type = container
+                break
+
+        if container_type is None or "name" not in application_data:
+            return False, None
+
+        # Fetch the application using the appropriate container
+        existing = client.application.fetch(
             name=application_data["name"],
-            folder=application_data.get("folder"),
-            snippet=application_data.get("snippet"),
+            **{container_type: application_data[container_type]}
         )
         return True, existing
-    except NotFoundError:
+    except (ObjectNotPresentError, InvalidObjectError):
         return False, None
 
 
 def main():
     """
     Main execution path for the application object module.
+
+    This module provides functionality to create, update, and delete application objects
+    in the SCM (Strata Cloud Manager) system. It handles various application attributes
+    and supports check mode operations.
+
+    :return: Ansible module exit data
+    :rtype: dict
     """
     module = AnsibleModule(
         argument_spec=ApplicationSpec.spec(),
         supports_check_mode=True,
-        required_if=[
-            ("state", "present", ["category", "subcategory", "technology", "risk"]),
+        mutually_exclusive=[
+            ["folder", "snippet"]
         ],
+        required_one_of=[
+            ["folder", "snippet"]
+        ],
+        required_if=[
+            ['state', 'present', ['category', 'subcategory', 'technology', 'risk']]
+        ]
     )
+
+    result = {
+        "changed": False,
+        "application": None
+    }
 
     try:
         client = get_scm_client(module)
-        application_api = Application(client)
-
         application_data = build_application_data(module.params)
-        exists, existing_application = get_existing_application(
-            application_api,
-            application_data,
-        )
+
+        # Validate container is specified
+        if not is_container_specified(application_data):
+            module.fail_json(
+                msg="Exactly one of 'folder' or 'snippet' must be provided."
+            )
+
+        # Get existing application
+        exists, existing_application = get_existing_application(client, application_data)
 
         if module.params["state"] == "present":
-            if not exists:
-                # Validate using Pydantic
-                try:
-                    ApplicationCreateModel(**application_data)
-                except ValidationError as e:
-                    module.fail_json(msg=str(e))
+            # Application attributes validation is handled by required_if in the AnsibleModule definition
 
+            if not exists:
+                # Create new application
                 if not module.check_mode:
-                    result = application_api.create(data=application_data)
-                    module.exit_json(
-                        changed=True,
-                        application=serialize_response(result),
-                    )
-                module.exit_json(changed=True)
+                    try:
+                        new_application = client.application.create(data=application_data)
+                        result["application"] = serialize_response(new_application)
+                        result["changed"] = True
+                    except NameNotUniqueError:
+                        module.fail_json(msg=f"An application with name '{application_data['name']}' already exists")
+                    except InvalidObjectError as e:
+                        module.fail_json(msg=f"Invalid application data: {str(e)}")
+                else:
+                    result["changed"] = True
             else:
                 # Compare and update if needed
-                need_update = False
-                for key, value in application_data.items():
-                    if (
-                            hasattr(existing_application, key)
-                            and getattr(existing_application, key) != value
-                    ):
-                        need_update = True
-                        break
+                need_update, update_data = needs_update(existing_application, application_data)
 
                 if need_update:
-                    # Prepare update data
-                    update_data = application_data.copy()
-                    update_data["id"] = str(existing_application.id)
-
-                    # Validate using Pydantic
-                    try:
-                        application_update_model = ApplicationUpdateModel(**update_data)
-                    except ValidationError as e:
-                        module.fail_json(msg=str(e))
-
                     if not module.check_mode:
-                        result = application_api.update(application=application_update_model)
-                        module.exit_json(
-                            changed=True,
-                            application=serialize_response(result),
-                        )
-                    module.exit_json(changed=True)
+                        # Create update model with complete object data
+                        update_model = ApplicationUpdateModel(**update_data)
+                        
+                        # Perform update with complete object
+                        updated_application = client.application.update(update_model)
+                        result["application"] = serialize_response(updated_application)
+                        result["changed"] = True
+                    else:
+                        result["changed"] = True
                 else:
-                    module.exit_json(
-                        changed=False,
-                        application=serialize_response(existing_application),
-                    )
+                    # No changes needed
+                    result["application"] = serialize_response(existing_application)
 
         elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
-                    application_api.delete(str(existing_application.id))
-                module.exit_json(changed=True)
-            module.exit_json(changed=False)
+                    client.application.delete(str(existing_application.id))
+                result["changed"] = True
+
+        module.exit_json(**result)
 
     except Exception as e:
         module.fail_json(msg=to_text(e))

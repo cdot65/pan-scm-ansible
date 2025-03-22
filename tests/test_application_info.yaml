@@ -1,0 +1,133 @@
+---
+- name: Test Application Info Module
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # Create test objects
+    - name: Create a custom application for testing
+      cdot65.scm.application:
+        provider: "{{ provider }}"
+        name: "test-app-info"
+        category: "business-systems"
+        subcategory: "database"
+        technology: "client-server"
+        risk: 3
+        description: "Application for testing info module"
+        ports:
+          - "tcp/1521"
+        folder: "Texas"
+        transfers_files: true
+        state: "present"
+
+    - name: Create a high-risk application for testing
+      cdot65.scm.application:
+        provider: "{{ provider }}"
+        name: "test-high-risk-app"
+        category: "collaboration"
+        subcategory: "instant-messaging"
+        technology: "client-server"
+        risk: 5
+        description: "High-risk application for testing"
+        ports:
+          - "tcp/8443"
+        folder: "Texas"
+        has_known_vulnerabilities: true
+        evasive: true
+        state: "present"
+
+    # Test application_info module functionality
+    - name: Get information about a specific application
+      cdot65.scm.application_info:
+        provider: "{{ provider }}"
+        name: "test-app-info"
+        folder: "Texas"
+      register: specific_info
+
+    - name: Display specific application info
+      debug:
+        var: specific_info
+        verbosity: 1
+
+    - name: Verify specific application info
+      assert:
+        that:
+          - specific_info.application is defined
+          - specific_info.application.name == "test-app-info"
+          - specific_info.application.description == "Application for testing info module"
+          - specific_info.application.risk == 3
+          - "'tcp/1521' in specific_info.application.ports"
+          - specific_info.application.transfers_files == true
+
+    - name: List all applications in the folder
+      cdot65.scm.application_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_apps
+
+    - name: Display all applications
+      debug:
+        var: all_apps
+        verbosity: 1
+
+    - name: Verify all applications
+      assert:
+        that:
+          - all_apps.applications is defined
+          - all_apps.applications | length >= 2
+
+    - name: List applications by category
+      cdot65.scm.application_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        category: ["business-systems"]
+      register: business_apps
+
+    - name: Display business applications
+      debug:
+        var: business_apps
+        verbosity: 1
+
+    - name: Verify business applications
+      assert:
+        that:
+          - business_apps.applications is defined
+          - business_apps.applications | selectattr('name', 'eq', 'test-app-info') | list | length == 1
+          - business_apps.applications | selectattr('name', 'eq', 'test-high-risk-app') | list | length == 0
+
+    - name: List high-risk applications
+      cdot65.scm.application_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        risk: [5]
+      register: high_risk_apps
+
+    - name: Display high-risk applications
+      debug:
+        var: high_risk_apps
+        verbosity: 1
+
+    - name: Verify high-risk applications
+      assert:
+        that:
+          - high_risk_apps.applications is defined
+          - high_risk_apps.applications | selectattr('name', 'eq', 'test-high-risk-app') | list | length == 1
+          - high_risk_apps.applications | selectattr('name', 'eq', 'test-app-info') | list | length == 0
+
+    # Cleanup test objects
+    - name: Remove test applications
+      cdot65.scm.application:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      loop:
+        - "test-app-info"
+        - "test-high-risk-app"
