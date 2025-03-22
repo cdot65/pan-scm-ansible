@@ -1,5 +1,3 @@
-# ansible_collections/cdot65/scm/plugins/modules/address_group.py
-
 # -*- coding: utf-8 -*-
 
 # This code is part of Ansible, but is an independent component.
@@ -23,20 +21,13 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.address_group import AddressGroupSpec  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
-    get_scm_client,
-)
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
-    serialize_response,
-)
-from pydantic import ValidationError
-
-from scm.config.objects.address_group import AddressGroup
-from scm.exceptions import NotFoundError
-from scm.models.objects.address_group import AddressGroupCreateModel, AddressGroupUpdateModel
+from ansible.module_utils.common.text.converters import to_text
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.address_group import AddressGroupSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response
+from scm.exceptions import InvalidObjectError, NameNotUniqueError, ObjectNotPresentError
+from scm.models.objects import AddressGroupUpdateModel
 
 DOCUMENTATION = r"""
 ---
@@ -194,107 +185,210 @@ def build_address_group_data(module_params):
     }
 
 
-def get_existing_address_group(address_group_api, address_group_data):
+def is_container_specified(address_group_data):
+    """
+    Check if exactly one container type (folder, snippet, device) is specified.
+
+    Args:
+        address_group_data (dict): Address group parameters
+
+    Returns:
+        bool: True if exactly one container is specified, False otherwise
+    """
+    containers = [address_group_data.get(container) for container in ["folder", "snippet", "device"]]
+    return sum(container is not None for container in containers) == 1
+
+
+def needs_update(existing, params):
+    """
+    Determine if the address group object needs to be updated.
+
+    Args:
+        existing: Existing address group object from the SCM API
+        params (dict): Address group parameters with desired state from Ansible module
+
+    Returns:
+        (bool, dict): Tuple containing:
+            - bool: Whether an update is needed
+            - dict: Complete object data for update including all fields from the existing
+                   object with any modifications from the params
+    """
+    changed = False
+    
+    # Start with a fresh update model using all fields from existing object
+    update_data = {
+        "id": existing.id,
+        "name": existing.name
+    }
+    
+    # Add the container field (folder, snippet, or device)
+    for container in ["folder", "snippet", "device"]:
+        container_value = getattr(existing, container, None)
+        if container_value is not None:
+            update_data[container] = container_value
+    
+    # Check each parameter that can be updated
+    for param in ["description"]:
+        # Set the current value as default
+        current_value = getattr(existing, param, None)
+        update_data[param] = current_value
+        
+        # If user provided a new value, use it and check if it's different
+        if param in params and params[param] is not None:
+            if current_value != params[param]:
+                update_data[param] = params[param]
+                changed = True
+    
+    # Handle the tag parameter specially due to Pydantic validation requirements
+    # For tag, if it's None in the existing object, we need to set an empty list []
+    current_tag = getattr(existing, "tag", None)
+    # If existing tag is None, use empty list to avoid Pydantic validation error
+    update_data["tag"] = [] if current_tag is None else current_tag
+    
+    # If user provided a tag value, use it and check if it's different
+    if "tag" in params and params["tag"] is not None:
+        if current_tag != params["tag"]:
+            update_data["tag"] = params["tag"]
+            changed = True
+
+    # Check and set static or dynamic address group type
+    # Handle static address group
+    if hasattr(existing, "static") and existing.static is not None:
+        update_data["static"] = existing.static
+        if "static" in params and params["static"] is not None:
+            if existing.static != params["static"]:
+                update_data["static"] = params["static"]
+                changed = True
+    
+    # Handle dynamic address group
+    if hasattr(existing, "dynamic") and existing.dynamic is not None:
+        update_data["dynamic"] = {"filter": existing.dynamic.filter}
+        if "dynamic" in params and params["dynamic"] is not None:
+            if existing.dynamic.filter != params["dynamic"]["filter"]:
+                update_data["dynamic"] = params["dynamic"]
+                changed = True
+
+    return changed, update_data
+
+
+def get_existing_address_group(client, address_group_data):
     """
     Attempt to fetch an existing address group object.
 
     Args:
-        address_group_api: AddressGroup API instance
+        client: SCM client instance
         address_group_data (dict): Address group parameters to search for
 
     Returns:
         tuple: (bool, object) indicating if address group exists and the address group object if found
     """
     try:
-        existing = address_group_api.fetch(
+        # Determine which container type is specified
+        container_type = None
+        for container in ["folder", "snippet", "device"]:
+            if container in address_group_data and address_group_data[container] is not None:
+                container_type = container
+                break
+
+        if container_type is None or "name" not in address_group_data:
+            return False, None
+
+        # Fetch the address group using the appropriate container
+        existing = client.address_group.fetch(
             name=address_group_data["name"],
-            folder=address_group_data.get("folder"),
-            snippet=address_group_data.get("snippet"),
-            device=address_group_data.get("device"),
+            **{container_type: address_group_data[container_type]}
         )
         return True, existing
-    except NotFoundError:
+    except (ObjectNotPresentError, InvalidObjectError):
         return False, None
 
 
 def main():
     """
     Main execution path for the address group object module.
+
+    This module provides functionality to create, update, and delete address group objects
+    in the SCM (Strata Cloud Manager) system. It handles both static and dynamic address groups
+    and supports check mode operations.
+
+    :return: Ansible module exit data
+    :rtype: dict
     """
     module = AnsibleModule(
         argument_spec=AddressGroupSpec.spec(),
         supports_check_mode=True,
+        mutually_exclusive=[
+            ["static", "dynamic"],
+            ["folder", "snippet", "device"]
+        ],
+        required_one_of=[
+            ["folder", "snippet", "device"]
+        ],
+        required_if=[
+            ['state', 'present', ['static', 'dynamic'], True]
+        ]
     )
+
+    result = {
+        "changed": False,
+        "address_group": None
+    }
 
     try:
         client = get_scm_client(module)
-        address_group_api = AddressGroup(client)
-
         address_group_data = build_address_group_data(module.params)
 
-        exists, existing_address_group = get_existing_address_group(
-            address_group_api,
-            address_group_data,
-        )
+        # Validate container is specified
+        if not is_container_specified(address_group_data):
+            module.fail_json(
+                msg="Exactly one of 'folder', 'snippet', or 'device' must be provided."
+            )
+
+        # Get existing address group
+        exists, existing_address_group = get_existing_address_group(client, address_group_data)
 
         if module.params["state"] == "present":
-            if not exists:
-                # Validate using Pydantic
-                try:
-                    AddressGroupCreateModel(**address_group_data)
-                except ValidationError as e:
-                    module.fail_json(msg=str(e))
+            # Group type validation is now handled by required_if in the AnsibleModule definition
 
+            if not exists:
+                # Create new address group
                 if not module.check_mode:
-                    result = address_group_api.create(data=address_group_data)
-                    module.exit_json(
-                        changed=True,
-                        address_group=serialize_response(result),
-                    )
-                module.exit_json(changed=True)
+                    try:
+                        new_address_group = client.address_group.create(data=address_group_data)
+                        result["address_group"] = serialize_response(new_address_group)
+                        result["changed"] = True
+                    except NameNotUniqueError:
+                        module.fail_json(msg=f"An address group with name '{address_group_data['name']}' already exists")
+                    except InvalidObjectError as e:
+                        module.fail_json(msg=f"Invalid address group data: {str(e)}")
+                else:
+                    result["changed"] = True
             else:
                 # Compare and update if needed
-                need_update = False
-                # Implement comparison logic to determine if update is needed
-                # Compare existing attributes with desired attributes
-                if existing_address_group.description != address_group_data.get("description"):
-                    need_update = True
-                if existing_address_group.tag != address_group_data.get("tag"):
-                    need_update = True
-                if existing_address_group.static != address_group_data.get("static"):
-                    need_update = True
-                if existing_address_group.dynamic != address_group_data.get("dynamic"):
-                    need_update = True
+                need_update, update_data = needs_update(existing_address_group, address_group_data)
 
                 if need_update:
-                    # Prepare update data
-                    update_data = address_group_data.copy()
-                    update_data["id"] = str(existing_address_group.id)
-                    # Validate using Pydantic
-                    try:
-                        address_group_update_model = AddressGroupUpdateModel(**update_data)
-                    except ValidationError as e:
-                        module.fail_json(msg=str(e))
-
                     if not module.check_mode:
-                        result = address_group_api.update(address_group=address_group_update_model)
-                        module.exit_json(
-                            changed=True,
-                            address_group=serialize_response(result),
-                        )
-                    module.exit_json(changed=True)
+                        # Create update model with complete object data
+                        update_model = AddressGroupUpdateModel(**update_data)
+                        
+                        # Perform update with complete object
+                        updated_address_group = client.address_group.update(update_model)
+                        result["address_group"] = serialize_response(updated_address_group)
+                        result["changed"] = True
+                    else:
+                        result["changed"] = True
                 else:
-                    module.exit_json(
-                        changed=False,
-                        address_group=serialize_response(existing_address_group),
-                    )
+                    # No changes needed
+                    result["address_group"] = serialize_response(existing_address_group)
 
         elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
-                    address_group_api.delete(str(existing_address_group.id))
-                module.exit_json(changed=True)
-            module.exit_json(changed=False)
+                    client.address_group.delete(str(existing_address_group.id))
+                result["changed"] = True
+
+        module.exit_json(**result)
 
     except Exception as e:
         module.fail_json(msg=to_text(e))

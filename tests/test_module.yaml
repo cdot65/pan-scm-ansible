@@ -1,13 +1,25 @@
 ---
-- name: Test Module Loading
+- name: Test Module to ensure basic syntax is correct
   hosts: localhost
   gather_facts: false
+  vars:
+    client_id: "dummy_client_id"
+    client_secret: "dummy_client_secret"
+    tsg_id: "dummy_tsg_id"
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
   tasks:
-    - name: Run test module
-      cdot65.scm.test_module:
-        message: "Hello, world!"
-      register: test_result
-
-    - name: Display test result
-      debug:
-        var: test_result
+    - name: Test address_group module syntax
+      include_tasks: 
+        file: "{{ item }}"
+        apply:
+          tags: syntax
+      vars:
+        ansible_check_mode: true
+      with_items:
+        - test_address_group.yaml
+        - test_address_group_info.yaml
+      tags: syntax
