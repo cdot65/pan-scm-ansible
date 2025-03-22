@@ -40,13 +40,13 @@ clean:
 .PHONY: build
 build: clean
 	@echo "Building collection $(COLLECTION_NAME) version $(VERSION)..."
-	ansible-galaxy collection build --force
+	poetry run ansible-galaxy collection build --force
 
 # Install
 .PHONY: install
 install:
 	@echo "Installing collection $(COLLECTION_NAME) version $(VERSION)..."
-	ansible-galaxy collection install $(TARBALL) --force --collections-path ./collections
+	poetry run ansible-galaxy collection install $(TARBALL) --force --collections-path ./collections
 
 # Fix dependencies
 .PHONY: fix-dependencies
@@ -77,19 +77,19 @@ reinstall: remove clean build install fix-dependencies
 .PHONY: test
 test:
 	@echo "Running tests for collection $(COLLECTION_NAME)..."
-	cd tests && ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ANSIBLE_MODULE_UTILS=$(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/module_utils ansible-playbook test_address.yaml --vault-password-file=.vault_password -vv
+	cd tests && ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ANSIBLE_MODULE_UTILS=$(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/module_utils poetry run ansible-playbook test_address.yaml --vault-password-file=.vault_password -vv
 
 # Test address module
 .PHONY: test-address
 test-address:
 	@echo "Running tests for address module..."
-	cd tests && ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ANSIBLE_MODULE_UTILS=$(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/module_utils ansible-playbook test_address.yaml --vault-password-file=.vault_password -vv
+	cd tests && ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ANSIBLE_MODULE_UTILS=$(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/module_utils poetry run ansible-playbook test_address.yaml --vault-password-file=.vault_password -vv
 
 # Test address_info module
 .PHONY: test-address-info
 test-address-info:
 	@echo "Running tests for address_info module..."
-	cd tests && ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ANSIBLE_MODULE_UTILS=$(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/module_utils ansible-playbook test_address_info.yaml --vault-password-file=.vault_password -vv
+	cd tests && ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ANSIBLE_MODULE_UTILS=$(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/module_utils poetry run ansible-playbook test_address_info.yaml --vault-password-file=.vault_password -vv
 
 # Update version
 .PHONY: version

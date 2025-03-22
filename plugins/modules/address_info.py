@@ -39,12 +39,22 @@ description:
     - Supports retrieving a specific address by name or listing addresses with various filters.
     - Provides additional client-side filtering capabilities for exact matches and exclusions.
     - Returns detailed information about each address object.
+    - This is an info module that only retrieves information and does not modify anything.
 
 options:
     name:
         description: The name of a specific address object to retrieve.
         required: false
         type: str
+    gather_subset:
+        description: 
+            - Determines which information to gather about addresses.
+            - C(all) gathers everything.
+            - C(config) is the default which retrieves basic configuration.
+        type: list
+        elements: str
+        default: ['config']
+        choices: ['all', 'config']
     folder:
         description: Filter addresses by folder container.
         required: false
@@ -252,6 +262,12 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             name=dict(type="str", required=False),
+            gather_subset=dict(
+                type="list", 
+                elements="str", 
+                default=["config"],
+                choices=["all", "config"]
+            ),
             folder=dict(type="str", required=False),
             snippet=dict(type="str", required=False),
             device=dict(type="str", required=False),
@@ -259,7 +275,12 @@ def main():
             exclude_folders=dict(type="list", elements="str", required=False),
             exclude_snippets=dict(type="list", elements="str", required=False),
             exclude_devices=dict(type="list", elements="str", required=False),
-            types=dict(type="list", elements="str", required=False),
+            types=dict(
+                type="list", 
+                elements="str", 
+                required=False,
+                choices=["netmask", "range", "wildcard", "fqdn"]
+            ),
             values=dict(type="list", elements="str", required=False),
             tags=dict(type="list", elements="str", required=False),
             provider=dict(
@@ -277,8 +298,9 @@ def main():
         mutually_exclusive=[
             ["folder", "snippet", "device"]
         ],
-        required_one_of=[
-            ["folder", "snippet", "device"]
+        # Only require a container if we're not provided with a specific name
+        required_if=[
+            ["name", None, ["folder", "snippet", "device"], True]
         ],
     )
 
