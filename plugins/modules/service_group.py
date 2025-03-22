@@ -23,17 +23,17 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.service_group import ServiceGroupSpec  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
-    get_scm_client,
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.service_group import (
+    ServiceGroupSpec,
 )
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
 from pydantic import ValidationError
 
 from scm.config.objects.service_group import ServiceGroup
-from scm.exceptions import NotFoundError
+from scm.exceptions import InvalidObjectError, NameNotUniqueError, ObjectNotPresentError
 from scm.models.objects.service_group import ServiceGroupCreateModel, ServiceGroupUpdateModel
 
 DOCUMENTATION = r"""
@@ -52,29 +52,29 @@ description:
 
 options:
     name:
-        description: The name of the service group.
+        description: The name of the service group (max 63 chars).
         required: true
         type: str
     members:
         description: List of service objects that are members of this group.
-        required: true
+        required: false
         type: list
         elements: str
     tag:
-        description: List of tags associated with the service group.
+        description: List of tags associated with the service group. These must be references to existing tag objects in SCM, not just string labels.
         required: false
         type: list
         elements: str
     folder:
-        description: The folder in which the resource is defined.
+        description: The folder in which the resource is defined (max 64 chars).
         required: false
         type: str
     snippet:
-        description: The snippet in which the resource is defined.
+        description: The snippet in which the resource is defined (max 64 chars).
         required: false
         type: str
     device:
-        description: The device in which the resource is defined.
+        description: The device in which the resource is defined (max 64 chars).
         required: false
         type: str
     provider:
@@ -126,6 +126,19 @@ EXAMPLES = r"""
       tsg_id: "{{ tsg_id }}"
       log_level: "INFO"
   tasks:
+    # First, create tag objects to use in the service group
+    - name: Create tag objects
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        color: "Blue"
+        folder: "Texas"
+        state: "present"
+      loop:
+        - "Web"
+        - "Automation"
+    
+    # Create a service group using the tag objects
     - name: Create a service group
       cdot65.scm.service_group:
         provider: "{{ provider }}"
@@ -158,9 +171,25 @@ EXAMPLES = r"""
         name: "web-services"
         folder: "Texas"
         state: "absent"
+        
+    # Clean up the tag objects
+    - name: Clean up tag objects
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      loop:
+        - "Web"
+        - "Automation"
 """
 
 RETURN = r"""
+changed:
+    description: Whether any changes were made.
+    returned: always
+    type: bool
+    sample: true
 service_group:
     description: Details about the service group object.
     returned: when state is present
@@ -173,6 +202,7 @@ service_group:
           - "HTTPS"
           - "SSH"
         folder: "Texas"
+        tag: ["Web", "Automation"]
 """
 
 
@@ -191,106 +221,181 @@ def build_service_group_data(module_params):
     }
 
 
-def get_existing_service_group(service_group_api, service_group_data):
+def is_container_specified(service_group_data):
+    """
+    Check if exactly one container type (folder, snippet, device) is specified.
+
+    Args:
+        service_group_data (dict): Service group parameters
+
+    Returns:
+        bool: True if exactly one container is specified, False otherwise
+    """
+    containers = [
+        service_group_data.get(container) for container in ["folder", "snippet", "device"]
+    ]
+    return sum(container is not None for container in containers) == 1
+
+
+def needs_update(existing, params):
+    """
+    Determine if the service group object needs to be updated.
+
+    Args:
+        existing: Existing service group object from the SCM API
+        params (dict): Service group parameters with desired state from Ansible module
+
+    Returns:
+        (bool, dict): Tuple containing:
+            - bool: Whether an update is needed
+            - dict: Complete object data for update including all fields from the existing
+                   object with any modifications from the params
+    """
+    changed = False
+
+    # Start with a fresh update model using all fields from existing object
+    update_data = {
+        "id": str(existing.id),  # Convert UUID to string for Pydantic
+        "name": existing.name,
+    }
+
+    # Add the container field (folder, snippet, or device)
+    for container in ["folder", "snippet", "device"]:
+        container_value = getattr(existing, container, None)
+        if container_value is not None:
+            update_data[container] = container_value
+
+    # Handle members field
+    current_members = getattr(existing, "members", None)
+    update_data["members"] = [] if current_members is None else current_members
+
+    if "members" in params and params["members"] is not None:
+        if set(current_members or []) != set(params["members"]):
+            update_data["members"] = params["members"]
+            changed = True
+
+    # Handle the tag parameter
+    current_tag = getattr(existing, "tag", None)
+    update_data["tag"] = [] if current_tag is None else current_tag
+
+    if "tag" in params and params["tag"] is not None:
+        if set(current_tag or []) != set(params["tag"]):
+            update_data["tag"] = params["tag"]
+            changed = True
+
+    return changed, update_data
+
+
+def get_existing_service_group(client, service_group_data):
     """
     Attempt to fetch an existing service group object.
 
     Args:
-        service_group_api: ServiceGroup API instance
+        client: SCM client instance
         service_group_data (dict): Service group parameters to search for
 
     Returns:
         tuple: (bool, object) indicating if service group exists and the service group object if found
     """
     try:
-        existing = service_group_api.fetch(
-            name=service_group_data["name"],
-            folder=service_group_data.get("folder"),
-            snippet=service_group_data.get("snippet"),
-            device=service_group_data.get("device"),
+        # Determine which container type is specified
+        container_type = None
+        for container in ["folder", "snippet", "device"]:
+            if container in service_group_data and service_group_data[container] is not None:
+                container_type = container
+                break
+
+        if container_type is None or "name" not in service_group_data:
+            return False, None
+
+        # Fetch the service group using the appropriate container
+        existing = client.service_group.fetch(
+            name=service_group_data["name"], **{container_type: service_group_data[container_type]}
         )
         return True, existing
-    except NotFoundError:
+    except (ObjectNotPresentError, InvalidObjectError):
         return False, None
 
 
 def main():
     """
     Main execution path for the service group object module.
+
+    This module provides functionality to create, update, and delete service group objects
+    in the SCM (Strata Cloud Manager) system. It handles service group members
+    and supports check mode operations.
+
+    :return: Ansible module exit data
+    :rtype: dict
     """
     module = AnsibleModule(
         argument_spec=ServiceGroupSpec.spec(),
         supports_check_mode=True,
-        required_if=[
-            ("state", "present", ["members"]),
-        ],
+        mutually_exclusive=[["folder", "snippet", "device"]],
+        required_one_of=[["folder", "snippet", "device"]],
+        required_if=[["state", "present", ["members"]]],
     )
+
+    result = {"changed": False, "service_group": None}
 
     try:
         client = get_scm_client(module)
-        service_group_api = ServiceGroup(client)
-
         service_group_data = build_service_group_data(module.params)
-        exists, existing_service_group = get_existing_service_group(
-            service_group_api,
-            service_group_data,
-        )
+
+        # Validate container is specified (handled by mutually_exclusive and required_one_of)
+        if not is_container_specified(service_group_data):
+            module.fail_json(
+                msg="Exactly one of 'folder', 'snippet', or 'device' must be provided."
+            )
+
+        # Get existing service group
+        exists, existing_service_group = get_existing_service_group(client, service_group_data)
 
         if module.params["state"] == "present":
             if not exists:
-                # Validate using Pydantic
-                try:
-                    ServiceGroupCreateModel(**service_group_data)
-                except ValidationError as e:
-                    module.fail_json(msg=str(e))
-
+                # Create new service group
                 if not module.check_mode:
-                    result = service_group_api.create(data=service_group_data)
-                    module.exit_json(
-                        changed=True,
-                        service_group=serialize_response(result),
-                    )
-                module.exit_json(changed=True)
+                    try:
+                        new_service_group = client.service_group.create(data=service_group_data)
+                        result["service_group"] = serialize_response(new_service_group)
+                        result["changed"] = True
+                    except NameNotUniqueError:
+                        module.fail_json(
+                            msg=f"A service group with name '{service_group_data['name']}' already exists"
+                        )
+                    except InvalidObjectError as e:
+                        module.fail_json(msg=f"Invalid service group data: {str(e)}")
+                else:
+                    result["changed"] = True
             else:
                 # Compare and update if needed
-                need_update = False
-                if set(existing_service_group.members) != set(
-                        service_group_data.get("members", [])
-                ):
-                    need_update = True
-                if existing_service_group.tag != service_group_data.get("tag"):
-                    need_update = True
+                need_update, update_data = needs_update(existing_service_group, service_group_data)
 
                 if need_update:
-                    # Prepare update data
-                    update_data = service_group_data.copy()
-                    update_data["id"] = str(existing_service_group.id)
-
-                    # Validate using Pydantic
-                    try:
-                        service_group_update_model = ServiceGroupUpdateModel(**update_data)
-                    except ValidationError as e:
-                        module.fail_json(msg=str(e))
-
                     if not module.check_mode:
-                        result = service_group_api.update(service_group=service_group_update_model)
-                        module.exit_json(
-                            changed=True,
-                            service_group=serialize_response(result),
-                        )
-                    module.exit_json(changed=True)
+                        # Create update model with complete object data
+                        try:
+                            update_model = ServiceGroupUpdateModel(**update_data)
+                        except ValidationError as e:
+                            module.fail_json(msg=f"Invalid service group update data: {str(e)}")
+
+                        # Perform update with complete object
+                        updated_service_group = client.service_group.update(update_model)
+                        result["service_group"] = serialize_response(updated_service_group)
+                        result["changed"] = True
+                    else:
+                        result["changed"] = True
                 else:
-                    module.exit_json(
-                        changed=False,
-                        service_group=serialize_response(existing_service_group),
-                    )
+                    # No changes needed
+                    result["service_group"] = serialize_response(existing_service_group)
 
         elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
-                    service_group_api.delete(str(existing_service_group.id))
-                module.exit_json(changed=True)
-            module.exit_json(changed=False)
+                    client.service_group.delete(str(existing_service_group.id))
+                result["changed"] = True
+
+        module.exit_json(**result)
 
     except Exception as e:
         module.fail_json(msg=to_text(e))

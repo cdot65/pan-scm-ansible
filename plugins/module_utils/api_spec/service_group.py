@@ -37,28 +37,34 @@ class ServiceGroupSpec:
             name=dict(
                 type="str",
                 required=True,
+                description="The name of the service group (max 63 chars).",
             ),
             members=dict(
                 type="list",
                 elements="str",
                 required=False,
+                description="List of service objects that are members of this group.",
             ),
             tag=dict(
                 type="list",
                 elements="str",
                 required=False,
+                description="List of tags associated with the service group. These must be references to existing tag objects in SCM, not just string labels.",
             ),
             folder=dict(
                 type="str",
                 required=False,
+                description="The folder in which the resource is defined (max 64 chars).",
             ),
             snippet=dict(
                 type="str",
                 required=False,
+                description="The snippet in which the resource is defined (max 64 chars).",
             ),
             device=dict(
                 type="str",
                 required=False,
+                description="The device in which the resource is defined (max 64 chars).",
             ),
             provider=dict(
                 type="dict",
@@ -67,26 +73,32 @@ class ServiceGroupSpec:
                     client_id=dict(
                         type="str",
                         required=True,
+                        description="Client ID for authentication.",
                     ),
                     client_secret=dict(
                         type="str",
                         required=True,
                         no_log=True,
+                        description="Client secret for authentication.",
                     ),
                     tsg_id=dict(
                         type="str",
                         required=True,
+                        description="Tenant Service Group ID.",
                     ),
                     log_level=dict(
                         type="str",
                         required=False,
                         default="INFO",
+                        description="Log level for the SDK.",
                     ),
                 ),
+                description="Authentication credentials.",
             ),
             state=dict(
                 type="str",
                 choices=["present", "absent"],
                 required=True,
+                description="Desired state of the service group object.",
             ),
         )

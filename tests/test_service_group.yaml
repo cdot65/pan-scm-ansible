@@ -11,6 +11,21 @@
       tsg_id: "{{ tsg_id }}"
       log_level: "INFO"
   tasks:
+    # First, create tag objects to use in the test
+    - name: Create tag objects
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        color: "Blue"
+        folder: "Texas"
+        state: "present"
+      loop:
+        - "Automation"
+        - "Web"
+        - "Updated"
+      register: tag_results
+
+    # Create service objects to use in the service group
     - name: Create TCP service
       cdot65.scm.service:
         provider: "{{ provider }}"
@@ -25,6 +40,7 @@
         description: "Web service ports"
         folder: "Texas"
         state: "present"
+      register: service_tcp_result
 
     - name: Create UDP service
       cdot65.scm.service:
@@ -38,7 +54,9 @@
         description: "DNS service"
         folder: "Texas"
         state: "present"
+      register: service_udp_result
 
+    # Test service group CRUD operations
     - name: Create a service group
       cdot65.scm.service_group:
         provider: "{{ provider }}"
@@ -49,7 +67,41 @@
         folder: "Texas"
         tag:
           - "Automation"
+          - "Web"
         state: "present"
+      register: create_result
+
+    - name: Verify service group created correctly
+      assert:
+        that:
+          - create_result.changed == true
+          - create_result.service_group.name == "web-services"
+          - create_result.service_group.members | length == 2
+          - '"web-service" in create_result.service_group.members'
+          - '"dns-service" in create_result.service_group.members'
+          - create_result.service_group.folder == "Texas"
+          - create_result.service_group.tag | length == 2
+          - '"Automation" in create_result.service_group.tag'
+          - '"Web" in create_result.service_group.tag'
+
+    - name: Run same task again to test idempotency
+      cdot65.scm.service_group:
+        provider: "{{ provider }}"
+        name: "web-services"
+        members:
+          - "web-service"
+          - "dns-service"
+        folder: "Texas"
+        tag:
+          - "Automation"
+          - "Web"
+        state: "present"
+      register: idempotency_result
+
+    - name: Verify idempotency
+      assert:
+        that:
+          - idempotency_result.changed == false
 
     - name: Update service group members
       cdot65.scm.service_group:
@@ -58,7 +110,23 @@
         members:
           - "web-service"
         folder: "Texas"
+        tag:
+          - "Automation"
+          - "Updated"
         state: "present"
+      register: update_result
+
+    - name: Verify service group updated correctly
+      assert:
+        that:
+          - update_result.changed == true
+          - update_result.service_group.members | length == 1
+          - '"web-service" in update_result.service_group.members'
+          - '"dns-service" not in update_result.service_group.members'
+          - update_result.service_group.tag | length == 2
+          - '"Automation" in update_result.service_group.tag'
+          - '"Updated" in update_result.service_group.tag'
+          - '"Web" not in update_result.service_group.tag'
 
     - name: Remove service group
       cdot65.scm.service_group:
@@ -66,7 +134,27 @@
         name: "web-services"
         folder: "Texas"
         state: "absent"
+      register: delete_result
 
+    - name: Verify service group deleted
+      assert:
+        that:
+          - delete_result.changed == true
+
+    - name: Verify service group is truly gone by trying to delete again
+      cdot65.scm.service_group:
+        provider: "{{ provider }}"
+        name: "web-services"
+        folder: "Texas"
+        state: "absent"
+      register: second_delete_result
+
+    - name: Verify second delete shows no change
+      assert:
+        that:
+          - second_delete_result.changed == false
+
+    # Clean up the test resources
     - name: Remove services
       cdot65.scm.service:
         provider: "{{ provider }}"
@@ -76,3 +164,13 @@
       loop:
         - "web-service"
         - "dns-service"
+
+    - name: Remove tags
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      loop:
+        - "Web"
+        - "Updated"
