@@ -10,9 +10,9 @@
 # All rights reserved.
 
 """
-Ansible module for gathering information about application objects in SCM.
+Ansible module for gathering information about application group objects in SCM.
 
-This module provides functionality to retrieve information about application objects
+This module provides functionality to retrieve information about application group objects
 in the SCM (Strata Cloud Manager) system with various filtering options.
 """
 
@@ -24,31 +24,32 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response
-from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
+from scm.config.objects.application_group import ApplicationGroup
+from scm.exceptions import InvalidObjectError, NotFoundError
 
 DOCUMENTATION = r"""
 ---
-module: application_info
+module: application_group_info
 
-short_description: Gather information about application objects in SCM.
+short_description: Gather information about application group objects in SCM.
 
 version_added: "0.1.0"
 
 description:
-    - Gather information about application objects within Strata Cloud Manager (SCM).
-    - Supports retrieving a specific application by name or listing applications with various filters.
+    - Gather information about application group objects within Strata Cloud Manager (SCM).
+    - Supports retrieving a specific application group by name or listing application groups with various filters.
     - Provides additional client-side filtering capabilities for exact matches and exclusions.
-    - Returns detailed information about each application object.
+    - Returns detailed information about each application group object.
     - This is an info module that only retrieves information and does not modify anything.
 
 options:
     name:
-        description: The name of a specific application object to retrieve.
+        description: The name of a specific application group object to retrieve.
         required: false
         type: str
     gather_subset:
         description: 
-            - Determines which information to gather about applications.
+            - Determines which information to gather about application groups.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.
         type: list
@@ -56,11 +57,15 @@ options:
         default: ['config']
         choices: ['all', 'config']
     folder:
-        description: Filter applications by folder container.
+        description: Filter application groups by folder container.
         required: false
         type: str
     snippet:
-        description: Filter applications by snippet container.
+        description: Filter application groups by snippet container.
+        required: false
+        type: str
+    device:
+        description: Filter application groups by device container.
         required: false
         type: str
     exact_match:
@@ -78,26 +83,6 @@ options:
         required: false
         type: list
         elements: str
-    category:
-        description: Filter by application category.
-        required: false
-        type: list
-        elements: str
-    subcategory:
-        description: Filter by application subcategory.
-        required: false
-        type: list
-        elements: str
-    technology:
-        description: Filter by application technology.
-        required: false
-        type: list
-        elements: str
-    risk:
-        description: Filter by application risk level.
-        required: false
-        type: list
-        elements: int
     provider:
         description: Authentication credentials.
         required: true
@@ -127,7 +112,7 @@ author:
 
 EXAMPLES = r"""
 ---
-- name: Gather Application Information in Strata Cloud Manager
+- name: Gather Application Group Information in Strata Cloud Manager
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -140,81 +125,59 @@ EXAMPLES = r"""
       log_level: "INFO"
   tasks:
 
-    - name: Get information about a specific application
-      cdot65.scm.application_info:
+    - name: Get information about a specific application group
+      cdot65.scm.application_group_info:
         provider: "{{ provider }}"
-        name: "custom-app"
+        name: "web-apps"
         folder: "Texas"
-      register: application_info
+      register: app_group_info
 
-    - name: List all application objects in a folder
-      cdot65.scm.application_info:
-        provider: "{{ provider }}"
-        folder: "Texas"
-      register: all_applications
-
-    - name: List applications by category
-      cdot65.scm.application_info:
+    - name: List all application group objects in a folder
+      cdot65.scm.application_group_info:
         provider: "{{ provider }}"
         folder: "Texas"
-        category: ["business-systems"]
-      register: business_applications
+      register: all_app_groups
 
-    - name: List high-risk applications
-      cdot65.scm.application_info:
-        provider: "{{ provider }}"
-        folder: "Texas"
-        risk: [4, 5]
-      register: high_risk_applications
-
-    - name: List applications with exact match and exclusions
-      cdot65.scm.application_info:
+    - name: List application groups with exact match and exclusions
+      cdot65.scm.application_group_info:
         provider: "{{ provider }}"
         folder: "Texas"
         exact_match: true
         exclude_folders: ["All"]
         exclude_snippets: ["default"]
-      register: filtered_applications
+      register: filtered_app_groups
 """
 
 RETURN = r"""
-applications:
-    description: List of application objects matching the filter criteria (returned when name is not specified).
+application_groups:
+    description: List of application group objects matching the filter criteria (returned when name is not specified).
     returned: success, when name is not specified
     type: list
     elements: dict
     sample:
       - id: "123e4567-e89b-12d3-a456-426655440000"
-        name: "custom-app"
-        category: "business-systems"
-        subcategory: "database"
-        technology: "client-server"
-        risk: 3
-        description: "Custom database application"
+        name: "web-apps"
+        members:
+          - "ssl"
+          - "web-browsing"
         folder: "Texas"
-        ports: ["tcp/1521"]
       - id: "234e5678-e89b-12d3-a456-426655440001"
-        name: "secure-chat"
-        category: "collaboration"
-        subcategory: "instant-messaging"
-        technology: "client-server"
-        risk: 2
+        name: "network-apps"
+        members:
+          - "dns"
+          - "dhcp"
         folder: "Texas"
-        ports: ["tcp/8443"]
-application:
-    description: Information about the requested application (returned when name is specified).
+application_group:
+    description: Information about the requested application group (returned when name is specified).
     returned: success, when name is specified
     type: dict
     sample:
         id: "123e4567-e89b-12d3-a456-426655440000"
-        name: "custom-app"
-        category: "business-systems"
-        subcategory: "database"
-        technology: "client-server"
-        risk: 3
-        description: "Custom database application"
+        name: "web-apps"
+        members:
+          - "ssl"
+          - "web-browsing"
         folder: "Texas"
-        ports: ["tcp/1521"]
 """
 
 
@@ -230,7 +193,7 @@ def build_filter_params(module_params):
     """
     # Container params
     container_params = {}
-    for container in ["folder", "snippet"]:
+    for container in ["folder", "snippet", "device"]:
         if module_params.get(container) is not None:
             container_params[container] = module_params[container]
 
@@ -240,19 +203,14 @@ def build_filter_params(module_params):
         if module_params.get(filter_param) is not None:
             filter_params[filter_param] = module_params[filter_param]
 
-    # Add other filter parameters
-    for param in ["category", "subcategory", "technology", "risk"]:
-        if module_params.get(param) is not None:
-            filter_params[param] = module_params[param]
-
     return container_params, filter_params
 
 
 def main():
     """
-    Main execution path for the application_info module.
+    Main execution path for the application_group_info module.
 
-    This module provides functionality to gather information about application objects
+    This module provides functionality to gather information about application group objects
     in the SCM (Strata Cloud Manager) system with various filtering options.
 
     :return: Ansible module exit data
@@ -269,13 +227,10 @@ def main():
             ),
             folder=dict(type="str", required=False),
             snippet=dict(type="str", required=False),
+            device=dict(type="str", required=False),
             exact_match=dict(type="bool", required=False, default=False),
             exclude_folders=dict(type="list", elements="str", required=False),
             exclude_snippets=dict(type="list", elements="str", required=False),
-            category=dict(type="list", elements="str", required=False),
-            subcategory=dict(type="list", elements="str", required=False),
-            technology=dict(type="list", elements="str", required=False),
-            risk=dict(type="list", elements="int", required=False),
             provider=dict(
                 type="dict",
                 required=True,
@@ -289,11 +244,11 @@ def main():
         ),
         supports_check_mode=True,
         mutually_exclusive=[
-            ["folder", "snippet"]
+            ["folder", "snippet", "device"]
         ],
         # Only require a container if we're not provided with a specific name
         required_if=[
-            ["name", None, ["folder", "snippet"], True]
+            ["name", None, ["folder", "snippet", "device"], True]
         ],
     )
 
@@ -301,60 +256,59 @@ def main():
 
     try:
         client = get_scm_client(module)
+        application_group_api = ApplicationGroup(client)
         
-        # Check if we're fetching a specific application by name
+        # Check if we're fetching a specific application group by name
         if module.params.get("name"):
             name = module.params["name"]
             container_params = {}
             
             # Get the container param
-            for container in ["folder", "snippet"]:
+            for container in ["folder", "snippet", "device"]:
                 if module.params.get(container):
                     container_params[container] = module.params[container]
             
             try:
-                # Fetch a specific application
-                application = client.application.fetch(
+                # Fetch a specific application group
+                application_group = application_group_api.fetch(
                     name=name,
                     **container_params
                 )
                 
                 # Serialize response for Ansible output
-                app_data = serialize_response(application)
+                app_group_data = serialize_response(application_group)
                 
                 # Ensure list fields are never None
-                if "ports" in app_data and app_data["ports"] is None:
-                    app_data["ports"] = []
+                if "members" in app_group_data and app_group_data["members"] is None:
+                    app_group_data["members"] = []
                     
-                result["application"] = app_data
+                result["application_group"] = app_group_data
                 
-            except ObjectNotPresentError:
+            except NotFoundError:
                 module.fail_json(
-                    msg=f"Application with name '{name}' not found in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
+                    msg=f"Application group with name '{name}' not found in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
                 )
-            except (MissingQueryParameterError, InvalidObjectError) as e:
+            except InvalidObjectError as e:
                 module.fail_json(msg=str(e))
                 
         else:
-            # List applications with filtering
+            # List application groups with filtering
             container_params, filter_params = build_filter_params(module.params)
             
             try:
-                applications = client.application.list(**container_params, **filter_params)
+                application_groups = application_group_api.list(**container_params, **filter_params)
                 
                 # Serialize response for Ansible output and ensure list fields are never None
-                serialized_apps = []
-                for app in applications:
-                    app_data = serialize_response(app)
+                serialized_groups = []
+                for app_group in application_groups:
+                    app_group_data = serialize_response(app_group)
                     # Ensure list fields are never None
-                    if "ports" in app_data and app_data["ports"] is None:
-                        app_data["ports"] = []
-                    serialized_apps.append(app_data)
-                    
-                result["applications"] = serialized_apps
+                    if "members" in app_group_data and app_group_data["members"] is None:
+                        app_group_data["members"] = []
+                    serialized_groups.append(app_group_data)
                 
-            except MissingQueryParameterError as e:
-                module.fail_json(msg=f"Missing required parameter: {str(e)}")
+                result["application_groups"] = serialized_groups
+                
             except InvalidObjectError as e:
                 module.fail_json(msg=f"Invalid filter parameters: {str(e)}")
         

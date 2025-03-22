@@ -1,0 +1,87 @@
+---
+- name: Gather Application Group Information in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # Create a test application group first
+    - name: Create test web applications group
+      cdot65.scm.application_group:
+        provider: "{{ provider }}"
+        name: "test-web-apps"
+        members:
+          - "ssl"
+          - "web-browsing"
+        folder: "Texas"
+        state: "present"
+      register: created_group
+
+    - name: Display created group
+      debug:
+        var: created_group
+
+    # Now test the info module
+    - name: Get information about a specific application group
+      cdot65.scm.application_group_info:
+        provider: "{{ provider }}"
+        name: "test-web-apps"
+        folder: "Texas"
+      register: app_group_info
+
+    - name: Display specific application group info
+      debug:
+        var: app_group_info
+
+    - name: Verify specific application group info
+      assert:
+        that:
+          - app_group_info.application_group is defined
+          - app_group_info.application_group.name == "test-web-apps"
+
+    - name: List all application group objects in a folder
+      cdot65.scm.application_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_app_groups
+
+    - name: Display all application groups
+      debug:
+        var: all_app_groups
+
+    - name: Verify all application groups
+      assert:
+        that:
+          - all_app_groups.application_groups is defined
+
+    - name: List application groups with exact match and exclusions
+      cdot65.scm.application_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        exact_match: true
+        exclude_folders: ["All"]
+        exclude_snippets: ["default"]
+      register: filtered_app_groups
+
+    - name: Display filtered application groups
+      debug:
+        var: filtered_app_groups
+
+    - name: Verify filtered application groups
+      assert:
+        that:
+          - filtered_app_groups.application_groups is defined
+
+    # Clean up
+    - name: Remove test application group
+      cdot65.scm.application_group:
+        provider: "{{ provider }}"
+        name: "test-web-apps"
+        folder: "Texas"
+        state: "absent"

@@ -38,5 +38,12 @@ def serialize_response(response: Any) -> Union[Dict, Any]:
         # Convert UUID to string
         if "id" in data and data["id"]:
             data["id"] = str(data["id"])
+            
+        # Ensure list fields are never None
+        list_fields = ["ports", "members", "tag"]
+        for field in list_fields:
+            if field in data and data[field] is None:
+                data[field] = []
+                
         return data
     return response

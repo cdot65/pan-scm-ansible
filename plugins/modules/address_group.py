@@ -217,7 +217,7 @@ def needs_update(existing, params):
     
     # Start with a fresh update model using all fields from existing object
     update_data = {
-        "id": existing.id,
+        "id": str(existing.id),  # Convert UUID to string for Pydantic
         "name": existing.name
     }
     
