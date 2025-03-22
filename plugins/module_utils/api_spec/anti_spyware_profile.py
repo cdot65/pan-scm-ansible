@@ -23,39 +23,55 @@ class AntiSpywareProfileSpec:
 
     @staticmethod
     def spec() -> Dict[str, Any]:
-        """Returns Ansible module spec for anti-spyware profile objects."""
+        """
+        Returns Ansible module spec for anti-spyware profile objects.
+
+        This method defines the structure and requirements for anti-spyware profile related
+        parameters in SCM modules, aligning with the Pydantic models in the SCM SDK.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the module specification with
+                         parameter definitions and their requirements.
+        """
         return dict(
             name=dict(
                 type="str",
                 required=True,
+                description="The name of the anti-spyware profile (max 63 chars, must match pattern: ^[a-zA-Z0-9][a-zA-Z0-9_\\-. ]*$).",
             ),
             description=dict(
                 type="str",
                 required=False,
+                description="Description of the anti-spyware profile (max 1023 chars).",
             ),
             cloud_inline_analysis=dict(
                 type="bool",
                 required=False,
                 default=False,
+                description="Enable or disable cloud inline analysis capabilities.",
             ),
             inline_exception_edl_url=dict(
                 type="list",
                 elements="str",
                 required=False,
+                description="List of EDL URLs to be excluded from cloud inline analysis.",
             ),
             inline_exception_ip_address=dict(
                 type="list",
                 elements="str",
                 required=False,
+                description="List of IP addresses to be excluded from cloud inline analysis.",
             ),
             mica_engine_spyware_enabled=dict(
                 type="list",
                 elements="dict",
                 required=False,
+                description="List of MICA engine spyware detector configurations.",
                 options=dict(
                     name=dict(
                         type="str",
                         required=True,
+                        description="Name of the MICA engine spyware detector.",
                     ),
                     inline_policy_action=dict(
                         type="str",
@@ -69,6 +85,7 @@ class AntiSpywareProfileSpec:
                             "reset-server",
                         ],
                         default="alert",
+                        description="Action to take when the MICA engine detects spyware.",
                     ),
                 ),
             ),
@@ -76,10 +93,12 @@ class AntiSpywareProfileSpec:
                 type="list",
                 elements="dict",
                 required=True,
+                description="List of anti-spyware rules to apply. At least one rule is required.",
                 options=dict(
                     name=dict(
                         type="str",
                         required=True,
+                        description="Name of the rule.",
                     ),
                     severity=dict(
                         type="list",
@@ -93,19 +112,78 @@ class AntiSpywareProfileSpec:
                             "informational",
                             "any",
                         ],
+                        description="List of severity levels this rule applies to.",
                     ),
                     category=dict(
                         type="str",
                         required=True,
+                        description="Category for the rule (e.g., spyware, dns-security, command-and-control).",
                     ),
                     threat_name=dict(
                         type="str",
                         required=False,
+                        description="Specific threat name to match (min length: 3 chars).",
                     ),
                     packet_capture=dict(
                         type="str",
                         required=False,
                         choices=["disable", "single-packet", "extended-capture"],
+                        description="Type of packet capture to perform when rule matches.",
+                    ),
+                    action=dict(
+                        type="dict",
+                        required=False,
+                        description="Action to take when the rule matches. Exactly one action type must be specified.",
+                        options=dict(
+                            alert=dict(
+                                type="dict",
+                                required=False,
+                                description="Generate an alert only.",
+                            ),
+                            allow=dict(
+                                type="dict",
+                                required=False,
+                                description="Allow the traffic.",
+                            ),
+                            drop=dict(
+                                type="dict",
+                                required=False,
+                                description="Drop the traffic silently.",
+                            ),
+                            reset_client=dict(
+                                type="dict",
+                                required=False,
+                                description="Reset the client connection.",
+                            ),
+                            reset_server=dict(
+                                type="dict",
+                                required=False,
+                                description="Reset the server connection.",
+                            ),
+                            reset_both=dict(
+                                type="dict",
+                                required=False,
+                                description="Reset both client and server connections.",
+                            ),
+                            block_ip=dict(
+                                type="dict",
+                                required=False,
+                                description="Block the IP address for a specific duration.",
+                                options=dict(
+                                    track_by=dict(
+                                        type="str",
+                                        required=True,
+                                        choices=["source", "source-and-destination"],
+                                        description="Method to track blocked IPs.",
+                                    ),
+                                    duration=dict(
+                                        type="int",
+                                        required=True,
+                                        description="Duration in seconds to block the IP (1-3600).",
+                                    ),
+                                ),
+                            ),
+                        ),
                     ),
                 ),
             ),
@@ -113,66 +191,117 @@ class AntiSpywareProfileSpec:
                 type="list",
                 elements="dict",
                 required=False,
+                description="List of exceptions to the threat rules.",
                 options=dict(
                     name=dict(
                         type="str",
                         required=True,
+                        description="Name of the threat exception.",
                     ),
                     packet_capture=dict(
                         type="str",
                         required=True,
                         choices=["disable", "single-packet", "extended-capture"],
+                        description="Type of packet capture to perform for this exception.",
                     ),
                     exempt_ip=dict(
                         type="list",
                         elements="dict",
                         required=False,
+                        description="List of IP addresses to exempt from this rule.",
                         options=dict(
                             name=dict(
                                 type="str",
                                 required=True,
+                                description="Exempt IP address or range.",
                             ),
                         ),
                     ),
                     notes=dict(
                         type="str",
                         required=False,
+                        description="Additional notes for the threat exception.",
+                    ),
+                    action=dict(
+                        type="dict",
+                        required=False,
+                        description="Action to take for excepted traffic. Exactly one action type must be specified.",
+                        options=dict(
+                            alert=dict(
+                                type="dict",
+                                required=False,
+                                description="Generate an alert only.",
+                            ),
+                            allow=dict(
+                                type="dict",
+                                required=False,
+                                description="Allow the traffic.",
+                            ),
+                            drop=dict(
+                                type="dict",
+                                required=False,
+                                description="Drop the traffic silently.",
+                            ),
+                            reset_client=dict(
+                                type="dict",
+                                required=False,
+                                description="Reset the client connection.",
+                            ),
+                            reset_server=dict(
+                                type="dict",
+                                required=False,
+                                description="Reset the server connection.",
+                            ),
+                            reset_both=dict(
+                                type="dict",
+                                required=False,
+                                description="Reset both client and server connections.",
+                            ),
+                        ),
                     ),
                 ),
             ),
             folder=dict(
                 type="str",
                 required=False,
+                description="The folder in which the profile is defined (max 64 chars).",
             ),
             snippet=dict(
                 type="str",
                 required=False,
+                description="The snippet in which the profile is defined (max 64 chars).",
             ),
             device=dict(
                 type="str",
                 required=False,
+                description="The device in which the profile is defined (max 64 chars).",
             ),
             provider=dict(
                 type="dict",
                 required=True,
+                description="Authentication credentials for connecting to SCM.",
                 options=dict(
                     client_id=dict(
                         type="str",
                         required=True,
+                        description="Client ID for authentication with SCM.",
                     ),
                     client_secret=dict(
                         type="str",
                         required=True,
                         no_log=True,
+                        description="Client secret for authentication with SCM.",
                     ),
                     tsg_id=dict(
                         type="str",
                         required=True,
+                        description="Tenant Service Group ID.",
                     ),
                     log_level=dict(
                         type="str",
                         required=False,
                         default="INFO",
+                        description="Log level for the SDK (DEBUG, INFO, WARNING, ERROR, CRITICAL).",
                     ),
                 ),
             ),
@@ -180,5 +309,6 @@ class AntiSpywareProfileSpec:
                 type="str",
                 choices=["present", "absent"],
                 required=True,
+                description="Desired state of the anti-spyware profile.",
             ),
         )

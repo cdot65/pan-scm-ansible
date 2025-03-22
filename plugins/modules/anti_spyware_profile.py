@@ -305,23 +305,128 @@ def get_existing_profile(profile_api, profile_data):
         return False, None
 
 
+def needs_update(existing, params):
+    """
+    Determine if the anti-spyware profile needs to be updated.
+
+    Args:
+        existing: Existing anti-spyware profile object from the SCM API
+        params (dict): Anti-spyware profile parameters with desired state from Ansible module
+
+    Returns:
+        (bool, dict): Tuple containing:
+            - bool: Whether an update is needed
+            - dict: Complete object data for update including all fields from the existing
+                   object with any modifications from the params
+    """
+    changed = False
+    
+    # Start with a fresh update model using all fields from existing object
+    update_data = {
+        "id": str(existing.id),  # Convert UUID to string for Pydantic
+        "name": existing.name
+    }
+    
+    # Add the container field (folder, snippet, or device)
+    for container in ["folder", "snippet", "device"]:
+        container_value = getattr(existing, container, None)
+        if container_value is not None:
+            update_data[container] = container_value
+    
+    # Add description if it exists
+    if hasattr(existing, "description") and existing.description is not None:
+        update_data["description"] = existing.description
+        if "description" in params and params["description"] is not None:
+            if existing.description != params["description"]:
+                update_data["description"] = params["description"]
+                changed = True
+    
+    # Add boolean fields
+    if hasattr(existing, "cloud_inline_analysis"):
+        update_data["cloud_inline_analysis"] = existing.cloud_inline_analysis
+        if "cloud_inline_analysis" in params and params["cloud_inline_analysis"] is not None:
+            if existing.cloud_inline_analysis != params["cloud_inline_analysis"]:
+                update_data["cloud_inline_analysis"] = params["cloud_inline_analysis"]
+                changed = True
+    
+    # Add list fields
+    list_fields = [
+        "inline_exception_edl_url",
+        "inline_exception_ip_address",
+        "mica_engine_spyware_enabled",
+        "rules",
+        "threat_exception"
+    ]
+    
+    for field in list_fields:
+        current_value = getattr(existing, field, None)
+        # If current value is None, use empty list for Pydantic validation
+        update_data[field] = current_value if current_value is not None else []
+        
+        if field in params and params[field] is not None:
+            if current_value != params[field]:
+                update_data[field] = params[field]
+                changed = True
+    
+    return changed, update_data
+
+
+def is_container_specified(profile_data):
+    """
+    Check if exactly one container type (folder, snippet, device) is specified.
+
+    Args:
+        profile_data (dict): Anti-spyware profile parameters
+
+    Returns:
+        bool: True if exactly one container is specified, False otherwise
+    """
+    containers = [profile_data.get(container) for container in ["folder", "snippet", "device"]]
+    return sum(container is not None for container in containers) == 1
+
+
 def main():
     """
     Main execution path for the anti-spyware profile module.
+
+    This module provides functionality to create, update, and delete anti-spyware profile objects
+    in the SCM (Strata Cloud Manager) system. It handles various profile attributes
+    and supports check mode operations.
+
+    :return: Ansible module exit data
+    :rtype: dict
     """
     module = AnsibleModule(
         argument_spec=AntiSpywareProfileSpec.spec(),
         supports_check_mode=True,
+        mutually_exclusive=[
+            ["folder", "snippet", "device"]
+        ],
+        required_one_of=[
+            ["folder", "snippet", "device"]
+        ],
         required_if=[
-            ("state", "present", ["rules"]),
+            ["state", "present", ["rules"]],
         ],
     )
+
+    result = {
+        "changed": False,
+        "anti_spyware_profile": None
+    }
 
     try:
         client = get_scm_client(module)
         profile_api = AntiSpywareProfile(client)
-
         profile_data = build_profile_data(module.params)
+
+        # Validate container is specified
+        if not is_container_specified(profile_data):
+            module.fail_json(
+                msg="Exactly one of 'folder', 'snippet', or 'device' must be provided."
+            )
+
+        # Get existing profile
         exists, existing_profile = get_existing_profile(
             profile_api,
             profile_data,
@@ -329,57 +434,53 @@ def main():
 
         if module.params["state"] == "present":
             if not exists:
-                # Validate using Pydantic
-                try:
-                    AntiSpywareProfileCreateModel(**profile_data)
-                except ValidationError as e:
-                    module.fail_json(msg=str(e))
-
+                # Create new profile
                 if not module.check_mode:
-                    result = profile_api.create(data=profile_data)
-                    module.exit_json(
-                        changed=True,
-                        anti_spyware_profile=serialize_response(result),
-                    )
-                module.exit_json(changed=True)
+                    try:
+                        # Validate using Pydantic
+                        AntiSpywareProfileCreateModel(**profile_data)
+                        
+                        # Create profile
+                        new_profile = profile_api.create(data=profile_data)
+                        result["anti_spyware_profile"] = serialize_response(new_profile)
+                        result["changed"] = True
+                    except ValidationError as e:
+                        module.fail_json(msg=f"Invalid profile data: {str(e)}")
+                    except Exception as e:
+                        module.fail_json(msg=f"Failed to create profile: {str(e)}")
+                else:
+                    result["changed"] = True
             else:
                 # Compare and update if needed
-                need_update = False
-                for key, value in profile_data.items():
-                    if hasattr(existing_profile, key) and getattr(existing_profile, key) != value:
-                        need_update = True
-                        break
+                need_update, update_data = needs_update(existing_profile, profile_data)
 
                 if need_update:
-                    # Prepare update data
-                    update_data = profile_data.copy()
-                    update_data["id"] = str(existing_profile.id)
-
-                    # Validate using Pydantic
-                    try:
-                        profile_update_model = AntiSpywareProfileUpdateModel(**update_data)
-                    except ValidationError as e:
-                        module.fail_json(msg=str(e))
-
                     if not module.check_mode:
-                        result = profile_api.update(profile=profile_update_model)
-                        module.exit_json(
-                            changed=True,
-                            anti_spyware_profile=serialize_response(result),
-                        )
-                    module.exit_json(changed=True)
+                        try:
+                            # Validate using Pydantic
+                            profile_update_model = AntiSpywareProfileUpdateModel(**update_data)
+                            
+                            # Perform update
+                            updated_profile = profile_api.update(profile=profile_update_model)
+                            result["anti_spyware_profile"] = serialize_response(updated_profile)
+                            result["changed"] = True
+                        except ValidationError as e:
+                            module.fail_json(msg=f"Invalid update data: {str(e)}")
+                        except Exception as e:
+                            module.fail_json(msg=f"Failed to update profile: {str(e)}")
+                    else:
+                        result["changed"] = True
                 else:
-                    module.exit_json(
-                        changed=False,
-                        anti_spyware_profile=serialize_response(existing_profile),
-                    )
+                    # No changes needed
+                    result["anti_spyware_profile"] = serialize_response(existing_profile)
 
         elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
                     profile_api.delete(str(existing_profile.id))
-                module.exit_json(changed=True)
-            module.exit_json(changed=False)
+                result["changed"] = True
+
+        module.exit_json(**result)
 
     except Exception as e:
         module.fail_json(msg=to_text(e))
