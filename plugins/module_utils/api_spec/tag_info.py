@@ -12,22 +12,22 @@
 from typing import Any, Dict
 
 
-class TagSpec:
+class TagInfoSpec:
     """
-    API specifications for SCM Ansible modules.
+    API specifications for SCM Ansible info modules.
 
     This class provides standardized specifications for SCM (Strata Cloud Manager)
-    related Ansible modules, ensuring consistent parameter definitions and validation
+    related Ansible info modules, ensuring consistent parameter definitions and validation
     across the module collection.
     """
 
     @staticmethod
     def spec() -> Dict[str, Any]:
         """
-        Returns Ansible module spec for tag objects.
+        Returns Ansible module spec for tag info objects.
 
         This method defines the structure and requirements for tag-related
-        parameters in SCM modules.
+        parameters in SCM info modules.
 
         Returns:
             Dict[str, Any]: A dictionary containing the module specification with
@@ -36,13 +36,60 @@ class TagSpec:
         return dict(
             name=dict(
                 type="str",
-                required=True,
-                description="The name of the tag (max 63 chars)",
+                required=False,
+                description="The name of a specific tag object to retrieve",
             ),
-            color=dict(
+            gather_subset=dict(
+                type="list",
+                elements="str",
+                default=["config"],
+                choices=["all", "config"],
+                description="Determines which information to gather about tags",
+            ),
+            folder=dict(
                 type="str",
                 required=False,
-                description="Color associated with the tag",
+                description="Filter tags by folder container",
+            ),
+            snippet=dict(
+                type="str",
+                required=False,
+                description="Filter tags by snippet container",
+            ),
+            device=dict(
+                type="str",
+                required=False,
+                description="Filter tags by device container",
+            ),
+            exact_match=dict(
+                type="bool",
+                required=False,
+                default=False,
+                description="When True, only return objects defined exactly in the specified container",
+            ),
+            exclude_folders=dict(
+                type="list",
+                elements="str",
+                required=False,
+                description="List of folder names to exclude from results",
+            ),
+            exclude_snippets=dict(
+                type="list",
+                elements="str",
+                required=False,
+                description="List of snippet values to exclude from results",
+            ),
+            exclude_devices=dict(
+                type="list",
+                elements="str",
+                required=False,
+                description="List of device values to exclude from results",
+            ),
+            colors=dict(
+                type="list",
+                elements="str",
+                required=False,
+                description="Filter by tag colors",
                 choices=[
                     "Azure Blue",
                     "Black",
@@ -87,26 +134,6 @@ class TagSpec:
                     "Yellow-Orange",
                 ],
             ),
-            comments=dict(
-                type="str",
-                required=False,
-                description="Comments for the tag (max 1023 chars)",
-            ),
-            folder=dict(
-                type="str",
-                required=False,
-                description="The folder where the tag is stored (max 64 chars)",
-            ),
-            snippet=dict(
-                type="str",
-                required=False,
-                description="The configuration snippet for the tag (max 64 chars)",
-            ),
-            device=dict(
-                type="str",
-                required=False,
-                description="The device where the tag is configured (max 64 chars)",
-            ),
             provider=dict(
                 type="dict",
                 required=True,
@@ -134,11 +161,5 @@ class TagSpec:
                         description="Log level for the SDK",
                     ),
                 ),
-            ),
-            state=dict(
-                type="str",
-                choices=["present", "absent"],
-                required=True,
-                description="Desired state of the tag object",
             ),
         )

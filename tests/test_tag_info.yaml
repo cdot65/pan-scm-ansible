@@ -1,0 +1,110 @@
+---
+- name: Gather Tag Information in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # First create tags that we can query
+    - name: Create test tags
+      block:
+        - name: Create Production tag
+          cdot65.scm.tag:
+            provider: "{{ provider }}"
+            name: "Production"
+            color: "Red"
+            comments: "Production environment tag"
+            folder: "Texas"
+            state: "present"
+
+        - name: Create Development tag
+          cdot65.scm.tag:
+            provider: "{{ provider }}"
+            name: "Development"
+            color: "Blue"
+            comments: "Development environment tag"
+            folder: "Texas"
+            state: "present"
+
+        - name: Create Testing tag
+          cdot65.scm.tag:
+            provider: "{{ provider }}"
+            name: "Testing"
+            color: "Green"
+            comments: "Testing environment tag"
+            folder: "Texas"
+            state: "present"
+
+    # Now query information about tags
+    - name: Get information about a specific tag
+      cdot65.scm.tag_info:
+        provider: "{{ provider }}"
+        name: "Production"
+        folder: "Texas"
+      register: tag_info
+
+    - name: Display specific tag information
+      debug:
+        var: tag_info
+
+    - name: List all tag objects in a folder
+      cdot65.scm.tag_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_tags
+
+    - name: Display all tags
+      debug:
+        var: all_tags
+
+    - name: List only tags with specific colors
+      cdot65.scm.tag_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        colors: ["Red", "Blue"]
+      register: colored_tags
+
+    - name: Display colored tags
+      debug:
+        var: colored_tags
+
+    - name: List tags with exact match
+      cdot65.scm.tag_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        exact_match: true
+      register: exact_tags
+
+    - name: Display exact match tags
+      debug:
+        var: exact_tags
+
+    # Clean up test tags
+    - name: Clean up test tags
+      block:
+        - name: Remove Production tag
+          cdot65.scm.tag:
+            provider: "{{ provider }}"
+            name: "Production"
+            folder: "Texas"
+            state: "absent"
+
+        - name: Remove Development tag
+          cdot65.scm.tag:
+            provider: "{{ provider }}"
+            name: "Development"
+            folder: "Texas"
+            state: "absent"
+
+        - name: Remove Testing tag
+          cdot65.scm.tag:
+            provider: "{{ provider }}"
+            name: "Testing"
+            folder: "Texas"
+            state: "absent"

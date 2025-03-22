@@ -21,20 +21,23 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.tag import TagSpec  # noqa: F401
-from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
-    get_scm_client,
-)
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
+from ansible.module_utils.common.text.converters import to_text
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.tag import TagSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
-from pydantic import ValidationError
 
 from scm.config.objects.tag import Tag
-from scm.exceptions import NotFoundError
-from scm.models.objects.tag import TagCreateModel, TagUpdateModel
+from scm.exceptions import (
+    InvalidObjectError,
+    MissingQueryParameterError,
+    NameNotUniqueError,
+    ObjectNotPresentError,
+    ReferenceNotZeroError,
+)
+from scm.models.objects.tag import TagUpdateModel
 
 DOCUMENTATION = r"""
 ---
@@ -52,7 +55,7 @@ description:
 
 options:
     name:
-        description: The name of the tag.
+        description: The name of the tag (max 63 chars).
         required: true
         type: str
     color:
@@ -64,21 +67,57 @@ options:
             - Black
             - Blue
             - Blue Gray
-            # ... (list all colors from the Colors enum)
+            - Blue Violet
+            - Brown
+            - Burnt Sienna
+            - Cerulean Blue
+            - Chestnut
+            - Cobalt Blue
+            - Copper
+            - Cyan
+            - Forest Green
+            - Gold
+            - Gray
+            - Green
+            - Lavender
+            - Light Gray
+            - Light Green
+            - Lime
+            - Magenta
+            - Mahogany
+            - Maroon
+            - Medium Blue
+            - Medium Rose
+            - Medium Violet
+            - Midnight Blue
+            - Olive
+            - Orange
+            - Orchid
+            - Peach
+            - Purple
+            - Red
+            - Red Violet
+            - Red-Orange
+            - Salmon
+            - Thistle
+            - Turquoise Blue
+            - Violet Blue
+            - Yellow
+            - Yellow-Orange
     comments:
-        description: Comments for the tag.
+        description: Comments for the tag (max 1023 chars).
         required: false
         type: str
     folder:
-        description: The folder where the tag is stored.
+        description: The folder where the tag is stored (max 64 chars).
         required: false
         type: str
     snippet:
-        description: The configuration snippet for the tag.
+        description: The configuration snippet for the tag (max 64 chars).
         required: false
         type: str
     device:
-        description: The device where the tag is configured.
+        description: The device where the tag is configured (max 64 chars).
         required: false
         type: str
     provider:
@@ -147,6 +186,23 @@ EXAMPLES = r"""
         folder: "Texas"
         state: "present"
 
+    - name: Create a tag in a snippet
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Development"
+        color: "Green"
+        comments: "Development environment tag"
+        snippet: "Common"
+        state: "present"
+
+    - name: Create a tag for a device
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Device-Tag"
+        color: "Orange"
+        device: "fw01"
+        state: "present"
+
     - name: Remove tag
       cdot65.scm.tag:
         provider: "{{ provider }}"
@@ -156,6 +212,11 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
+changed:
+    description: Whether any changes were made.
+    returned: always
+    type: bool
+    sample: true
 tag:
     description: Details about the tag object.
     returned: when state is present
@@ -164,6 +225,7 @@ tag:
         id: "123e4567-e89b-12d3-a456-426655440000"
         name: "Production"
         color: "Blue"
+        comments: "Production environment tag"
         folder: "Texas"
 """
 
@@ -183,101 +245,174 @@ def build_tag_data(module_params):
     }
 
 
-def get_existing_tag(tag_api, tag_data):
+def is_container_specified(tag_data):
+    """
+    Check if exactly one container type (folder, snippet, device) is specified.
+
+    Args:
+        tag_data (dict): Tag parameters
+
+    Returns:
+        bool: True if exactly one container is specified, False otherwise
+    """
+    containers = [tag_data.get(container) for container in ["folder", "snippet", "device"]]
+    return sum(container is not None for container in containers) == 1
+
+
+def needs_update(existing, params):
+    """
+    Determine if the tag object needs to be updated.
+
+    Args:
+        existing: Existing tag object from the SCM API
+        params (dict): Tag parameters with desired state from Ansible module
+
+    Returns:
+        (bool, dict): Tuple containing:
+            - bool: Whether an update is needed
+            - dict: Complete object data for update including all fields from the existing
+                  object with any modifications from the params
+    """
+    changed = False
+
+    # Start with a fresh update model using all fields from existing object
+    update_data = {
+        "id": str(existing.id),  # Convert UUID to string for Pydantic
+        "name": existing.name,
+    }
+
+    # Add the container field (folder, snippet, or device)
+    for container in ["folder", "snippet", "device"]:
+        container_value = getattr(existing, container, None)
+        if container_value is not None:
+            update_data[container] = container_value
+
+    # Check each parameter that can be updated
+    for param in ["color", "comments"]:
+        # Set the current value as default
+        current_value = getattr(existing, param, None)
+        update_data[param] = current_value
+
+        # If user provided a new value, use it and check if it's different
+        if param in params and params[param] is not None:
+            if current_value != params[param]:
+                update_data[param] = params[param]
+                changed = True
+
+    return changed, update_data
+
+
+def get_existing_tag(client, tag_data):
     """
     Attempt to fetch an existing tag object.
 
     Args:
-        tag_api: Tag API instance
+        client: SCM client instance
         tag_data (dict): Tag parameters to search for
 
     Returns:
         tuple: (bool, object) indicating if tag exists and the tag object if found
     """
     try:
-        existing = tag_api.fetch(
-            name=tag_data["name"],
-            folder=tag_data.get("folder"),
-            snippet=tag_data.get("snippet"),
-            device=tag_data.get("device"),
+        # Determine which container type is specified
+        container_type = None
+        for container in ["folder", "snippet", "device"]:
+            if container in tag_data and tag_data[container] is not None:
+                container_type = container
+                break
+
+        if container_type is None or "name" not in tag_data:
+            return False, None
+
+        # Fetch the tag using the appropriate container
+        existing = client.tag.fetch(
+            name=tag_data["name"], **{container_type: tag_data[container_type]}
         )
         return True, existing
-    except NotFoundError:
+    except (ObjectNotPresentError, InvalidObjectError, MissingQueryParameterError):
         return False, None
 
 
 def main():
     """
     Main execution path for the tag object module.
+
+    This module provides functionality to create, update, and delete tag objects
+    in the SCM (Strata Cloud Manager) system. It handles tag attributes
+    and supports check mode operations.
+
+    :return: Ansible module exit data
+    :rtype: dict
     """
     module = AnsibleModule(
         argument_spec=TagSpec.spec(),
         supports_check_mode=True,
+        mutually_exclusive=[["folder", "snippet", "device"]],
+        required_one_of=[["folder", "snippet", "device"]],
     )
+
+    result = {"changed": False, "tag": None}
 
     try:
         client = get_scm_client(module)
-        tag_api = Tag(client)
-
         tag_data = build_tag_data(module.params)
-        exists, existing_tag = get_existing_tag(
-            tag_api,
-            tag_data,
-        )
+
+        # Validate container is specified
+        if not is_container_specified(tag_data):
+            module.fail_json(
+                msg="Exactly one of 'folder', 'snippet', or 'device' must be provided."
+            )
+
+        # Get existing tag
+        exists, existing_tag = get_existing_tag(client, tag_data)
 
         if module.params["state"] == "present":
             if not exists:
-                # Validate using Pydantic
-                try:
-                    TagCreateModel(**tag_data)
-                except ValidationError as e:
-                    module.fail_json(msg=str(e))
-
+                # Create new tag
                 if not module.check_mode:
-                    result = tag_api.create(data=tag_data)
-                    module.exit_json(
-                        changed=True,
-                        tag=serialize_response(result),
-                    )
-                module.exit_json(changed=True)
+                    try:
+                        new_tag = client.tag.create(data=tag_data)
+                        result["tag"] = serialize_response(new_tag)
+                        result["changed"] = True
+                    except NameNotUniqueError:
+                        module.fail_json(msg=f"A tag with name '{tag_data['name']}' already exists")
+                    except InvalidObjectError as e:
+                        module.fail_json(msg=f"Invalid tag data: {str(e)}")
+                else:
+                    result["changed"] = True
             else:
                 # Compare and update if needed
-                need_update = False
-                for key, value in tag_data.items():
-                    if hasattr(existing_tag, key) and getattr(existing_tag, key) != value:
-                        need_update = True
-                        break
+                need_update, update_data = needs_update(existing_tag, tag_data)
 
                 if need_update:
-                    # Prepare update data
-                    update_data = tag_data.copy()
-                    update_data["id"] = str(existing_tag.id)
-
-                    # Validate using Pydantic
-                    try:
-                        tag_update_model = TagUpdateModel(**update_data)
-                    except ValidationError as e:
-                        module.fail_json(msg=str(e))
-
                     if not module.check_mode:
-                        result = tag_api.update(tag=tag_update_model)
-                        module.exit_json(
-                            changed=True,
-                            tag=serialize_response(result),
-                        )
-                    module.exit_json(changed=True)
+                        # Create update model with complete object data
+                        update_model = TagUpdateModel(**update_data)
+
+                        # Perform update with complete object
+                        updated_tag = client.tag.update(update_model)
+                        result["tag"] = serialize_response(updated_tag)
+                        result["changed"] = True
+                    else:
+                        result["changed"] = True
                 else:
-                    module.exit_json(
-                        changed=False,
-                        tag=serialize_response(existing_tag),
-                    )
+                    # No changes needed
+                    result["tag"] = serialize_response(existing_tag)
 
         elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
-                    tag_api.delete(str(existing_tag.id))
-                module.exit_json(changed=True)
-            module.exit_json(changed=False)
+                    try:
+                        client.tag.delete(str(existing_tag.id))
+                        result["changed"] = True
+                    except ReferenceNotZeroError:
+                        module.fail_json(
+                            msg=f"Tag '{tag_data['name']}' is still in use and cannot be deleted"
+                        )
+                else:
+                    result["changed"] = True
+
+        module.exit_json(**result)
 
     except Exception as e:
         module.fail_json(msg=to_text(e))
