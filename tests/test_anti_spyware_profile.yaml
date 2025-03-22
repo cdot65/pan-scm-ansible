@@ -1,5 +1,5 @@
 ---
-- name: Manage Anti-Spyware Profiles in Strata Cloud Manager
+- name: Test Anti-Spyware Profile Module
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -11,36 +11,216 @@
       tsg_id: "{{ tsg_id }}"
       log_level: "INFO"
   tasks:
-    - name: Create anti-spyware profile
+    - name: Clear existing profiles (if exist)
       cdot65.scm.anti_spyware_profile:
         provider: "{{ provider }}"
-        name: "Custom-Spyware-Profile"
-        description: "Custom anti-spyware profile"
-        cloud_inline_analysis: true
+        name: "Test-Spyware-Profile"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+
+    # Set the action as a string enum value
+    - name: Create basic anti-spyware profile
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "Test-Spyware-Profile"
+        description: "Basic anti-spyware profile for testing"
+        cloud_inline_analysis: false
+        inline_exception_edl_url: []
         rules:
-          - name: "Block-Critical-Threats"
-            severity: [ "critical" ]
+          - name: "Critical-Threat-Rule"
+            severity: ["critical"]
             category: "spyware"
             packet_capture: "single-packet"
-        folder: "Production"
+            threat_name: "test-threat"
+            action: "alert"
+        folder: "Texas"
         state: "present"
+      register: create_result
 
-    - name: Update anti-spyware profile
+    - name: Display create results
+      debug:
+        var: create_result
+        verbosity: 1
+
+    - name: Verify create operation
+      assert:
+        that:
+          - create_result.changed is defined
+          - create_result.changed == true
+          - create_result.anti_spyware_profile is defined
+          - create_result.anti_spyware_profile.name == "Test-Spyware-Profile"
+          - create_result.anti_spyware_profile.description == "Basic anti-spyware profile for testing"
+          - create_result.anti_spyware_profile.cloud_inline_analysis == false
+          - create_result.anti_spyware_profile.rules | length == 1
+          - create_result.anti_spyware_profile.rules[0].name == "Critical-Threat-Rule"
+
+    - name: Test idempotency (run same create again)
       cdot65.scm.anti_spyware_profile:
         provider: "{{ provider }}"
-        name: "Custom-Spyware-Profile"
-        description: "Updated anti-spyware profile"
+        name: "Test-Spyware-Profile"
+        description: "Basic anti-spyware profile for testing"
+        cloud_inline_analysis: false
+        inline_exception_edl_url: []
         rules:
-          - name: "Block-Critical-Threats"
-            severity: [ "critical", "high" ]
+          - name: "Critical-Threat-Rule"
+            severity: ["critical"]
+            category: "spyware"
+            packet_capture: "single-packet"
+            threat_name: "test-threat"
+            action: "alert"
+        folder: "Texas"
+        state: "present"
+      register: idempotency_result
+
+    - name: Verify idempotency
+      assert:
+        that:
+          - idempotency_result.changed is defined
+          - idempotency_result.changed == false
+
+    - name: Update anti-spyware profile (add rule and change settings)
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "Test-Spyware-Profile"
+        description: "Updated anti-spyware profile"
+        cloud_inline_analysis: true
+        inline_exception_edl_url: []
+        rules:
+          - name: "Critical-Threat-Rule"
+            severity: ["critical"]
             category: "spyware"
             packet_capture: "extended-capture"
-        folder: "Production"
+            threat_name: "test-threat"
+            action: "reset-both"
+          - name: "High-Threat-Rule"
+            severity: ["high"]
+            category: "command-and-control"
+            packet_capture: "single-packet"
+            threat_name: "test-high-threat"
+            action: "alert"
+        folder: "Texas"
         state: "present"
+      register: update_result
 
-    - name: Remove anti-spyware profile
+    - name: Display update results
+      debug:
+        var: update_result
+        verbosity: 1
+
+    - name: Verify update operation
+      assert:
+        that:
+          - update_result.changed is defined
+          - update_result.changed == true
+          - update_result.anti_spyware_profile is defined
+          - update_result.anti_spyware_profile.name == "Test-Spyware-Profile"
+          - update_result.anti_spyware_profile.description == "Updated anti-spyware profile"
+          - update_result.anti_spyware_profile.cloud_inline_analysis == true
+          - update_result.anti_spyware_profile.rules | length == 2
+          - update_result.anti_spyware_profile.rules[0].packet_capture == "extended-capture"
+
+    - name: Update a single field
       cdot65.scm.anti_spyware_profile:
         provider: "{{ provider }}"
-        name: "Custom-Spyware-Profile"
-        folder: "Production"
+        name: "Test-Spyware-Profile"
+        description: "Changed just the description"
+        folder: "Texas"
+        inline_exception_edl_url: []
+        rules:
+          - name: "Critical-Threat-Rule"
+            severity: ["critical"]
+            category: "spyware"
+            packet_capture: "extended-capture"
+            threat_name: "test-threat"
+            action: "reset-both"
+          - name: "High-Threat-Rule"
+            severity: ["high"]
+            category: "command-and-control"
+            packet_capture: "single-packet"
+            threat_name: "test-high-threat"
+            action: "alert"
+        state: "present"
+      register: partial_update_result
+
+    - name: Display partial update results
+      debug:
+        var: partial_update_result
+        verbosity: 1
+
+    - name: Verify partial update operation
+      assert:
+        that:
+          - partial_update_result.changed is defined
+          - partial_update_result.changed == true
+          - partial_update_result.anti_spyware_profile.description == "Changed just the description"
+
+    - name: Add threat exceptions
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "Test-Spyware-Profile"
+        description: "Changed just the description"
+        folder: "Texas"
+        inline_exception_edl_url: []
+        rules:
+          - name: "Critical-Threat-Rule"
+            severity: ["critical"]
+            category: "spyware"
+            packet_capture: "extended-capture"
+            threat_name: "test-threat"
+            action: "reset-both"
+          - name: "High-Threat-Rule"
+            severity: ["high"]
+            category: "command-and-control"
+            packet_capture: "single-packet"
+            threat_name: "test-high-threat"
+            action: "alert"
+        threat_exception:
+          - name: "exception-1"
+            packet_capture: "disable"
+            notes: "Test exception"
+            action: "allow"
+        state: "present"
+      register: exception_update_result
+
+    - name: Display threat exception results
+      debug:
+        var: exception_update_result
+        verbosity: 1
+
+    - name: Verify threat exception operation
+      assert:
+        that:
+          - exception_update_result.changed is defined
+          - exception_update_result.changed == true
+          - exception_update_result.anti_spyware_profile.threat_exception is defined
+          - exception_update_result.anti_spyware_profile.threat_exception | length == 1
+          - exception_update_result.anti_spyware_profile.threat_exception[0].name == "exception-1"
+
+    - name: Delete anti-spyware profile
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "Test-Spyware-Profile"
+        folder: "Texas"
         state: "absent"
+      register: delete_result
+
+    - name: Verify delete operation
+      assert:
+        that:
+          - delete_result.changed is defined
+          - delete_result.changed == true
+
+    - name: Test delete idempotency
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "Test-Spyware-Profile"
+        folder: "Texas"
+        state: "absent"
+      register: delete_idempotency_result
+
+    - name: Verify delete idempotency
+      assert:
+        that:
+          - delete_idempotency_result.changed is defined
+          - delete_idempotency_result.changed == false

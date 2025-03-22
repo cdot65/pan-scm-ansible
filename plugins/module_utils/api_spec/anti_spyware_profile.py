@@ -121,8 +121,8 @@ class AntiSpywareProfileSpec:
                     ),
                     threat_name=dict(
                         type="str",
-                        required=False,
-                        description="Specific threat name to match (min length: 3 chars).",
+                        required=True,
+                        description="Specific threat name to match (min length: 4 chars).",
                     ),
                     packet_capture=dict(
                         type="str",
@@ -131,59 +131,17 @@ class AntiSpywareProfileSpec:
                         description="Type of packet capture to perform when rule matches.",
                     ),
                     action=dict(
-                        type="dict",
-                        required=False,
-                        description="Action to take when the rule matches. Exactly one action type must be specified.",
-                        options=dict(
-                            alert=dict(
-                                type="dict",
-                                required=False,
-                                description="Generate an alert only.",
-                            ),
-                            allow=dict(
-                                type="dict",
-                                required=False,
-                                description="Allow the traffic.",
-                            ),
-                            drop=dict(
-                                type="dict",
-                                required=False,
-                                description="Drop the traffic silently.",
-                            ),
-                            reset_client=dict(
-                                type="dict",
-                                required=False,
-                                description="Reset the client connection.",
-                            ),
-                            reset_server=dict(
-                                type="dict",
-                                required=False,
-                                description="Reset the server connection.",
-                            ),
-                            reset_both=dict(
-                                type="dict",
-                                required=False,
-                                description="Reset both client and server connections.",
-                            ),
-                            block_ip=dict(
-                                type="dict",
-                                required=False,
-                                description="Block the IP address for a specific duration.",
-                                options=dict(
-                                    track_by=dict(
-                                        type="str",
-                                        required=True,
-                                        choices=["source", "source-and-destination"],
-                                        description="Method to track blocked IPs.",
-                                    ),
-                                    duration=dict(
-                                        type="int",
-                                        required=True,
-                                        description="Duration in seconds to block the IP (1-3600).",
-                                    ),
-                                ),
-                            ),
-                        ),
+                        type="str",
+                        required=True,
+                        choices=[
+                            "alert",
+                            "allow",
+                            "drop",
+                            "reset-both",
+                            "reset-client",
+                            "reset-server",
+                        ],
+                        description="Action to take when the rule matches. This is converted to an action object in the API.",
                     ),
                 ),
             ),
@@ -223,41 +181,17 @@ class AntiSpywareProfileSpec:
                         description="Additional notes for the threat exception.",
                     ),
                     action=dict(
-                        type="dict",
-                        required=False,
-                        description="Action to take for excepted traffic. Exactly one action type must be specified.",
-                        options=dict(
-                            alert=dict(
-                                type="dict",
-                                required=False,
-                                description="Generate an alert only.",
-                            ),
-                            allow=dict(
-                                type="dict",
-                                required=False,
-                                description="Allow the traffic.",
-                            ),
-                            drop=dict(
-                                type="dict",
-                                required=False,
-                                description="Drop the traffic silently.",
-                            ),
-                            reset_client=dict(
-                                type="dict",
-                                required=False,
-                                description="Reset the client connection.",
-                            ),
-                            reset_server=dict(
-                                type="dict",
-                                required=False,
-                                description="Reset the server connection.",
-                            ),
-                            reset_both=dict(
-                                type="dict",
-                                required=False,
-                                description="Reset both client and server connections.",
-                            ),
-                        ),
+                        type="str",
+                        required=True,
+                        choices=[
+                            "alert",
+                            "allow",
+                            "drop",
+                            "reset-both",
+                            "reset-client",
+                            "reset-server",
+                        ],
+                        description="Action to take for excepted traffic.",
                     ),
                 ),
             ),

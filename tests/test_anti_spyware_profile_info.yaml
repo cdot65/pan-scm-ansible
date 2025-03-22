@@ -1,0 +1,132 @@
+---
+- name: Test Anti-Spyware Profile Info Module
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # Create test profiles first
+    - name: Clear existing profiles (if exist)
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Test-Spyware-Profile-1"
+        - "Test-Spyware-Profile-2"
+
+    - name: Create first test profile
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "Test-Spyware-Profile-1"
+        description: "Test profile 1 for info module"
+        cloud_inline_analysis: true
+        inline_exception_edl_url: []
+        rules:
+          - name: "Critical-Rule"
+            severity: ["critical"]
+            category: "spyware"
+            packet_capture: "single-packet"
+            threat_name: "test-critical-threat"
+            action: "alert"
+        folder: "Texas"
+        state: "present"
+
+    - name: Create second test profile
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "Test-Spyware-Profile-2"
+        description: "Test profile 2 for info module"
+        cloud_inline_analysis: false
+        inline_exception_edl_url: []
+        rules:
+          - name: "High-Rule"
+            severity: ["high"]
+            category: "command-and-control" 
+            packet_capture: "disable"
+            threat_name: "test-high-rule-threat"
+            action: "reset-both"
+        folder: "Texas"
+        state: "present"
+
+    # Test info module functionality
+    - name: Get information about a specific profile
+      cdot65.scm.anti_spyware_profile_info:
+        provider: "{{ provider }}"
+        name: "Test-Spyware-Profile-1"
+        folder: "Texas"
+      register: specific_info
+
+    - name: Display specific profile info
+      debug:
+        var: specific_info
+        verbosity: 1
+
+    - name: Verify specific profile info
+      assert:
+        that:
+          - specific_info.anti_spyware_profile is defined
+          - specific_info.anti_spyware_profile.name == "Test-Spyware-Profile-1"
+          - specific_info.anti_spyware_profile.description == "Test profile 1 for info module"
+          - specific_info.anti_spyware_profile.cloud_inline_analysis == true
+          - specific_info.anti_spyware_profile.rules | length == 1
+          - specific_info.anti_spyware_profile.rules[0].name == "Critical-Rule"
+          - specific_info.anti_spyware_profile.rules[0].category == "spyware"
+
+    - name: List all anti-spyware profiles in a folder
+      cdot65.scm.anti_spyware_profile_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_profiles
+
+    - name: Display all profiles
+      debug:
+        var: all_profiles
+        verbosity: 1
+
+    - name: Verify all profiles
+      assert:
+        that:
+          - all_profiles.anti_spyware_profiles is defined
+          - all_profiles.anti_spyware_profiles | length >= 2
+          - all_profiles.anti_spyware_profiles | selectattr('name', 'eq', 'Test-Spyware-Profile-1') | list | length == 1
+          - all_profiles.anti_spyware_profiles | selectattr('name', 'eq', 'Test-Spyware-Profile-2') | list | length == 1
+
+    # Test filtering options
+    - name: Filter profiles by cloud inline analysis
+      cdot65.scm.anti_spyware_profile_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        cloud_inline_analysis: true
+      register: filtered_profiles
+
+    - name: Display filtered profiles
+      debug:
+        var: filtered_profiles
+        verbosity: 1
+
+    - name: Verify filtered profiles
+      assert:
+        that:
+          - filtered_profiles.anti_spyware_profiles is defined
+          - filtered_profiles.anti_spyware_profiles | selectattr('name', 'eq', 'Test-Spyware-Profile-1') | list | length == 1
+          - filtered_profiles.anti_spyware_profiles | selectattr('name', 'eq', 'Test-Spyware-Profile-2') | list | length == 0
+
+    # Cleanup test profiles
+    - name: Remove test profiles
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      loop:
+        - "Test-Spyware-Profile-1"
+        - "Test-Spyware-Profile-2"

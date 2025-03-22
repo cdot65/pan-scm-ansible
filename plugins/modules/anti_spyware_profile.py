@@ -23,8 +23,9 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.anti_spyware_profile import \
-    AntiSpywareProfileSpec  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.anti_spyware_profile import (
+    AntiSpywareProfileSpec,
+)  # noqa: F401
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
     get_scm_client,
 )
@@ -115,14 +116,19 @@ options:
                 required: true
                 type: str
             threat_name:
-                description: Threat name.
-                required: false
+                description: Threat name (minimum length is 4 characters).
+                required: true
                 type: str
             packet_capture:
                 description: Packet capture setting.
                 required: false
                 type: str
                 choices: ['disable', 'single-packet', 'extended-capture']
+            action:
+                description: Action to take when the rule matches.
+                required: true
+                type: str
+                choices: ['alert', 'allow', 'drop', 'reset-both', 'reset-client', 'reset-server', 'block-ip']
     threat_exception:
         description: List of threat exceptions.
         required: false
@@ -152,6 +158,11 @@ options:
                 description: Notes for the threat exception.
                 required: false
                 type: str
+            action:
+                description: Action to take for excepted traffic.
+                required: true
+                type: str
+                choices: ['alert', 'allow', 'drop', 'reset-both', 'reset-client', 'reset-server']
     folder:
         description: The folder in which the resource is defined.
         required: false
@@ -224,6 +235,8 @@ EXAMPLES = r"""
             severity: ["critical"]
             category: "spyware"
             packet_capture: "single-packet"
+            threat_name: "critical-threat-name"
+            action: "alert"
         folder: "Production"
         state: "present"
 
@@ -237,6 +250,8 @@ EXAMPLES = r"""
             severity: ["critical", "high"]
             category: "spyware"
             packet_capture: "extended-capture"
+            threat_name: "critical-threat-name"
+            action: "reset-both"
         folder: "Production"
         state: "present"
 
@@ -263,6 +278,8 @@ anti_spyware_profile:
             severity: ["critical"]
             category: "spyware"
             packet_capture: "single-packet"
+            threat_name: "critical-threat-name"
+            action: "alert"
         folder: "Production"
 """
 
@@ -277,9 +294,28 @@ def build_profile_data(module_params):
     Returns:
         dict: Filtered dictionary containing only relevant profile parameters
     """
-    return {
+    # Create a copy of the parameters to avoid modifying the original
+    profile_data = {
         k: v for k, v in module_params.items() if k not in ["provider", "state"] and v is not None
     }
+
+    # Check if rules are present and convert action strings to action objects
+    if "rules" in profile_data and profile_data["rules"]:
+        for rule in profile_data["rules"]:
+            if "action" in rule and isinstance(rule["action"], str):
+                # Convert action string to API action object
+                action_type = rule["action"]
+                rule["action"] = {action_type: {}}
+
+    # Similarly handle threat exceptions if present
+    if "threat_exception" in profile_data and profile_data["threat_exception"]:
+        for exception in profile_data["threat_exception"]:
+            if "action" in exception and isinstance(exception["action"], str):
+                # Convert action string to API action object
+                action_type = exception["action"]
+                exception["action"] = {action_type: {}}
+
+    return profile_data
 
 
 def get_existing_profile(profile_api, profile_data):
@@ -320,19 +356,19 @@ def needs_update(existing, params):
                    object with any modifications from the params
     """
     changed = False
-    
+
     # Start with a fresh update model using all fields from existing object
     update_data = {
         "id": str(existing.id),  # Convert UUID to string for Pydantic
-        "name": existing.name
+        "name": existing.name,
     }
-    
+
     # Add the container field (folder, snippet, or device)
     for container in ["folder", "snippet", "device"]:
         container_value = getattr(existing, container, None)
         if container_value is not None:
             update_data[container] = container_value
-    
+
     # Add description if it exists
     if hasattr(existing, "description") and existing.description is not None:
         update_data["description"] = existing.description
@@ -340,7 +376,7 @@ def needs_update(existing, params):
             if existing.description != params["description"]:
                 update_data["description"] = params["description"]
                 changed = True
-    
+
     # Add boolean fields
     if hasattr(existing, "cloud_inline_analysis"):
         update_data["cloud_inline_analysis"] = existing.cloud_inline_analysis
@@ -348,26 +384,54 @@ def needs_update(existing, params):
             if existing.cloud_inline_analysis != params["cloud_inline_analysis"]:
                 update_data["cloud_inline_analysis"] = params["cloud_inline_analysis"]
                 changed = True
-    
+
     # Add list fields
     list_fields = [
         "inline_exception_edl_url",
         "inline_exception_ip_address",
         "mica_engine_spyware_enabled",
         "rules",
-        "threat_exception"
+        "threat_exception",
     ]
-    
+
     for field in list_fields:
         current_value = getattr(existing, field, None)
         # If current value is None, use empty list for Pydantic validation
         update_data[field] = current_value if current_value is not None else []
-        
+
         if field in params and params[field] is not None:
-            if current_value != params[field]:
+            # Special handling for rules to convert action string to action object
+            if field == "rules" and params[field]:
+                rules_copy = []
+                for rule in params[field]:
+                    rule_copy = rule.copy()
+                    if "action" in rule_copy and isinstance(rule_copy["action"], str):
+                        action_type = rule_copy["action"]
+                        rule_copy["action"] = {action_type: {}}
+                    rules_copy.append(rule_copy)
+
+                # Now check if there's a difference and update if needed
+                if current_value != rules_copy:
+                    update_data[field] = rules_copy
+                    changed = True
+            # Special handling for threat_exception as well
+            elif field == "threat_exception" and params[field]:
+                exceptions_copy = []
+                for exception in params[field]:
+                    exception_copy = exception.copy()
+                    if "action" in exception_copy and isinstance(exception_copy["action"], str):
+                        action_type = exception_copy["action"]
+                        exception_copy["action"] = {action_type: {}}
+                    exceptions_copy.append(exception_copy)
+
+                if current_value != exceptions_copy:
+                    update_data[field] = exceptions_copy
+                    changed = True
+            # For other fields, use normal comparison
+            elif current_value != params[field]:
                 update_data[field] = params[field]
                 changed = True
-    
+
     return changed, update_data
 
 
@@ -399,21 +463,14 @@ def main():
     module = AnsibleModule(
         argument_spec=AntiSpywareProfileSpec.spec(),
         supports_check_mode=True,
-        mutually_exclusive=[
-            ["folder", "snippet", "device"]
-        ],
-        required_one_of=[
-            ["folder", "snippet", "device"]
-        ],
+        mutually_exclusive=[["folder", "snippet", "device"]],
+        required_one_of=[["folder", "snippet", "device"]],
         required_if=[
             ["state", "present", ["rules"]],
         ],
     )
 
-    result = {
-        "changed": False,
-        "anti_spyware_profile": None
-    }
+    result = {"changed": False, "anti_spyware_profile": None}
 
     try:
         client = get_scm_client(module)
@@ -439,7 +496,7 @@ def main():
                     try:
                         # Validate using Pydantic
                         AntiSpywareProfileCreateModel(**profile_data)
-                        
+
                         # Create profile
                         new_profile = profile_api.create(data=profile_data)
                         result["anti_spyware_profile"] = serialize_response(new_profile)
@@ -459,7 +516,7 @@ def main():
                         try:
                             # Validate using Pydantic
                             profile_update_model = AntiSpywareProfileUpdateModel(**update_data)
-                            
+
                             # Perform update
                             updated_profile = profile_api.update(profile=profile_update_model)
                             result["anti_spyware_profile"] = serialize_response(updated_profile)
