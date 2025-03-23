@@ -23,8 +23,9 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.application_group import \
-    ApplicationGroupSpec  # noqa: F401
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.application_group import (  # noqa: F401
+    ApplicationGroupSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
     get_scm_client,
 )
@@ -246,7 +247,7 @@ def main():
                 # Compare and update if needed
                 need_update = False
                 if sorted(existing_group.members) != sorted(
-                        application_group_data.get("members", [])
+                    application_group_data.get("members", [])
                 ):
                     need_update = True
 

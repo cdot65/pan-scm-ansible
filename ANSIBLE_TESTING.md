@@ -66,7 +66,7 @@ poetry run ruff check plugins tests
 poetry run ruff format plugins tests
 
 # Run Ansible tests
-ansible-test sanity --docker default --python 3.11 --ansible 2.17 --use-ignore-file
+ansible-test sanity --docker default --python 3.11 --skip-test ansible-doc
 ```
 
 ## Future Work

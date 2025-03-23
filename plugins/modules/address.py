@@ -25,7 +25,10 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.address import AddressSpec
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
+    serialize_response,
+)
+
 from scm.exceptions import InvalidObjectError, NameNotUniqueError, ObjectNotPresentError
 from scm.models.objects import AddressUpdateModel
 
@@ -220,8 +223,7 @@ def build_address_data(module_params):
         dict: Filtered dictionary containing only relevant address parameters
     """
     return {
-        k: v for k, v in module_params.items()
-        if k not in ["provider", "state"] and v is not None
+        k: v for k, v in module_params.items() if k not in ["provider", "state"] and v is not None
     }
 
 
@@ -271,37 +273,37 @@ def needs_update(existing, params):
                    object with any modifications from the params
     """
     changed = False
-    
+
     # Start with a fresh update model using all fields from existing object
     update_data = {
         "id": str(existing.id),  # Convert UUID to string for Pydantic
-        "name": existing.name
+        "name": existing.name,
     }
-    
+
     # Add the container field (folder, snippet, or device)
     for container in ["folder", "snippet", "device"]:
         container_value = getattr(existing, container, None)
         if container_value is not None:
             update_data[container] = container_value
-    
+
     # Check each parameter that can be updated
     for param in ["description"]:
         # Set the current value as default
         current_value = getattr(existing, param, None)
         update_data[param] = current_value
-        
+
         # If user provided a new value, use it and check if it's different
         if param in params and params[param] is not None:
             if current_value != params[param]:
                 update_data[param] = params[param]
                 changed = True
-    
+
     # Handle the tag parameter specially due to Pydantic validation requirements
     # For tag, if it's None in the existing object, we need to set an empty list []
     current_tag = getattr(existing, "tag", None)
     # If existing tag is None, use empty list to avoid Pydantic validation error
     update_data["tag"] = [] if current_tag is None else current_tag
-    
+
     # If user provided a tag value, use it and check if it's different
     if "tag" in params and params["tag"] is not None:
         if current_tag != params["tag"]:
@@ -312,11 +314,11 @@ def needs_update(existing, params):
     # Only one address type will be set due to mutual exclusivity
     for addr_type in ["ip_netmask", "ip_range", "ip_wildcard", "fqdn"]:
         current_value = getattr(existing, addr_type, None)
-        
+
         # Set the current address type value
         if current_value is not None:
             update_data[addr_type] = current_value
-            
+
         # If user provided this address type, check if it needs updating
         if addr_type in params and params[addr_type] is not None:
             if current_value != params[addr_type]:
@@ -350,8 +352,7 @@ def get_existing_address(client, address_data):
 
         # Fetch the address using the appropriate container
         existing = client.address.fetch(
-            name=address_data["name"],
-            **{container_type: address_data[container_type]}
+            name=address_data["name"], **{container_type: address_data[container_type]}
         )
         return True, existing
     except (ObjectNotPresentError, InvalidObjectError):
@@ -374,20 +375,13 @@ def main():
         supports_check_mode=True,
         mutually_exclusive=[
             ["ip_netmask", "ip_range", "ip_wildcard", "fqdn"],
-            ["folder", "snippet", "device"]
+            ["folder", "snippet", "device"],
         ],
-        required_one_of=[
-            ["folder", "snippet", "device"]
-        ],
-        required_if=[
-            ['state', 'present', ['ip_netmask', 'ip_range', 'ip_wildcard', 'fqdn'], True]
-        ]
+        required_one_of=[["folder", "snippet", "device"]],
+        required_if=[["state", "present", ["ip_netmask", "ip_range", "ip_wildcard", "fqdn"], True]],
     )
 
-    result = {
-        "changed": False,
-        "address": None
-    }
+    result = {"changed": False, "address": None}
 
     try:
         client = get_scm_client(module)
@@ -413,7 +407,9 @@ def main():
                         result["address"] = serialize_response(new_address)
                         result["changed"] = True
                     except NameNotUniqueError:
-                        module.fail_json(msg=f"An address with name '{address_data['name']}' already exists")
+                        module.fail_json(
+                            msg=f"An address with name '{address_data['name']}' already exists"
+                        )
                     except InvalidObjectError as e:
                         module.fail_json(msg=f"Invalid address data: {str(e)}")
                 else:

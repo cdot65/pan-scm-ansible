@@ -26,6 +26,7 @@ from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.config.security.anti_spyware_profile import AntiSpywareProfile
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, NotFoundError
 

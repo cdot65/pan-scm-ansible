@@ -23,9 +23,9 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.anti_spyware_profile import (
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.anti_spyware_profile import (  # noqa: F401
     AntiSpywareProfileSpec,
-)  # noqa: F401
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
     get_scm_client,
 )

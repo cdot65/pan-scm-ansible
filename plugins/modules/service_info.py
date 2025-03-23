@@ -29,6 +29,7 @@ from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 
 DOCUMENTATION = r"""

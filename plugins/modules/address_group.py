@@ -23,9 +23,14 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.address_group import AddressGroupSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.address_group import (
+    AddressGroupSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
+    serialize_response,
+)
+
 from scm.exceptions import InvalidObjectError, NameNotUniqueError, ObjectNotPresentError
 from scm.models.objects import AddressGroupUpdateModel
 
@@ -195,7 +200,9 @@ def is_container_specified(address_group_data):
     Returns:
         bool: True if exactly one container is specified, False otherwise
     """
-    containers = [address_group_data.get(container) for container in ["folder", "snippet", "device"]]
+    containers = [
+        address_group_data.get(container) for container in ["folder", "snippet", "device"]
+    ]
     return sum(container is not None for container in containers) == 1
 
 
@@ -214,37 +221,37 @@ def needs_update(existing, params):
                    object with any modifications from the params
     """
     changed = False
-    
+
     # Start with a fresh update model using all fields from existing object
     update_data = {
         "id": str(existing.id),  # Convert UUID to string for Pydantic
-        "name": existing.name
+        "name": existing.name,
     }
-    
+
     # Add the container field (folder, snippet, or device)
     for container in ["folder", "snippet", "device"]:
         container_value = getattr(existing, container, None)
         if container_value is not None:
             update_data[container] = container_value
-    
+
     # Check each parameter that can be updated
     for param in ["description"]:
         # Set the current value as default
         current_value = getattr(existing, param, None)
         update_data[param] = current_value
-        
+
         # If user provided a new value, use it and check if it's different
         if param in params and params[param] is not None:
             if current_value != params[param]:
                 update_data[param] = params[param]
                 changed = True
-    
+
     # Handle the tag parameter specially due to Pydantic validation requirements
     # For tag, if it's None in the existing object, we need to set an empty list []
     current_tag = getattr(existing, "tag", None)
     # If existing tag is None, use empty list to avoid Pydantic validation error
     update_data["tag"] = [] if current_tag is None else current_tag
-    
+
     # If user provided a tag value, use it and check if it's different
     if "tag" in params and params["tag"] is not None:
         if current_tag != params["tag"]:
@@ -259,7 +266,7 @@ def needs_update(existing, params):
             if existing.static != params["static"]:
                 update_data["static"] = params["static"]
                 changed = True
-    
+
     # Handle dynamic address group
     if hasattr(existing, "dynamic") and existing.dynamic is not None:
         update_data["dynamic"] = {"filter": existing.dynamic.filter}
@@ -295,8 +302,7 @@ def get_existing_address_group(client, address_group_data):
 
         # Fetch the address group using the appropriate container
         existing = client.address_group.fetch(
-            name=address_group_data["name"],
-            **{container_type: address_group_data[container_type]}
+            name=address_group_data["name"], **{container_type: address_group_data[container_type]}
         )
         return True, existing
     except (ObjectNotPresentError, InvalidObjectError):
@@ -317,22 +323,12 @@ def main():
     module = AnsibleModule(
         argument_spec=AddressGroupSpec.spec(),
         supports_check_mode=True,
-        mutually_exclusive=[
-            ["static", "dynamic"],
-            ["folder", "snippet", "device"]
-        ],
-        required_one_of=[
-            ["folder", "snippet", "device"]
-        ],
-        required_if=[
-            ['state', 'present', ['static', 'dynamic'], True]
-        ]
+        mutually_exclusive=[["static", "dynamic"], ["folder", "snippet", "device"]],
+        required_one_of=[["folder", "snippet", "device"]],
+        required_if=[["state", "present", ["static", "dynamic"], True]],
     )
 
-    result = {
-        "changed": False,
-        "address_group": None
-    }
+    result = {"changed": False, "address_group": None}
 
     try:
         client = get_scm_client(module)
@@ -358,7 +354,9 @@ def main():
                         result["address_group"] = serialize_response(new_address_group)
                         result["changed"] = True
                     except NameNotUniqueError:
-                        module.fail_json(msg=f"An address group with name '{address_group_data['name']}' already exists")
+                        module.fail_json(
+                            msg=f"An address group with name '{address_group_data['name']}' already exists"
+                        )
                     except InvalidObjectError as e:
                         module.fail_json(msg=f"Invalid address group data: {str(e)}")
                 else:
@@ -371,7 +369,7 @@ def main():
                     if not module.check_mode:
                         # Create update model with complete object data
                         update_model = AddressGroupUpdateModel(**update_data)
-                        
+
                         # Perform update with complete object
                         updated_address_group = client.address_group.update(update_model)
                         result["address_group"] = serialize_response(updated_address_group)

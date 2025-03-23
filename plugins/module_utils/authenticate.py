@@ -10,7 +10,8 @@
 # Copyright (c) 2024 Calvin Remsburg (@cdot65)
 # All rights reserved.
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from traceback import format_exc
@@ -19,9 +20,10 @@ from ansible.module_utils._text import to_native
 
 try:
     # Try to import the SCM package - this will only work in the live environment
-    # not in the testing environment 
+    # not in the testing environment
     from scm.client import Scm
     from scm.exceptions import AuthenticationError
+
     HAS_SCM = True
 except ImportError:
     HAS_SCM = False
@@ -52,7 +54,7 @@ def get_scm_client(module):
     if not HAS_SCM:
         module.fail_json(
             msg="The python pan-scm-sdk module is required for this module. "
-                "Please install it using 'pip install pan-scm-sdk'"
+            "Please install it using 'pip install pan-scm-sdk'"
         )
 
     try:
