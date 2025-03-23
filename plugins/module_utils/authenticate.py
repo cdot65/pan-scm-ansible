@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # This code is part of Ansible, but is an independent component.
 # This particular file snippet, and this file snippet only, is Apache2.0 licensed.
@@ -9,12 +10,21 @@
 # Copyright (c) 2024 Calvin Remsburg (@cdot65)
 # All rights reserved.
 
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
 from traceback import format_exc
 
 from ansible.module_utils._text import to_native
 
-from scm.client import Scm
-from scm.exceptions import AuthenticationError
+try:
+    # Try to import the SCM package - this will only work in the live environment
+    # not in the testing environment 
+    from scm.client import Scm
+    from scm.exceptions import AuthenticationError
+    HAS_SCM = True
+except ImportError:
+    HAS_SCM = False
 
 
 def get_scm_client(module):
@@ -39,6 +49,12 @@ def get_scm_client(module):
         AnsibleFailJson: When authentication fails or other errors occur during initialization.
             The error message will contain details about the failure.
     """
+    if not HAS_SCM:
+        module.fail_json(
+            msg="The python pan-scm-sdk module is required for this module. "
+                "Please install it using 'pip install pan-scm-sdk'"
+        )
+
     try:
         provider = module.params["provider"]
         client = Scm(
@@ -50,7 +66,7 @@ def get_scm_client(module):
         return client
     except AuthenticationError as e:
         module.fail_json(
-            msg=f"Authentication failed: {to_native(e)}",
+            msg="Authentication failed: {0}".format(to_native(e)),
             error_code=getattr(
                 e,
                 "error_code",

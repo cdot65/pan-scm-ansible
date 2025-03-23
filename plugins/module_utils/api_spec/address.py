@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # This code is part of Ansible, but is an independent component.
 # This particular file snippet, and this file snippet only, is Apache2.0 licensed.
@@ -9,7 +10,14 @@
 # Copyright (c) 2024 Calvin Remsburg (@cdot65)
 # All rights reserved.
 
-from typing import Any, Dict
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+try:
+    from typing import Any, Dict
+except ImportError:
+    # Define fallback for Python 2.7
+    Any = Dict = None
 
 
 class AddressSpec:
@@ -22,7 +30,7 @@ class AddressSpec:
     """
 
     @staticmethod
-    def spec() -> Dict[str, Any]:
+    def spec():
         """
         Returns Ansible module spec for address objects.
 
@@ -31,8 +39,8 @@ class AddressSpec:
         updating, and deleting address objects.
 
         Returns:
-            Dict[str, Any]: A dictionary containing the module specification with
-                           parameter definitions and their requirements.
+            Dict: A dictionary containing the module specification with
+                parameter definitions and their requirements.
         """
         return dict(
             name=dict(

@@ -131,3 +131,4 @@ nav:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
       - Release Process: development/release-process.md
+      - Ansible Compatibility: development/ansible_compatibility.md
