@@ -103,6 +103,7 @@ nav:
               - Application Info: collection/modules/application_info.md
               - Application Group: collection/modules/application_group.md
               - Application Group Info: collection/modules/application_group_info.md
+              - Dynamic User Group: collection/modules/dynamic_user_group.md
               - Service: collection/modules/service.md
               - Service Info: collection/modules/service_info.md
               - Service Group: collection/modules/service_group.md

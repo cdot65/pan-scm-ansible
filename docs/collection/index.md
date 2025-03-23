@@ -94,6 +94,7 @@ The collection includes modules for managing various SCM configuration objects:
 - **Network Objects**: 
   - [Address](modules/address.md), [Address Group](modules/address_group.md)
   - [Application](modules/application.md), [Application Group](modules/application_group.md)
+  - [Dynamic User Group](modules/dynamic_user_group.md)
   - [Service](modules/service.md), [Service Group](modules/service_group.md)
   - [Tag](modules/tag.md)
   
