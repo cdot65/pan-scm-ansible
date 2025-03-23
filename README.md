@@ -40,6 +40,20 @@ Python SDK.
 For detailed usage, please refer to
 the [Documentation](https://github.com/cdot65/pan-scm-ansible/blob/main/pan_scm_ansible_collection/README.md).
 
+## Testing
+
+This collection comes with an Ansible testing automation script to handle common compatibility issues:
+
+```bash
+# Make the script executable
+chmod +x fix_ansible_tests.sh
+
+# Run the script to fix common testing issues
+./fix_ansible_tests.sh
+```
+
+For more information on compatibility and testing, see [ANSIBLE_TESTING.md](ANSIBLE_TESTING.md).
+
 ## Contributing
 
 - Refer to the [Contributing guide](https://github.com/cdot65/pan-scm-ansible/blob/main/CONTRIBUTING.md) to get started

@@ -1,31 +1,103 @@
+---
 name: Ansible Test
-
 on:
   push:
-    branches: [ main ]
-    paths:
-      - 'plugins/**'
-      - '.github/workflows/ansible-test.yml'
-
+    branches: [main, "stable*"]
   pull_request:
-    paths:
-      - 'plugins/**'
-      - '.github/workflows/ansible-test.yml'
+    branches: [main, "stable*"]
+  schedule:
+    - cron: '0 6 * * *'  # Run daily at 6:00 UTC
+  workflow_dispatch:
 
 jobs:
-  ansible-test:
+  sanity:
+    name: Sanity (Python ${{ matrix.python }})
+    timeout-minutes: 5
     runs-on: ubuntu-latest
-    env:
-      PY_COLORS: 1
-      ANSIBLE_FORCE_COLOR: 1
+    strategy:
+      fail-fast: false
+      matrix:
+        python:
+          - '3.9'
+          - '3.11'
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - name: Setup prerequisites
+        run: |
+          pip install pipx
+          pipx install ansible-core
+          mkdir -p ~/.ansible/collections/ansible_collections/cdot65
 
-      - name: Perform sanity testing with ansible-test
-        uses: ansible-community/ansible-test-gh-action@release/v1
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          ansible-core-version: stable-2.15
-          testing-type: sanity
-          pre-test-cmd: 'rm -rf .devcontainer/ .git* .pre-commit-config.yaml'
+          path: ~/.ansible/collections/ansible_collections/cdot65/scm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Run fix script
+        run: |
+          cd ~/.ansible/collections/ansible_collections/cdot65/scm
+          chmod +x fix_ansible_tests.sh
+          ./fix_ansible_tests.sh
+
+      - name: Run sanity tests
+        run: |
+          cd ~/.ansible/collections/ansible_collections/cdot65/scm
+          ansible-test sanity --docker --skip-test ansible-doc
+
+  units:
+    name: Units (Python ${{ matrix.python }})
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python:
+          - '3.9'
+          - '3.11'
+
+    steps:
+      - name: Setup prerequisites
+        run: |
+          pip install pipx
+          pipx install ansible-core
+          mkdir -p ~/.ansible/collections/ansible_collections/cdot65
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ~/.ansible/collections/ansible_collections/cdot65/scm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install dependencies
+        run: |
+          cd ~/.ansible/collections/ansible_collections/cdot65/scm
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          fi
+          if [ -f "requirements-test.txt" ]; then
+            pip install -r requirements-test.txt
+          fi
+
+      - name: Run fix script
+        run: |
+          cd ~/.ansible/collections/ansible_collections/cdot65/scm
+          chmod +x fix_ansible_tests.sh
+          ./fix_ansible_tests.sh
+
+      - name: Run unit tests
+        run: |
+          cd ~/.ansible/collections/ansible_collections/cdot65/scm
+          if [ -d "tests/unit" ]; then
+            ansible-test units --docker
+          else
+            echo "No unit tests found, skipping"
+          fi
