@@ -15,18 +15,36 @@ The inventory plugin allows you to dynamically generate Ansible inventory from S
 - Filter devices based on tags, status, or other attributes
 - Automatically populate variables with SCM-sourced data
 
-### Example Configuration
-
-```yaml
-# inventory.yml
+<div class="termynal" data-termynal data-ty-typeDelay="40" data-ty-lineDelay="700">
+    <span data-ty="input">cat inventory.yml</span>
+    <span data-ty>---
 plugin: cdot65.scm.inventory
 client_id: "{{ lookup('env', 'SCM_CLIENT_ID') }}"
 client_secret: "{{ lookup('env', 'SCM_CLIENT_SECRET') }}"
 tsg_id: "{{ lookup('env', 'SCM_TSG_ID') }}"
 groups:
   firewall: "type == 'firewall'"
-  prisma_access: "type == 'prisma_access'"
-```
+  prisma_access: "type == 'prisma_access'"</span>
+    <span data-ty="input">ansible-inventory -i inventory.yml --list</span>
+    <span data-ty="progress" data-ty-progressChar="·"></span>
+    <span data-ty>{
+  "_meta": {
+    "hostvars": {
+      "pa-fw-01": {
+        "ansible_host": "10.1.1.1",
+        "device_type": "firewall",
+        "location": "Texas"
+      }
+    }
+  },
+  "all": {
+    "children": ["firewall", "prisma_access", "ungrouped"]
+  },
+  "firewall": {
+    "hosts": ["pa-fw-01"]
+  }
+}</span>
+</div>
 
 ## Lookup Plugin
 
@@ -41,57 +59,36 @@ The lookup plugin allows you to query SCM for specific information during playbo
 - Access and filter device information
 - Retrieve status information from SCM
 
-### Example Usage
+<div class="termynal" data-termynal data-ty-typeDelay="40" data-ty-lineDelay="700">
+    <span data-ty="input">cat lookup-example.yml</span>
+    <span data-ty>---
+- name: Lookup examples
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  tasks:
+    - name: Get address object information
+      debug:
+        msg: "{{ lookup('cdot65.scm.address', 'web-server', folder='Texas') }}"
 
-```yaml
-- name: Get address object information
-  debug:
-    msg: "{{ lookup('cdot65.scm.address', 'web-server', folder='Texas') }}"
-
-- name: Get all service objects in a folder
-  debug:
-    msg: "{{ lookup('cdot65.scm.service', folder='Texas') }}"
-
-- name: Get security rule IDs that reference an address
-  debug:
-    msg: "{{ lookup('cdot65.scm.reference', type='address', name='web-server', folder='Texas') }}"
-```
-
-## Filter Plugin
-
-Filter plugins provide custom filters to transform and manipulate SCM data in your templates and playbooks.
-
-### Available Filters
-
-| Filter | Description |
-|--------|-------------|
-| `scm_format_address` | Format SCM address objects for display |
-| `scm_format_service` | Format SCM service objects for display |
-| `scm_extract_property` | Extract a specific property from SCM objects |
-| `scm_filter_objects` | Filter a list of SCM objects by property |
-
-### Example Usage
-
-```yaml
-- name: Format addresses for display
-  debug:
-    msg: "{{ addresses | scm_format_address }}"
-
-- name: Filter objects by property
-  debug:
-    msg: "{{ services | scm_filter_objects('protocol.tcp') }}"
-```
+    - name: Get all service objects in a folder
+      debug:
+        msg: "{{ lookup('cdot65.scm.service', folder='Texas') }}"</span>
+</div>
 
 ## Using Plugins Together
 
-The real power of these plugins comes from using them together. For example:
+The real power of these plugins comes from using them together:
 
-```yaml
+<div class="termynal" data-termynal data-ty-typeDelay="40" data-ty-lineDelay="700">
+    <span data-ty="input">cat integrated-example.yml</span>
+    <span data-ty>---
 - name: Configure security rules for all devices
-  hosts: "{{ lookup('cdot65.scm.inventory', 'type=firewall') }}"
+  hosts: "{{ query('cdot65.scm.inventory', 'type=firewall') }}"
   vars:
     address_objects: "{{ lookup('cdot65.scm.address', folder='Texas') }}"
-    web_servers: "{{ address_objects | scm_filter_objects('name', 'web') }}"
+    web_servers: "{{ address_objects | selectattr('name', 'match', 'web') | list }}"
   tasks:
     - name: Configure security rule for web servers
       cdot65.scm.security_rule:
@@ -105,8 +102,8 @@ The real power of these plugins comes from using them together. For example:
         service: ["application-default"]
         action: "allow"
         folder: "Texas"
-        state: "present"
-```
+        state: "present"</span>
+</div>
 
 ## Plugin Development
 

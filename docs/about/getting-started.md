@@ -1,130 +1,327 @@
-# Getting Started
+# Getting Started with pan-scm-ansible
 
-This guide will help you get started with the Palo Alto Networks SCM Ansible Collection by walking through basic authentication setup and your first playbook.
+Welcome to the `cdot65.scm` Ansible Collection! This guide will walk you through the initial setup and basic usage of the collection to automate Palo Alto Networks Strata Cloud Manager configurations.
+
+## Installation
+
+**Requirements**:
+
+- Python 3.11 or higher
+- Ansible Core 2.17 or higher
+- `pan-scm-sdk` version 0.3.22 or higher
+
+<div class="termy">
+
+```bash
+$ pip install pan-scm-sdk
+---> 100%
+Successfully installed pan-scm-sdk-0.3.22
+
+$ ansible-galaxy collection install cdot65.scm
+---> 100%
+Process completed successfully
+```
+
+</div>
 
 ## Authentication
 
-To authenticate with Strata Cloud Manager, you'll need to provide your SCM credentials. The recommended approach is to use environment variables for security:
+Before using the collection, you need to set up authentication with Strata Cloud Manager using OAuth2 client credentials. The recommended approach is to store credentials securely using Ansible Vault:
+
+1. **Create a vault-encrypted variables file**:
+
+<div class="termy">
 
 ```bash
-export PAN_SCM_USERNAME="your-username"
-export PAN_SCM_PASSWORD="your-password"
-export PAN_SCM_TENANT="your-tenant-id"
+$ ansible-vault create vault.yaml
+New Vault password: 
+Confirm New Vault password: 
 ```
 
-Alternatively, you can store credentials in an Ansible vault file:
+</div>
+
+2. **Add your credentials to the file**:
+
+<div class="termy">
 
 ```yaml
-# credentials.yml
----
-scm_username: "your-username"
-scm_password: "your-password"
-scm_tenant: "your-tenant-id"
+# Contents of vault.yaml
+client_id: "your-client-id"
+client_secret: "your-client-secret"
+tsg_id: "your-tenant-service-group-id"
 ```
 
-Then encrypt the file:
+</div>
 
-```bash
-ansible-vault encrypt credentials.yml
-```
+3. **Reference the vault file in your playbook**:
 
-## Your First Playbook
-
-Here's a simple playbook that creates an address object in SCM:
+<div class="termy">
 
 ```yaml
+# Example playbook with authentication
 ---
-- name: Create SCM Address Objects
+- name: SCM Configuration Example
   hosts: localhost
-  connection: local
   gather_facts: false
   vars_files:
-    - credentials.yml  # If using vault for credentials
-  
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"  # Optional, defaults to INFO
   tasks:
-    - name: Create web server address
+    - name: Create an address object
       cdot65.scm.address:
+        provider: "{{ provider }}"
         name: "web-server"
-        folder: "SharedFolder"
-        description: "Web server address"
+        description: "Web server"
         ip_netmask: "10.1.1.10/32"
-        # Use environment variables or specify here:
-        # username: "{{ scm_username }}"
-        # password: "{{ scm_password }}"
-        # tenant: "{{ scm_tenant }}"
+        folder: "Texas"
+        state: "present"
 ```
 
-Save this as `create_address.yml` and run it:
+</div>
 
-```bash
-ansible-playbook create_address.yml
-```
+## Basic Usage
 
-If using vault:
+The collection provides modules for managing various SCM configuration objects. Here are some common examples:
 
-```bash
-ansible-playbook create_address.yml --ask-vault-pass
-```
+### Managing Address Objects
 
-## Using Tags
-
-Tags in SCM are used to organize and categorize objects. Here's an example of creating a tag and then applying it to an address object:
+<div class="termy">
 
 ```yaml
+# Example: Creating different types of address objects
 ---
-- name: Create and Apply Tags
+- name: Manage Address Objects
   hosts: localhost
-  connection: local
   gather_facts: false
-  
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
   tasks:
-    - name: Create a web-servers tag
-      cdot65.scm.tag:
-        name: "web-servers"
-        color: "color13"  # Red
-        folder: "SharedFolder"
-    
-    - name: Create web server address with tag
+    # IP/Netmask address
+    - name: Create an IP address object
       cdot65.scm.address:
-        name: "web-server-prod"
-        folder: "SharedFolder"
-        description: "Production web server"
-        ip_netmask: "10.1.1.11/32"
-        tags:
-          - "web-servers"
+        provider: "{{ provider }}"
+        name: "internal-network"
+        description: "Internal network segment"
+        ip_netmask: "192.168.1.0/24"
+        folder: "Texas"
+        tag: ["Network", "Internal"]
+        state: "present"
+    
+    # FQDN address
+    - name: Create an FQDN address object
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "example-server"
+        description: "Example server FQDN"
+        fqdn: "server.example.com"
+        folder: "Texas"
+        state: "present"
+        
+    # IP Range address
+    - name: Create an IP Range address object
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "dhcp-range"
+        description: "DHCP address range"
+        ip_range: "192.168.1.100-192.168.1.200"
+        folder: "Texas"
+        state: "present"
 ```
 
-## Working with Security Rules
+</div>
 
-Security rules are a core component of network security. Here's an example that creates a basic security rule:
+### Managing Tags
+
+<div class="termy">
 
 ```yaml
+# Example: Creating and managing tags
+---
+- name: Manage Tags
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+  tasks:
+    - name: Create tags with different colors
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        color: "{{ item.color }}"
+        folder: "Texas"
+        state: "present"
+      loop:
+        - { name: "Production", color: "red" }
+        - { name: "Testing", color: "green" }
+        - { name: "Development", color: "blue" }
+    
+    - name: Get tag information
+      cdot65.scm.tag_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: tags_result
+    
+    - name: Display all tags
+      debug:
+        var: tags_result
+```
+
+</div>
+
+### Managing Security Rules
+
+<div class="termy">
+
+```yaml
+# Example: Creating security rules
 ---
 - name: Configure Security Rules
   hosts: localhost
-  connection: local
   gather_facts: false
-  
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
   tasks:
-    - name: Allow web traffic
+    - name: Create a web access rule
       cdot65.scm.security_rule:
+        provider: "{{ provider }}"
         name: "Allow-Web-Traffic"
-        folder: "SharedFolder"
-        description: "Allow HTTP/HTTPS to web servers"
-        source_zones: ["untrust"]
-        destination_zones: ["trust"]
-        source_addresses: ["any"]
-        destination_addresses: ["web-server-prod"]
-        applications: ["web-browsing", "ssl"]
-        services: ["application-default"]
+        folder: "Texas"
+        description: "Allow HTTP/HTTPS traffic to web servers"
+        source_zone: ["untrust"]
+        destination_zone: ["trust"]
+        source_address: ["any"]
+        destination_address: ["web-server"]
+        application: ["web-browsing", "ssl"]
+        service: ["application-default"]
         action: "allow"
-        log_setting: "default"
+        log_end: true
+        state: "present"
 ```
+
+</div>
+
+## Using Info Modules
+
+Info modules allow you to retrieve information about objects in SCM:
+
+<div class="termy">
+
+```yaml
+# Example: Using info modules
+---
+- name: Retrieve SCM Information
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+  tasks:
+    - name: Get all address objects
+      cdot65.scm.address_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: addresses
+    
+    - name: Display all addresses
+      debug:
+        var: addresses
+    
+    - name: Get specific address object
+      cdot65.scm.address_info:
+        provider: "{{ provider }}"
+        name: "web-server"
+        folder: "Texas"
+      register: specific_address
+    
+    - name: Display specific address
+      debug:
+        var: specific_address
+```
+
+</div>
+
+## Error Handling
+
+Always implement proper error handling in your playbooks:
+
+<div class="termy">
+
+```yaml
+# Example: Error handling
+---
+- name: Error Handling Example
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+  tasks:
+    - name: Attempt to create an address
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "example-server"
+        description: "Example server"
+        fqdn: "server.example.com"
+        folder: "Texas"
+        state: "present"
+      register: address_result
+      failed_when: false
+    
+    - name: Handle potential errors
+      debug:
+        msg: "Failed to create address: {{ address_result.msg }}"
+      when: address_result.failed
+    
+    - name: Continue with successful creation
+      debug:
+        msg: "Successfully created address with ID: {{ address_result.address.id }}"
+      when: not address_result.failed
+```
+
+</div>
+
+## Using Check Mode
+
+All modules support Ansible's check mode, allowing you to see what changes would be made without actually making them:
+
+<div class="termy">
+
+```bash
+$ ansible-playbook --check my_playbook.yml
+```
+
+</div>
 
 ## Next Steps
 
-Now that you have the basics, explore the following resources:
-
-- [Module Reference](../collection/modules/index.md): Documentation for all available modules
-- [Playbook Examples](../guide/playbook-examples.md): More complex playbooks for common tasks
-- [Roles Documentation](../collection/roles/index.md): Pre-built roles for SCM management
+- Explore the [Collection Documentation](../collection/index.md) for detailed information on all available modules, roles, and plugins
+- Check out the [User Guide](../guide/using-modules.md) for more advanced usage examples
+- Refer to the [Playbook Examples](../guide/playbook-examples.md) for complete playbook examples
