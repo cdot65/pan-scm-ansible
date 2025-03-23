@@ -137,7 +137,7 @@ EXAMPLES = r"""
       loop:
         - "Web"
         - "Automation"
-    
+
     # Create a service group using the tag objects
     - name: Create a service group
       cdot65.scm.service_group:
@@ -171,7 +171,7 @@ EXAMPLES = r"""
         name: "web-services"
         folder: "Texas"
         state: "absent"
-        
+
     # Clean up the tag objects
     - name: Clean up tag objects
       cdot65.scm.tag:

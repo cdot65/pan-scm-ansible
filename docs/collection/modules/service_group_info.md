@@ -33,7 +33,7 @@ The `service_group_info` module provides functionality to gather information abo
 | exclude_snippets       | no       | list  |                  |            | List of snippet values to exclude from results.                    |
 | exclude_devices        | no       | list  |                  |            | List of device values to exclude from results.                     |
 | members                | no       | list  |                  |            | Filter by service members contained in the groups.                 |
-| tags                   | no       | list  |                  |            | Filter by tags.                                                    |
+| tags                   | no       | list  |                  |            | Filter by tags associated with service groups.                      |
 | provider               | yes      | dict  |                  |            | Authentication credentials.                                        |
 | provider.client_id     | yes      | str   |                  |            | Client ID for authentication.                                      |
 | provider.client_secret | yes      | str   |                  |            | Client secret for authentication.                                  |
@@ -119,6 +119,35 @@ The `service_group_info` module provides functionality to gather information abo
 
 </div>
 
+### Advanced Filtering with Ansible
+
+<div class="termy">
+
+<!-- termynal -->
+
+```yaml
+# Since the module doesn't support filtering by name prefix directly,
+# we can use Ansible's built-in filters to achieve this
+- name: Get all service groups for name prefix filtering
+  cdot65.scm.service_group_info:
+    provider: "{{ provider }}"
+    folder: "Texas"
+  register: all_groups_for_filtering
+  
+# Filter service groups for names starting with "dev-" in memory
+- name: Filter service groups for dev- prefix in memory
+  set_fact:
+    dev_groups: 
+      service_groups: "{{ all_groups_for_filtering.service_groups | selectattr('name', 'match', '^dev-.*') | list }}"
+
+# Work with the filtered results
+- name: Display filtered service groups
+  debug:
+    var: dev_groups
+```
+
+</div>
+
 ## Return Values
 
 | Name           | Description                                                | Type | Returned                         | Sample                                                                                                                                       |
@@ -181,7 +210,13 @@ Common errors you might encounter when using this module:
    - Combine multiple tags with AND logic to narrow results
    - Create consistent tagging conventions for easier filtering
 
-5. **Integration with Other Modules**
+5. **Naming and Uniqueness**
+   - Consider using timestamps in object names for test environments
+   - Use Ansible's `lookup('pipe', 'date +%Y%m%d%H%M%S')` to generate timestamps
+   - Store dynamic object names in variables for easier reference and cleanup
+   - Ensure unique names to avoid conflicts when testing
+
+6. **Integration with Other Modules**
    - Use service_group_info module output as input for service_group module operations
    - Chain info queries with security policy modules to see where service groups are used
    - Leverage the registered variables for conditional tasks and reporting

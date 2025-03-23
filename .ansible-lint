@@ -30,9 +30,9 @@ skip_list:
   - role-name
   - internal-error
   - galaxy
-  - '204'
-  - 'ignore-errors'
-  - 'var-naming[no-role-prefix]'
+  - "204"
+  - "ignore-errors"
+  - "var-naming[no-role-prefix]"
 
 # Set verbosity level
 verbosity: 1
