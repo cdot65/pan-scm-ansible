@@ -248,7 +248,7 @@ def main():
                 # Compare and update if needed
                 need_update = False
                 if sorted(existing_group.members) != sorted(
-                        application_group_data.get("members", [])
+                    application_group_data.get("members", [])
                 ):
                     need_update = True
 

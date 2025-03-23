@@ -267,9 +267,9 @@ def build_service_data(module_params):
 
         # Handle TCP protocol
         if (
-                "tcp" in module_params["protocol"]
-                and module_params["protocol"]["tcp"] is not None
-                and module_params["protocol"]["tcp"].get("port")
+            "tcp" in module_params["protocol"]
+            and module_params["protocol"]["tcp"] is not None
+            and module_params["protocol"]["tcp"].get("port")
         ):
             tcp_data = module_params["protocol"]["tcp"].copy()
             if "override" in tcp_data and tcp_data["override"]:
@@ -280,9 +280,9 @@ def build_service_data(module_params):
 
         # Handle UDP protocol
         elif (
-                "udp" in module_params["protocol"]
-                and module_params["protocol"]["udp"] is not None
-                and module_params["protocol"]["udp"].get("port")
+            "udp" in module_params["protocol"]
+            and module_params["protocol"]["udp"] is not None
+            and module_params["protocol"]["udp"].get("port")
         ):
             udp_data = module_params["protocol"]["udp"].copy()
             if "override" in udp_data and udp_data["override"]:
@@ -424,16 +424,16 @@ def needs_update(existing, params):
                 if hasattr(current_protocol, "tcp") and current_protocol.tcp is not None:
                     # Check port updates
                     if (
-                            "port" in params["protocol"]["tcp"]
-                            and current_protocol.tcp.port != params["protocol"]["tcp"]["port"]
+                        "port" in params["protocol"]["tcp"]
+                        and current_protocol.tcp.port != params["protocol"]["tcp"]["port"]
                     ):
                         update_data["protocol"]["tcp"]["port"] = params["protocol"]["tcp"]["port"]
                         changed = True
 
                     # Check override updates
                     if (
-                            "override" in params["protocol"]["tcp"]
-                            and params["protocol"]["tcp"]["override"] is not None
+                        "override" in params["protocol"]["tcp"]
+                        and params["protocol"]["tcp"]["override"] is not None
                     ):
                         current_override = getattr(current_protocol.tcp, "override", None)
                         current_override_dict = (
@@ -448,7 +448,7 @@ def needs_update(existing, params):
 
                         for k, v in params["protocol"]["tcp"]["override"].items():
                             if v is not None and (
-                                    k not in current_override_dict or current_override_dict[k] != v
+                                k not in current_override_dict or current_override_dict[k] != v
                             ):
                                 if "override" not in update_data["protocol"]["tcp"]:
                                     update_data["protocol"]["tcp"]["override"] = {}
@@ -460,16 +460,16 @@ def needs_update(existing, params):
                 if hasattr(current_protocol, "udp") and current_protocol.udp is not None:
                     # Check port updates
                     if (
-                            "port" in params["protocol"]["udp"]
-                            and current_protocol.udp.port != params["protocol"]["udp"]["port"]
+                        "port" in params["protocol"]["udp"]
+                        and current_protocol.udp.port != params["protocol"]["udp"]["port"]
                     ):
                         update_data["protocol"]["udp"]["port"] = params["protocol"]["udp"]["port"]
                         changed = True
 
                     # Check override updates
                     if (
-                            "override" in params["protocol"]["udp"]
-                            and params["protocol"]["udp"]["override"] is not None
+                        "override" in params["protocol"]["udp"]
+                        and params["protocol"]["udp"]["override"] is not None
                     ):
                         current_override = getattr(current_protocol.udp, "override", None)
                         current_override_dict = (
@@ -481,8 +481,8 @@ def needs_update(existing, params):
                         if "timeout" in params["protocol"]["udp"]["override"]:
                             timeout_value = params["protocol"]["udp"]["override"]["timeout"]
                             if timeout_value is not None and (
-                                    "timeout" not in current_override_dict
-                                    or current_override_dict["timeout"] != timeout_value
+                                "timeout" not in current_override_dict
+                                or current_override_dict["timeout"] != timeout_value
                             ):
                                 if "override" not in update_data["protocol"]["udp"]:
                                     update_data["protocol"]["udp"]["override"] = {}
