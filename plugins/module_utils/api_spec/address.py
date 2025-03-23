@@ -15,10 +15,10 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 try:
-    from typing import Any, Dict
+    from typing import Dict
 except ImportError:
     # Define fallback for Python 2.7
-    Any = Dict = None
+    Dict = None
 
 
 class AddressSpec:

@@ -33,7 +33,6 @@ from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
-from scm.config.objects.service_group import ServiceGroup
 from scm.exceptions import InvalidObjectError, NameNotUniqueError, ObjectNotPresentError
 from scm.models.objects.service_group import ServiceGroupCreateModel, ServiceGroupUpdateModel
 
