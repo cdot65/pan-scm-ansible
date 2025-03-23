@@ -1,8 +1,9 @@
+---
 site_name: Palo Alto Networks Strata Cloud Manager Ansible Collection
 site_description: Ansible Collection to manage Palo Alto Networks Strata Cloud Manager configurations
-site_url: https://cdot65.github.io/pan-scm-ansible-collection/
-repo_url: https://github.com/cdot65/pan-scm-ansible-collection
-repo_name: cdot65/pan-scm-ansible-collection
+site_url: https://cdot65.github.io/pan-scm-ansible/
+repo_url: https://github.com/cdot65/pan-scm-ansible
+repo_name: cdot65/pan-scm-ansible
 site_dir: site
 copyright: Copyright &copy; 2023-2025 Calvin Remsburg
 
@@ -44,7 +45,8 @@ plugins:
       default_handler: python
       handlers:
         python:
-          paths: [pan_scm_ansible]
+          paths:
+            - pan_scm_ansible
           options:
             show_source: false
             docstring_style: google
@@ -95,24 +97,22 @@ nav:
       - Modules:
           - Overview: collection/modules/index.md
           - Address: collection/modules/address.md
+          - Address Info: collection/modules/address_info.md
           - Address Group: collection/modules/address_group.md
+          - Address Group Info: collection/modules/address_group_info.md
           - Anti-Spyware Profile: collection/modules/anti_spyware_profile.md
+          - Anti-Spyware Profile Info: collection/modules/anti_spyware_profile_info.md
           - Application: collection/modules/application.md
+          - Application Info: collection/modules/application_info.md
           - Application Group: collection/modules/application_group.md
-          - BGP Routing: collection/modules/bgp_routing.md
-          - IKE Crypto Profile: collection/modules/ike_crypto_profile.md
-          - IKE Gateway: collection/modules/ike_gateway.md
-          - IPSec Crypto Profile: collection/modules/ipsec_crypto_profile.md
-          - IPSec Tunnel: collection/modules/ipsec_tunnel.md
-          - Network Locations: collection/modules/network_locations.md
-          - Remote Networks: collection/modules/remote_networks.md
-          - Security Profiles Group: collection/modules/security_profiles_group.md
-          - Security Rule: collection/modules/security_rule.md
-          - Security Zone: collection/modules/security_zone.md
+          - Application Group Info: collection/modules/application_group_info.md
           - Service: collection/modules/service.md
+          - Service Info: collection/modules/service_info.md
           - Service Connections: collection/modules/service_connections.md
           - Service Group: collection/modules/service_group.md
+          - Service Group Info: collection/modules/service_group_info.md
           - Tag: collection/modules/tag.md
+          - Tag Info: collection/modules/tag_info.md
       - Roles:
           - Overview: collection/roles/index.md
           - Bootstrap: collection/roles/bootstrap.md

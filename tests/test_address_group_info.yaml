@@ -1,0 +1,314 @@
+---
+- name: Test Address Group Info Module in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # First clean up any existing test objects if they exist
+    - name: Remove test address groups if they exist
+      cdot65.scm.address_group:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Test_Static_Group_Info"
+        - "Test_Dynamic_Group_Info"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    - name: Remove test address objects if they exist
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "ansible_test_network1"
+        - "ansible_test_network2"
+      tags:
+        - dev-cleanup
+        
+    # Create required tags
+    - name: Create tags needed for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        color: "{{ item.color }}"
+        comments: "Test tag for address group info module testing"
+        folder: "Texas"
+        state: "present"
+      ignore_errors: true
+      loop:
+        - { name: "dev-ansible", color: "Blue" }
+        - { name: "dev-automation", color: "Green" }
+        - { name: "dev-test", color: "Orange" }
+        - { name: "dev-cicd", color: "Red" }
+        - { name: "tag1", color: "Cyan" }
+        - { name: "tag2", color: "Magenta" }
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    # ==========================================
+    # CREATE test objects for info testing
+    # ==========================================
+    - name: Create ansible_test_network1 address object with ip_netmask
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "ansible_test_network1"
+        description: "An address object with ip_netmask"
+        ip_netmask: "192.168.1.0/24"
+        folder: "Texas"
+        tag: ["dev-ansible", "tag1"]
+        state: "present"
+      register: address1_create_result
+      tags:
+        - dev-test
+
+    - name: Create ansible_test_network2 address object with ip_netmask
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "ansible_test_network2"
+        description: "An address object with ip_netmask"
+        ip_netmask: "192.168.2.0/24"
+        folder: "Texas"
+        tag: ["dev-automation", "tag2"]
+        state: "present"
+      register: address2_create_result
+      tags:
+        - dev-automation
+
+    - name: Create a static address group for testing
+      cdot65.scm.address_group:
+        provider: "{{ provider }}"
+        name: "Test_Static_Group_Info"
+        description: "A static address group for testing info module"
+        static:
+          - "ansible_test_network1"
+          - "ansible_test_network2"
+        folder: "Texas"
+        tag: ["dev-ansible", "dev-cicd"]
+        state: "present"
+      register: static_group_create_result
+      tags:
+        - dev-cicd
+
+    - name: Create a dynamic address group for testing
+      cdot65.scm.address_group:
+        provider: "{{ provider }}"
+        name: "Test_Dynamic_Group_Info"
+        description: "A dynamic address group for testing info module"
+        dynamic:
+          filter: "'tag1' or 'tag2'"
+        folder: "Texas"
+        tag: ["dev-test", "dev-automation"]
+        state: "present"
+      register: dynamic_group_create_result
+      tags:
+        - dev-test
+
+    # Verify address groups were created successfully
+    - name: Verify address group creation
+      assert:
+        that:
+          - static_group_create_result is changed
+          - dynamic_group_create_result is changed
+          - static_group_create_result.address_group is defined
+          - dynamic_group_create_result.address_group is defined
+        fail_msg: "Failed to create test address groups"
+        success_msg: "Successfully created test address groups"
+
+    # ==========================================
+    # INFO queries
+    # ==========================================
+    # Get info about a specific address group
+    - name: Get information about a specific address group
+      cdot65.scm.address_group_info:
+        provider: "{{ provider }}"
+        name: "Test_Static_Group_Info"
+        folder: "Texas"
+      register: specific_info
+      tags:
+        - dev-test
+
+    - name: Display specific address group info
+      debug:
+        var: specific_info
+        verbosity: 1
+
+    - name: Verify specific address group info
+      assert:
+        that:
+          - specific_info.address_group is defined
+          - specific_info.address_group.name == "Test_Static_Group_Info"
+          - specific_info.address_group.description == "A static address group for testing info module"
+          - specific_info.address_group.static is defined
+          - specific_info.address_group.static | length == 2
+          - "'ansible_test_network1' in specific_info.address_group.static"
+          - "'ansible_test_network2' in specific_info.address_group.static"
+          - specific_info.address_group.tag | length == 2
+          - "'dev-ansible' in specific_info.address_group.tag"
+          - "'dev-cicd' in specific_info.address_group.tag"
+        fail_msg: "Failed to retrieve specific address group information"
+        success_msg: "Successfully retrieved specific address group information"
+      tags:
+        - dev-ansible
+
+    # List all address groups
+    - name: List all address groups in the folder
+      cdot65.scm.address_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_groups
+      tags:
+        - dev-automation
+
+    - name: Display all address groups
+      debug:
+        var: all_groups
+        verbosity: 1
+
+    - name: Verify all address groups
+      assert:
+        that:
+          - all_groups.address_groups is defined
+          - all_groups.address_groups | length >= 2
+          - all_groups.address_groups | selectattr('name', 'equalto', 'Test_Static_Group_Info') | list | length == 1
+          - all_groups.address_groups | selectattr('name', 'equalto', 'Test_Dynamic_Group_Info') | list | length == 1
+        fail_msg: "Failed to retrieve all address groups"
+        success_msg: "Successfully retrieved all address groups"
+      tags:
+        - dev-cicd
+
+    # Filter by group type
+    - name: List only static address groups
+      cdot65.scm.address_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        types: ["static"]
+      register: static_groups
+      tags:
+        - dev-test
+
+    - name: Display static address groups
+      debug:
+        var: static_groups
+        verbosity: 1
+
+    - name: Verify static address groups
+      assert:
+        that:
+          - static_groups.address_groups is defined
+          - static_groups.address_groups | selectattr('name', 'equalto', 'Test_Static_Group_Info') | list | length == 1
+          - static_groups.address_groups | selectattr('name', 'equalto', 'Test_Dynamic_Group_Info') | list | length == 0
+        fail_msg: "Failed to filter static address groups"
+        success_msg: "Successfully filtered static address groups"
+
+    # Filter by dynamic groups
+    - name: List only dynamic address groups
+      cdot65.scm.address_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        types: ["dynamic"]
+      register: dynamic_groups
+      tags:
+        - dev-cicd
+
+    - name: Display dynamic address groups
+      debug:
+        var: dynamic_groups
+        verbosity: 1
+
+    - name: Verify dynamic address groups
+      assert:
+        that:
+          - dynamic_groups.address_groups is defined
+          - dynamic_groups.address_groups | selectattr('name', 'equalto', 'Test_Dynamic_Group_Info') | list | length == 1
+          - dynamic_groups.address_groups | selectattr('name', 'equalto', 'Test_Static_Group_Info') | list | length == 0
+        fail_msg: "Failed to filter dynamic address groups"
+        success_msg: "Successfully filtered dynamic address groups"
+      tags:
+        - dev-automation
+
+    # Filter by tag
+    - name: List address groups with specific tag
+      cdot65.scm.address_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        tags: ["dev-test"]
+      register: tagged_groups
+      tags:
+        - dev-ansible
+
+    - name: Display tagged address groups
+      debug:
+        var: tagged_groups
+        verbosity: 1
+
+    - name: Verify tagged address groups
+      assert:
+        that:
+          - tagged_groups.address_groups is defined
+          - tagged_groups.address_groups | selectattr('name', 'equalto', 'Test_Dynamic_Group_Info') | list | length == 1
+          - tagged_groups.address_groups | selectattr('name', 'equalto', 'Test_Static_Group_Info') | list | length == 0
+        fail_msg: "Failed to filter address groups by tag"
+        success_msg: "Successfully filtered address groups by tag"
+
+    # ==========================================
+    # CLEANUP
+    # ==========================================
+    # Cleanup test objects
+    - name: Delete the address groups
+      cdot65.scm.address_group:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      loop:
+        - "Test_Static_Group_Info"
+        - "Test_Dynamic_Group_Info"
+      register: group_delete_result
+      tags:
+        - dev-cleanup
+
+    - name: Clean up the address objects
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      loop:
+        - "ansible_test_network1"
+        - "ansible_test_network2"
+      register: address_delete_result
+      tags:
+        - dev-cleanup
+
+    # Clean up test tags
+    - name: Remove tags created for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+        - "tag1"
+        - "tag2"
+      tags:
+        - dev-cleanup

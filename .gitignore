@@ -74,7 +74,12 @@ requirements/vendor
 *credentials*.y*ml*
 *.vault_password
 venv/*
+.ruff_cache
+.ansible
 
 # Ansible module tests
 /dist/*.tar.gz
 *.tar.gz
+collections
+scripts
+/.env

@@ -70,12 +70,15 @@ These modules retrieve information from SCM without making changes:
 
 | Module Name | Description |
 |-------------|-------------|
-| `address_info` | Get information about address objects |
-| `address_group_info` | Get information about address groups |
-| `application_info` | Get information about applications |
-| `security_rule_info` | Get information about security rules |
-| `service_info` | Get information about service objects |
-| `tag_info` | Get information about tags |
+| [`address_info`](address_info.md) | Get information about address objects |
+| [`address_group_info`](address_group_info.md) | Get information about address groups |
+| [`anti_spyware_profile_info`](anti_spyware_profile_info.md) | Get information about anti-spyware profiles |
+| [`application_info`](application_info.md) | Get information about applications |
+| [`application_group_info`](application_group_info.md) | Get information about application groups |
+| [`security_rule_info`](security_rule_info.md) | Get information about security rules |
+| [`service_info`](service_info.md) | Get information about service objects |
+| [`service_group_info`](service_group_info.md) | Get information about service groups |
+| [`tag_info`](tag_info.md) | Get information about tags |
 
 ## Return Values
 

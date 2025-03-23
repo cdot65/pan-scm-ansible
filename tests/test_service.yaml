@@ -1,5 +1,5 @@
 ---
-- name: Manage Service Objects in Strata Cloud Manager
+- name: Test Service Module in Strata Cloud Manager
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -11,50 +11,291 @@
       tsg_id: "{{ tsg_id }}"
       log_level: "INFO"
   tasks:
-    - name: Create TCP service
-      cdot65.scm.service:
-        provider: "{{ provider }}"
-        name: "web-service"
-        protocol:
-          tcp:
-            port: "80,443"
-            override:
-              timeout: 30
-              halfclose_timeout: 10
-              timewait_timeout: 2
-        description: "Web service ports"
-        folder: "Texas"
-        state: "present"
-
-    - name: Create UDP service
-      cdot65.scm.service:
-        provider: "{{ provider }}"
-        name: "dns-service"
-        protocol:
-          udp:
-            port: "53"
-            override:
-              timeout: 30
-        description: "DNS service"
-        folder: "Texas"
-        state: "present"
-
-    - name: Update service
-      cdot65.scm.service:
-        provider: "{{ provider }}"
-        name: "web-service"
-        protocol:
-          tcp:
-            port: "80,443,8080"
-        folder: "Texas"
-        state: "present"
-
-    - name: Remove services
+    # First clean up any existing test services if they exist
+    - name: Remove test services if they exist
       cdot65.scm.service:
         provider: "{{ provider }}"
         name: "{{ item }}"
         folder: "Texas"
         state: "absent"
+      ignore_errors: true
       loop:
-        - "web-service"
-        - "dns-service"
+        - "Test-TCP-Service"
+        - "Test-UDP-Service"
+        - "Test-TCP-Service-Updated"
+      tags:
+        - dev-cleanup
+        - dev-test
+        
+    # Create required tags
+    - name: Create tags needed for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        color: "{{ item.color }}"
+        comments: "Test tag for service module testing"
+        folder: "Texas"
+        state: "present"
+      ignore_errors: true
+      loop:
+        - { name: "dev-ansible", color: "Blue" }
+        - { name: "dev-automation", color: "Green" }
+        - { name: "dev-test", color: "Orange" }
+        - { name: "dev-cicd", color: "Red" }
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
+    # Create a TCP service with override settings
+    - name: Create TCP service with port and timeout overrides
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "Test-TCP-Service"
+        protocol:
+          tcp:
+            port: "80,443"
+            override:
+              timeout: 60
+              halfclose_timeout: 30
+              timewait_timeout: 10
+        description: "Test TCP service with ports 80 and 443"
+        folder: "Texas"
+        tag: ["dev-ansible", "dev-test"]
+        state: "present"
+      register: tcp_create_result
+      tags:
+        - dev-test
+
+    # Display and verify the TCP service creation
+    - name: Display TCP service creation result
+      debug:
+        var: tcp_create_result
+        verbosity: 1
+
+    - name: Verify TCP service creation
+      assert:
+        that:
+          - tcp_create_result.changed == true
+          - tcp_create_result.service.name == "Test-TCP-Service"
+          - tcp_create_result.service.description == "Test TCP service with ports 80 and 443"
+          - tcp_create_result.service.protocol.tcp.port == "80,443"
+          - tcp_create_result.service.protocol.tcp.override.timeout == 60
+          - tcp_create_result.service.protocol.tcp.override.halfclose_timeout == 30
+          - tcp_create_result.service.protocol.tcp.override.timewait_timeout == 10
+          - tcp_create_result.service.tag | length == 2
+          - '"dev-ansible" in tcp_create_result.service.tag'
+          - '"dev-test" in tcp_create_result.service.tag'
+        fail_msg: "Failed to create TCP service"
+        success_msg: "Successfully created TCP service"
+      tags:
+        - dev-cicd
+
+    # Test idempotency - run the same create again
+    - name: Test idempotency for TCP service (re-run same create)
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "Test-TCP-Service"
+        protocol:
+          tcp:
+            port: "80,443"
+            override:
+              timeout: 60
+              halfclose_timeout: 30
+              timewait_timeout: 10
+        description: "Test TCP service with ports 80 and 443"
+        folder: "Texas"
+        tag: ["dev-ansible", "dev-test"]
+        state: "present"
+      register: tcp_idempotency_result
+
+    - name: Verify TCP service idempotency
+      assert:
+        that:
+          - tcp_idempotency_result.changed == false
+        fail_msg: "Service module failed idempotency test"
+        success_msg: "Service module passed idempotency test"
+      tags:
+        - dev-automation
+
+    # Create a UDP service with timeout override
+    - name: Create UDP service with port and timeout override
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "Test-UDP-Service"
+        protocol:
+          udp:
+            port: "53"
+            override:
+              timeout: 120
+        description: "Test UDP service for DNS"
+        folder: "Texas"
+        tag: ["dev-automation", "dev-cicd"]
+        state: "present"
+      register: udp_create_result
+      tags:
+        - dev-cicd
+
+    # Display and verify the UDP service creation
+    - name: Display UDP service creation result
+      debug:
+        var: udp_create_result
+        verbosity: 1
+
+    - name: Verify UDP service creation
+      assert:
+        that:
+          - udp_create_result.changed == true
+          - udp_create_result.service.name == "Test-UDP-Service"
+          - udp_create_result.service.description == "Test UDP service for DNS"
+          - udp_create_result.service.protocol.udp.port == "53"
+          - udp_create_result.service.protocol.udp.override.timeout == 120
+          - udp_create_result.service.tag | length == 2
+          - '"dev-automation" in udp_create_result.service.tag'
+          - '"dev-cicd" in udp_create_result.service.tag'
+        fail_msg: "Failed to create UDP service"
+        success_msg: "Successfully created UDP service"
+      tags:
+        - dev-ansible
+
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    # Update the TCP service with new ports and tags
+    - name: Update TCP service with additional port and changed description
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "Test-TCP-Service"
+        protocol:
+          tcp:
+            port: "80,443,8080"
+        description: "Updated TCP service with additional port 8080"
+        folder: "Texas"
+        tag: ["dev-ansible", "dev-test", "dev-cicd"]
+        state: "present"
+      register: tcp_update_result
+      tags:
+        - dev-test
+
+    # Display and verify the TCP service update
+    - name: Display TCP service update result
+      debug:
+        var: tcp_update_result
+        verbosity: 1
+
+    - name: Verify TCP service update
+      assert:
+        that:
+          - tcp_update_result.changed == true
+          - tcp_update_result.service.name == "Test-TCP-Service"
+          - tcp_update_result.service.description == "Updated TCP service with additional port 8080"
+          - tcp_update_result.service.protocol.tcp.port == "80,443,8080"
+          - tcp_update_result.service.tag | length == 3
+          - '"dev-cicd" in tcp_update_result.service.tag'
+        fail_msg: "Failed to update TCP service"
+        success_msg: "Successfully updated TCP service"
+      tags:
+        - dev-cicd
+
+    # Update only description
+    - name: Update just the description of UDP service
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "Test-UDP-Service"
+        protocol:
+          udp:
+            port: "53"
+        description: "Updated description for DNS service"
+        folder: "Texas"
+        state: "present"
+      register: udp_description_update_result
+      tags:
+        - dev-automation
+
+    - name: Verify UDP service description update
+      assert:
+        that:
+          - udp_description_update_result.changed == true
+          - udp_description_update_result.service.description == "Updated description for DNS service"
+          - udp_description_update_result.service.protocol.udp.port == "53"
+        fail_msg: "Failed to update UDP service description"
+        success_msg: "Successfully updated UDP service description"
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    # Delete the TCP service
+    - name: Delete the TCP service
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "Test-TCP-Service"
+        folder: "Texas"
+        state: "absent"
+      register: tcp_delete_result
+      tags:
+        - dev-test
+
+    # Verify TCP service deletion
+    - name: Verify TCP service deletion
+      assert:
+        that:
+          - tcp_delete_result.changed == true
+        fail_msg: "Failed to delete TCP service"
+        success_msg: "Successfully deleted TCP service"
+      tags:
+        - dev-ansible
+
+    # Test idempotency for deleting a service that doesn't exist
+    - name: Test idempotency for deleting a non-existent service
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "Test-TCP-Service"
+        folder: "Texas"
+        state: "absent"
+      register: tcp_delete_idempotency_result
+
+    - name: Verify TCP service deletion idempotency
+      assert:
+        that:
+          - tcp_delete_idempotency_result.changed == false
+        fail_msg: "Service deletion failed idempotency test"
+        success_msg: "Service deletion passed idempotency test"
+      tags:
+        - dev-cicd
+
+    # Delete the UDP service
+    - name: Delete the UDP service
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "Test-UDP-Service"
+        folder: "Texas"
+        state: "absent"
+      register: udp_delete_result
+      tags:
+        - dev-cleanup
+
+    # Verify UDP service deletion
+    - name: Verify UDP service deletion
+      assert:
+        that:
+          - udp_delete_result.changed == true
+        fail_msg: "Failed to delete UDP service"
+        success_msg: "Successfully deleted UDP service"
+          
+    # Clean up test tags
+    - name: Remove tags created for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+      tags:
+        - dev-cleanup

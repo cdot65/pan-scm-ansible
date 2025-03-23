@@ -1,126 +1,105 @@
-.PHONY: setup lint format test clean install-hooks docs docs-serve sanity-tests integration-tests ansible-lint help format-all
+# Makefile for managing the collection
 
-# Default goal
-.DEFAULT_GOAL := help
+# Variables
+COLLECTION_NAME = cdot65.scm
+COLLECTION_NAMESPACE = cdot65
+COLLECTION_NAME_ONLY = scm
+VERSION ?= $(shell grep version galaxy.yml | awk '{print $$2}')
+TARBALL = $(COLLECTION_NAMESPACE)-$(COLLECTION_NAME_ONLY)-$(VERSION).tar.gz
+COLLECTION_PATH = $(shell pwd)/collections/ansible_collections
 
-# Install poetry dependencies
-setup:
-	@echo "Installing dependencies..."
-	poetry install
-	@echo "Installing pre-commit hooks..."
-	poetry run pre-commit install
+# Default target
+.PHONY: all
+all: help
 
-# Run linting with ruff
-lint:
-	@echo "Running linting checks..."
-	poetry run ruff check pan_scm_ansible tests
-	@echo "Running ansible-lint..."
-	poetry run ansible-lint
-
-# Run formatting with ruff
-format:
-	@echo "Running code formatter..."
-	poetry run ruff format pan_scm_ansible tests
-	@echo "Running isort..."
-	poetry run isort pan_scm_ansible tests
-
-# Format all files and ignore exit code (for CI)
-format-all:
-	@echo "Formatting all files..."
-	-poetry run pre-commit run ruff-format --all-files
-	-poetry run pre-commit run isort --all-files
-
-# Check and auto-fix with ruff
-fix:
-	@echo "Auto-fixing linting issues..."
-	poetry run ruff check --fix pan_scm_ansible tests
-
-# Run both linting and formatting
-lint-format: format lint
-
-# Run tests
-test:
-	@echo "Running tests..."
-	poetry run pytest
-
-# Run tests with coverage
-test-cov:
-	@echo "Running tests with coverage..."
-	poetry run pytest --cov=pan_scm_ansible tests/
-
-# Clean caches
-clean:
-	@echo "Cleaning cache directories..."
-	rm -rf .pytest_cache
-	rm -rf .ruff_cache
-	rm -rf htmlcov
-	rm -rf .coverage
-	find . -type d -name "__pycache__" -exec rm -rf {} +
-
-# Install pre-commit hooks
-install-hooks:
-	@echo "Installing pre-commit hooks..."
-	poetry run pre-commit install
-
-# Update all hooks to the latest version
-update-hooks:
-	@echo "Updating pre-commit hooks..."
-	poetry run pre-commit autoupdate
-
-# Run pre-commit on all files
-pre-commit-all:
-	@echo "Running pre-commit on all files..."
-	@echo "NOTE: Formatters may modify files and exit with non-zero, this is normal"
-	@echo "Use 'make format-all && make lint-check' for CI environments"
-	poetry run pre-commit run --all-files || echo "Formatters modified files, run again to verify"
-
-# Only run lint checks (no formatters)
-lint-check:
-	@echo "Running only lint checks (no formatters)..."
-	poetry run pre-commit run --all-files --hook-stage manual
-
-# Build documentation
-docs:
-	@echo "Building documentation site..."
-	poetry run mkdocs build --strict --no-directory-urls
-
-# Serve documentation locally
-docs-serve:
-	@echo "Starting documentation server..."
-	poetry run mkdocs serve
-
-# Run Ansible sanity tests
-sanity-tests:
-	@echo "Running Ansible sanity tests..."
-	poetry run ansible-test sanity
-
-# Run Ansible integration tests
-integration-tests:
-	@echo "Running Ansible integration tests..."
-	poetry run ansible-test integration
-
-# Run Ansible linting
-ansible-lint:
-	@echo "Running ansible-lint..."
-	poetry run ansible-lint
-
+# Help
+.PHONY: help
 help:
-	@echo "Available commands:"
-	@echo "  setup               - Install dependencies and pre-commit hooks"
-	@echo "  lint                - Run linting checks with ruff and ansible-lint"
-	@echo "  format              - Format code with ruff and isort"
-	@echo "  format-all          - Format all files (ignores errors)"
-	@echo "  fix                 - Auto-fix linting issues with ruff"
-	@echo "  lint-format         - Run both linting and formatting"
-	@echo "  lint-check          - Run only lint checks (no formatters)"
-	@echo "  test                - Run tests"
-	@echo "  test-cov            - Run tests with coverage"
-	@echo "  clean               - Clean cache directories"
-	@echo "  docs                - Build documentation site (with strict validation)"
-	@echo "  docs-serve          - Serve documentation locally for development"
-	@echo "  install-hooks       - Install pre-commit hooks"
-	@echo "  update-hooks        - Update pre-commit hooks to the latest versions"
-	@echo "  pre-commit-all      - Run pre-commit on all files"
-	@echo "  sanity-tests        - Run Ansible sanity tests"
-	@echo "  integration-tests   - Run Ansible integration tests"
-	@echo "  ansible-lint        - Run ansible-lint"
+	@echo "Makefile for managing the collection"
+	@echo ""
+	@echo "Usage:"
+	@echo "  make build              Build the collection"
+	@echo "  make clean              Clean up build artifacts"
+	@echo "  make install            Install the collection"
+	@echo "  make reinstall          Reinstall the collection (remove + build + install)"
+	@echo "  make test               Run tests for the collection"
+	@echo "  make test-address       Run address module tests"
+	@echo "  make test-address-info  Run address_info module tests"
+	@echo "  make version VERSION=x.y.z  Update the version in galaxy.yml"
+	@echo "  make check              Run diagnostic checks on the installation"
+	@echo "  make fix-dependencies   Ensure all required module dependencies are in place"
+	@echo ""
+
+# Clean
+.PHONY: clean
+clean:
+	@echo "Cleaning up build artifacts..."
+	rm -f *.tar.gz
+
+# Build
+.PHONY: build
+build: clean
+	@echo "Building collection $(COLLECTION_NAME) version $(VERSION)..."
+	poetry run ansible-galaxy collection build --force
+
+# Install
+.PHONY: install
+install:
+	@echo "Installing collection $(COLLECTION_NAME) version $(VERSION)..."
+	poetry run ansible-galaxy collection install $(TARBALL) --force --collections-path ./collections
+
+# Fix dependencies
+.PHONY: fix-dependencies
+fix-dependencies:
+	@echo "Ensuring all required module dependencies are in place..."
+	@mkdir -p $(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/module_utils
+	@mkdir -p $(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/modules
+	@echo "Creating __init__.py files..."
+	@touch $(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/module_utils/__init__.py
+	@touch $(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/modules/__init__.py
+	@touch $(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/__init__.py
+	@touch $(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/__init__.py
+	@touch $(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/__init__.py
+	@echo "Setting execute permissions on Python files..."
+	@chmod +x $(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/modules/*.py
+
+# Remove
+.PHONY: remove
+remove:
+	@echo "Removing collection $(COLLECTION_NAME)..."
+	rm -rf $(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)
+
+# Reinstall
+.PHONY: reinstall
+reinstall: remove clean build install fix-dependencies
+
+# Test
+.PHONY: test
+test:
+	@echo "Running tests for collection $(COLLECTION_NAME)..."
+	cd tests && ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ANSIBLE_MODULE_UTILS=$(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/module_utils poetry run ansible-playbook test_address.yaml --vault-password-file=.vault_password -vv
+
+# Test address module
+.PHONY: test-address
+test-address:
+	@echo "Running tests for address module..."
+	cd tests && ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ANSIBLE_MODULE_UTILS=$(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/module_utils poetry run ansible-playbook test_address.yaml --vault-password-file=.vault_password -vv
+
+# Test address_info module
+.PHONY: test-address-info
+test-address-info:
+	@echo "Running tests for address_info module..."
+	cd tests && ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ANSIBLE_MODULE_UTILS=$(COLLECTION_PATH)/$(COLLECTION_NAMESPACE)/$(COLLECTION_NAME_ONLY)/plugins/module_utils poetry run ansible-playbook test_address_info.yaml --vault-password-file=.vault_password -vv
+
+# Update version
+.PHONY: version
+version:
+	@echo "Updating version to $(VERSION)..."
+	sed -i '' "s/^version: .*/version: $(VERSION)/" galaxy.yml
+
+# Diagnostic check
+.PHONY: check
+check:
+	@echo "Running diagnostic checks..."
+	chmod +x check_installation.sh
+	ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ./check_installation.sh

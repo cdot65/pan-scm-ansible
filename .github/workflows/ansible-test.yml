@@ -1,0 +1,31 @@
+name: Ansible Test
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'plugins/**'
+      - '.github/workflows/ansible-test.yml'
+
+  pull_request:
+    paths:
+      - 'plugins/**'
+      - '.github/workflows/ansible-test.yml'
+
+jobs:
+  ansible-test:
+    runs-on: ubuntu-latest
+    env:
+      PY_COLORS: 1
+      ANSIBLE_FORCE_COLOR: 1
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Perform sanity testing with ansible-test
+        uses: ansible-community/ansible-test-gh-action@release/v1
+        with:
+          ansible-core-version: stable-2.15
+          testing-type: sanity
+          pre-test-cmd: 'rm -rf .devcontainer/ .git* .pre-commit-config.yaml'

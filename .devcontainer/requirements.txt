@@ -1,0 +1,16 @@
+molecule
+molecule-plugins[ec2]
+yamllint
+flake8
+pylint
+pre-commit
+autopep8
+ansible
+ansible-core
+ansible-lint
+wheel
+ansible-rulebook
+ansible-runner
+aiohttp
+pan-scm-sdk
+tox

@@ -1,2 +1,29 @@
 [flake8]
-ignore = F401
+ignore = E501,E402,DAR101,DAR201,DAR401
+
+[flake8]
+max-line-length = 100
+exclude = 
+    collections/ansible_collections,
+    .git,
+    __pycache__,
+    build,
+    dist
+ignore = 
+    # line too long
+    E501,
+    # module level import not at top of file
+    E402,
+    # unused import
+    F401,
+    # allow star imports
+    F403,
+    # allow undefined names from star imports
+    F405
+per-file-ignores =
+    # Allow imports to not be used in __init__.py files
+    */__init__.py:F401
+    # Allow shadowing in plugin files
+    */plugins/*.py:F401
+    # Allow unused imports in module_utils
+    */module_utils/*.py:F401

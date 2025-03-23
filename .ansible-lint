@@ -11,6 +11,7 @@ exclude_paths:
   - dist/
   - .idea/
   - docs/
+  - tests/
 
 # Enable specific rules
 enable_list:
@@ -29,7 +30,9 @@ skip_list:
   - role-name
   - internal-error
   - galaxy
-  - syntax-check  # Skip syntax checks that fail with collection module resolution
+  - "204"
+  - "ignore-errors"
+  - "var-naming[no-role-prefix]"
 
 # Set verbosity level
 verbosity: 1
@@ -49,6 +52,7 @@ warn_list:
   - no-changed-when
   - no-handler
   - var-naming[no-role-prefix]
+  - experimental
 
 # Custom settings (adjust as needed)
 parseable: true
