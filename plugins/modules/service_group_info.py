@@ -22,6 +22,7 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
+
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.service_group_info import (
     ServiceGroupInfoSpec,
 )
@@ -52,7 +53,7 @@ options:
         required: false
         type: str
     gather_subset:
-        description: 
+        description:
             - Determines which information to gather about service groups.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.

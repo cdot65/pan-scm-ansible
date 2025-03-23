@@ -10,7 +10,8 @@
 # Copyright (c) 2024 Calvin Remsburg (@cdot65)
 # All rights reserved.
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 try:
@@ -23,7 +24,7 @@ except ImportError:
 class AddressSpec:
     """
     Address API specification for Ansible modules interacting with SCM address objects.
-    
+
     This class provides a standard specification for address-related parameters
     used in SCM Ansible modules. It ensures consistent parameter validation
     across the collection.

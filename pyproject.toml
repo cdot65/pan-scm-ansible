@@ -12,9 +12,9 @@ documentation = "https://cdot65.github.io/pan-scm-ansible/"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
-ansible-core = "^2.18.0"
+ansible-core = ">=2.17.0"
 pan-scm-sdk = ">=0.3.22"
-ansible = "^11.3.0"
+ansible = ">=11.3.0"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.1.1"

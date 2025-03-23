@@ -22,6 +22,7 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
+
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
@@ -50,7 +51,7 @@ options:
         required: false
         type: str
     gather_subset:
-        description: 
+        description:
             - Determines which information to gather about anti-spyware profiles.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.

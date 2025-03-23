@@ -23,17 +23,17 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.anti_spyware_profile import (
+from pydantic import ValidationError
+
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.anti_spyware_profile import (  # noqa: F401
     AntiSpywareProfileSpec,
-)  # noqa: F401
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  # noqa: F401
     get_scm_client,
 )
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
     serialize_response,
 )
-from pydantic import ValidationError
-
 from scm.config.security.anti_spyware_profile import AntiSpywareProfile
 from scm.exceptions import NotFoundError
 from scm.models.security.anti_spyware_profiles import (
@@ -188,7 +188,7 @@ options:
                 description: Client secret for authentication.
                 required: true
                 type: str
-                no_log: true
+                no_log: True
             tsg_id:
                 description: Tenant Service Group ID.
                 required: true

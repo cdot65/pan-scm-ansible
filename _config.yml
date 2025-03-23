@@ -1,0 +1,27 @@
+---
+# Site settings
+title: Strata Cloud Manager Ansible Collection
+description: Ansible Collection for Palo Alto Networks Strata Cloud Manager.
+github_username: cdot65
+# Build settings
+markdown: kramdown
+theme: minima # or choose another Jekyll theme
+plugins:
+  - jekyll-feed
+
+include:
+  - docs
+  - README.md
+  - images/
+
+# Exclude from build
+exclude:
+  - pyproject.toml
+  - "*.py"
+  - "*.sh"
+  - "*.bat"
+  - "*.yml"
+  - "*.yaml"
+  - "*.toml"
+  - "LICENSE"
+  - "poetry.lock"

@@ -22,8 +22,11 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
+
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
+    serialize_response,
+)
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
@@ -47,7 +50,7 @@ options:
         required: false
         type: str
     gather_subset:
-        description: 
+        description:
             - Determines which information to gather about applications.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.
@@ -262,10 +265,7 @@ def main():
         argument_spec=dict(
             name=dict(type="str", required=False),
             gather_subset=dict(
-                type="list", 
-                elements="str", 
-                default=["config"],
-                choices=["all", "config"]
+                type="list", elements="str", default=["config"], choices=["all", "config"]
             ),
             folder=dict(type="str", required=False),
             snippet=dict(type="str", required=False),
@@ -288,60 +288,53 @@ def main():
             ),
         ),
         supports_check_mode=True,
-        mutually_exclusive=[
-            ["folder", "snippet"]
-        ],
+        mutually_exclusive=[["folder", "snippet"]],
         # Only require a container if we're not provided with a specific name
-        required_if=[
-            ["name", None, ["folder", "snippet"], True]
-        ],
+        required_if=[["name", None, ["folder", "snippet"], True]],
     )
 
     result = {}
 
     try:
         client = get_scm_client(module)
-        
+
         # Check if we're fetching a specific application by name
         if module.params.get("name"):
             name = module.params["name"]
             container_params = {}
-            
+
             # Get the container param
             for container in ["folder", "snippet"]:
                 if module.params.get(container):
                     container_params[container] = module.params[container]
-            
+
             try:
                 # Fetch a specific application
-                application = client.application.fetch(
-                    name=name,
-                    **container_params
-                )
-                
+                application = client.application.fetch(name=name, **container_params)
+
                 # Serialize response for Ansible output
                 app_data = serialize_response(application)
-                
+
                 # Ensure list fields are never None
                 if "ports" in app_data and app_data["ports"] is None:
                     app_data["ports"] = []
-                    
+
                 result["application"] = app_data
-                
+
             except ObjectNotPresentError:
                 module.fail_json(
                     msg=f"Application with name '{name}' not found in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
                 )
             except (MissingQueryParameterError, InvalidObjectError) as e:
                 module.fail_json(msg=str(e))
-                
+
         else:
             # List applications with filtering
             container_params, filter_params = build_filter_params(module.params)
-            
+
             try:
                 applications = client.application.list(**container_params, **filter_params)
-                
+
                 # Serialize response for Ansible output and ensure list fields are never None
                 serialized_apps = []
                 for app in applications:
@@ -350,16 +343,16 @@ def main():
                     if "ports" in app_data and app_data["ports"] is None:
                         app_data["ports"] = []
                     serialized_apps.append(app_data)
-                    
+
                 result["applications"] = serialized_apps
-                
+
             except MissingQueryParameterError as e:
                 module.fail_json(msg=f"Missing required parameter: {str(e)}")
             except InvalidObjectError as e:
                 module.fail_json(msg=f"Invalid filter parameters: {str(e)}")
-        
+
         module.exit_json(**result)
-        
+
     except Exception as e:
         module.fail_json(msg=to_text(e))
 

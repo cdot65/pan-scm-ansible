@@ -23,9 +23,12 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
+
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.application import ApplicationSpec
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
+    serialize_response,
+)
 from scm.exceptions import InvalidObjectError, NameNotUniqueError, ObjectNotPresentError
 from scm.models.objects import ApplicationUpdateModel
 
@@ -139,7 +142,7 @@ options:
                 description: Client secret for authentication.
                 required: true
                 type: str
-                no_log: true
+                no_log: True
             tsg_id:
                 description: Tenant Service Group ID.
                 required: true
@@ -270,66 +273,72 @@ def needs_update(existing, params):
                    object with any modifications from the params
     """
     changed = False
-    
+
     # Start with a fresh update model using all fields from existing object
     update_data = {
         "id": str(existing.id),  # Convert UUID to string for Pydantic
-        "name": existing.name
+        "name": existing.name,
     }
-    
+
     # Add the container field (folder or snippet)
     for container in ["folder", "snippet"]:
         container_value = getattr(existing, container, None)
         if container_value is not None:
             update_data[container] = container_value
-    
+
     # Add required application fields
     required_fields = ["category", "subcategory", "technology", "risk"]
     for field in required_fields:
         current_value = getattr(existing, field, None)
         update_data[field] = current_value
-        
+
         # If user provided a new value, use it and check if it's different
         if field in params and params[field] is not None:
             if current_value != params[field]:
                 update_data[field] = params[field]
                 changed = True
-                
+
     # Add optional text fields
     optional_fields = ["description"]
     for field in optional_fields:
         current_value = getattr(existing, field, None)
         update_data[field] = current_value
-        
+
         # If user provided a new value, use it and check if it's different
         if field in params and params[field] is not None:
             if current_value != params[field]:
                 update_data[field] = params[field]
                 changed = True
-    
+
     # Add optional list fields
     list_fields = ["ports"]
     for field in list_fields:
         current_value = getattr(existing, field, None)
         update_data[field] = current_value if current_value is not None else []
-        
+
         # If user provided a new value, use it and check if it's different
         if field in params and params[field] is not None:
             if current_value != params[field]:
                 update_data[field] = params[field]
                 changed = True
-    
+
     # Add boolean fields
     boolean_fields = [
-        "evasive", "pervasive", "excessive_bandwidth_use", "used_by_malware",
-        "transfers_files", "has_known_vulnerabilities", "tunnels_other_apps",
-        "prone_to_misuse", "no_certifications"
+        "evasive",
+        "pervasive",
+        "excessive_bandwidth_use",
+        "used_by_malware",
+        "transfers_files",
+        "has_known_vulnerabilities",
+        "tunnels_other_apps",
+        "prone_to_misuse",
+        "no_certifications",
     ]
-    
+
     for field in boolean_fields:
         current_value = getattr(existing, field, False)
         update_data[field] = current_value
-        
+
         # If user provided a new value, use it and check if it's different
         if field in params and params[field] is not None:
             if current_value != params[field]:
@@ -363,8 +372,7 @@ def get_existing_application(client, application_data):
 
         # Fetch the application using the appropriate container
         existing = client.application.fetch(
-            name=application_data["name"],
-            **{container_type: application_data[container_type]}
+            name=application_data["name"], **{container_type: application_data[container_type]}
         )
         return True, existing
     except (ObjectNotPresentError, InvalidObjectError):
@@ -385,21 +393,12 @@ def main():
     module = AnsibleModule(
         argument_spec=ApplicationSpec.spec(),
         supports_check_mode=True,
-        mutually_exclusive=[
-            ["folder", "snippet"]
-        ],
-        required_one_of=[
-            ["folder", "snippet"]
-        ],
-        required_if=[
-            ['state', 'present', ['category', 'subcategory', 'technology', 'risk']]
-        ]
+        mutually_exclusive=[["folder", "snippet"]],
+        required_one_of=[["folder", "snippet"]],
+        required_if=[["state", "present", ["category", "subcategory", "technology", "risk"]]],
     )
 
-    result = {
-        "changed": False,
-        "application": None
-    }
+    result = {"changed": False, "application": None}
 
     try:
         client = get_scm_client(module)
@@ -407,9 +406,7 @@ def main():
 
         # Validate container is specified
         if not is_container_specified(application_data):
-            module.fail_json(
-                msg="Exactly one of 'folder' or 'snippet' must be provided."
-            )
+            module.fail_json(msg="Exactly one of 'folder' or 'snippet' must be provided.")
 
         # Get existing application
         exists, existing_application = get_existing_application(client, application_data)
@@ -425,7 +422,9 @@ def main():
                         result["application"] = serialize_response(new_application)
                         result["changed"] = True
                     except NameNotUniqueError:
-                        module.fail_json(msg=f"An application with name '{application_data['name']}' already exists")
+                        module.fail_json(
+                            msg=f"An application with name '{application_data['name']}' already exists"
+                        )
                     except InvalidObjectError as e:
                         module.fail_json(msg=f"Invalid application data: {str(e)}")
                 else:
@@ -438,7 +437,7 @@ def main():
                     if not module.check_mode:
                         # Create update model with complete object data
                         update_model = ApplicationUpdateModel(**update_data)
-                        
+
                         # Perform update with complete object
                         updated_application = client.application.update(update_model)
                         result["application"] = serialize_response(updated_application)

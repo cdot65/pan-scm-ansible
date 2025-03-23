@@ -7,6 +7,12 @@
 This Ansible Collection allows you to manage Palo Alto Networks Strata Cloud Manager (SCM) using the `pan-scm-sdk`
 Python SDK.
 
+## Requirements
+
+- Python 3.11 or higher
+- Ansible Core 2.17 or higher
+- pan-scm-sdk 0.3.22 or higher
+
 ## Installation
 
 1. Clone the repository and install the required Python packages:

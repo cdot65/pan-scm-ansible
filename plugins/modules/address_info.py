@@ -22,8 +22,11 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
+
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
-from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import serialize_response
+from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
+    serialize_response,
+)
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
@@ -47,7 +50,7 @@ options:
         required: false
         type: str
     gather_subset:
-        description: 
+        description:
             - Determines which information to gather about addresses.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.
@@ -263,10 +266,7 @@ def main():
         argument_spec=dict(
             name=dict(type="str", required=False),
             gather_subset=dict(
-                type="list", 
-                elements="str", 
-                default=["config"],
-                choices=["all", "config"]
+                type="list", elements="str", default=["config"], choices=["all", "config"]
             ),
             folder=dict(type="str", required=False),
             snippet=dict(type="str", required=False),
@@ -276,10 +276,10 @@ def main():
             exclude_snippets=dict(type="list", elements="str", required=False),
             exclude_devices=dict(type="list", elements="str", required=False),
             types=dict(
-                type="list", 
-                elements="str", 
+                type="list",
+                elements="str",
                 required=False,
-                choices=["netmask", "range", "wildcard", "fqdn"]
+                choices=["netmask", "range", "wildcard", "fqdn"],
             ),
             values=dict(type="list", elements="str", required=False),
             tags=dict(type="list", elements="str", required=False),
@@ -295,64 +295,57 @@ def main():
             ),
         ),
         supports_check_mode=True,
-        mutually_exclusive=[
-            ["folder", "snippet", "device"]
-        ],
+        mutually_exclusive=[["folder", "snippet", "device"]],
         # Only require a container if we're not provided with a specific name
-        required_if=[
-            ["name", None, ["folder", "snippet", "device"], True]
-        ],
+        required_if=[["name", None, ["folder", "snippet", "device"], True]],
     )
 
     result = {}
 
     try:
         client = get_scm_client(module)
-        
+
         # Check if we're fetching a specific address by name
         if module.params.get("name"):
             name = module.params["name"]
             container_params = {}
-            
+
             # Get the container param
             for container in ["folder", "snippet", "device"]:
                 if module.params.get(container):
                     container_params[container] = module.params[container]
-            
+
             try:
                 # Fetch a specific address
-                address = client.address.fetch(
-                    name=name,
-                    **container_params
-                )
-                
+                address = client.address.fetch(name=name, **container_params)
+
                 # Serialize response for Ansible output
                 result["address"] = serialize_response(address)
-                
+
             except ObjectNotPresentError:
                 module.fail_json(
                     msg=f"Address with name '{name}' not found in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
                 )
             except (MissingQueryParameterError, InvalidObjectError) as e:
                 module.fail_json(msg=str(e))
-                
+
         else:
             # List addresses with filtering
             container_params, filter_params = build_filter_params(module.params)
-            
+
             try:
                 addresses = client.address.list(**container_params, **filter_params)
-                
+
                 # Serialize response for Ansible output
                 result["addresses"] = [serialize_response(addr) for addr in addresses]
-                
+
             except MissingQueryParameterError as e:
                 module.fail_json(msg=f"Missing required parameter: {str(e)}")
             except InvalidObjectError as e:
                 module.fail_json(msg=f"Invalid filter parameters: {str(e)}")
-        
+
         module.exit_json(**result)
-        
+
     except Exception as e:
         module.fail_json(msg=to_text(e))
 
