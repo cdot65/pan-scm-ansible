@@ -1,0 +1,266 @@
+---
+# Playbook for testing Strata Cloud Manager external dynamic lists info module
+# Usage: ansible-playbook tests/test_external_dynamic_lists_info.yaml --vault-password-file=tests/.vault_password
+
+- name: Test External Dynamic Lists Info Module in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_folder: "Texas"
+  tasks:
+    # First clean up any existing test objects if they exist
+    - name: Remove test external dynamic lists if they exist
+      cdot65.scm.external_dynamic_lists:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Test_EDL_IP"
+        - "Test_EDL_Domain"
+        - "Test_EDL_URL"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # ==========================================
+    # CREATE EDLs for info testing
+    # ==========================================
+    - name: Create IP-based external dynamic list
+      cdot65.scm.external_dynamic_lists:
+        provider: "{{ provider }}"
+        name: "Test_EDL_IP"
+        description: "Test IP list for info module testing"
+        folder: "{{ test_folder }}"
+        ip_list:
+          url: "https://threatfeeds.example.com/ips.txt"
+          exception_list: []
+          auth:
+            username: "testuser"
+            password: "testpass"
+        hourly: true
+        state: "present"
+      register: create_ip_result
+      tags:
+        - dev-test
+
+    - name: Create domain-based external dynamic list
+      cdot65.scm.external_dynamic_lists:
+        provider: "{{ provider }}"
+        name: "Test_EDL_Domain"
+        description: "Test domain list for info module testing"
+        folder: "{{ test_folder }}"
+        domain_list:
+          url: "https://threatfeeds.example.com/domains.txt"
+          exception_list: []
+          auth:
+            username: "testuser"
+            password: "testpass"
+          expand_domain: true
+        daily:
+          at: "03"
+        state: "present"
+      register: create_domain_result
+      tags:
+        - dev-test
+
+    - name: Create URL-based external dynamic list
+      cdot65.scm.external_dynamic_lists:
+        provider: "{{ provider }}"
+        name: "Test_EDL_URL"
+        description: "Test URL list for info module testing"
+        folder: "{{ test_folder }}"
+        url_list:
+          url: "https://threatfeeds.example.com/urls.txt"
+          exception_list: []
+          auth:
+            username: "testuser"
+            password: "testpass"
+        weekly:
+          day_of_week: "monday"
+          at: "12"
+        state: "present"
+      register: create_url_result
+      tags:
+        - dev-test
+
+    # Verify test objects creation
+    - name: Verify test EDLs creation
+      assert:
+        that:
+          - create_ip_result is changed
+          - create_domain_result is changed
+          - create_url_result is changed
+        fail_msg: "Failed to create test EDLs"
+        success_msg: "Successfully created test EDLs"
+      tags:
+        - dev-test
+
+    # ==========================================
+    # INFO queries
+    # ==========================================
+    # Get info about a specific EDL
+    - name: Get information about a specific IP-based EDL
+      cdot65.scm.external_dynamic_lists_info:
+        provider: "{{ provider }}"
+        name: "Test_EDL_IP"
+        folder: "{{ test_folder }}"
+      register: specific_edl_info
+      tags:
+        - dev-test
+
+    - name: Display specific EDL information
+      debug:
+        var: specific_edl_info
+        verbosity: 1
+
+    # Verify specific EDL query
+    - name: Verify specific EDL query
+      assert:
+        that:
+          - specific_edl_info.external_dynamic_list.name == "Test_EDL_IP"
+          - specific_edl_info.external_dynamic_list.description == "Test IP list for info module testing"
+          - specific_edl_info.external_dynamic_list.folder == test_folder
+        fail_msg: "Failed to retrieve specific EDL information"
+        success_msg: "Successfully retrieved specific EDL information"
+      tags:
+        - dev-test
+
+    # Test listing all EDLs in a folder
+    - name: List all external dynamic lists in the folder
+      cdot65.scm.external_dynamic_lists_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+      register: all_edls_info
+      tags:
+        - dev-test
+
+    - name: Display all EDLs information
+      debug:
+        var: all_edls_info
+        verbosity: 1
+
+    # Verify all EDLs listing
+    - name: Verify all EDLs listing
+      assert:
+        that:
+          - all_edls_info.external_dynamic_lists | length >= 3  # At least our test EDLs
+          - all_edls_info.external_dynamic_lists | selectattr('name', 'equalto', 'Test_EDL_IP') | list | length == 1
+          - all_edls_info.external_dynamic_lists | selectattr('name', 'equalto', 'Test_EDL_Domain') | list | length == 1
+          - all_edls_info.external_dynamic_lists | selectattr('name', 'equalto', 'Test_EDL_URL') | list | length == 1
+        fail_msg: "Failed to retrieve all EDLs information"
+        success_msg: "Successfully retrieved all EDLs information"
+      tags:
+        - dev-test
+
+    # Test filtering by type
+    - name: List IP-type external dynamic lists
+      cdot65.scm.external_dynamic_lists_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        types: ["ip"]
+      register: ip_type_result
+      tags:
+        - dev-test
+
+    - name: Display IP-type EDLs information
+      debug:
+        var: ip_type_result
+        verbosity: 1
+
+    # Verify type filtering
+    - name: Verify IP type filtering
+      assert:
+        that:
+          - ip_type_result.external_dynamic_lists | selectattr('name', 'equalto', 'Test_EDL_IP') | list | length == 1
+          - ip_type_result.external_dynamic_lists | selectattr('name', 'equalto', 'Test_EDL_Domain') | list | length == 0
+        fail_msg: "Failed to filter EDLs by IP type"
+        success_msg: "Successfully filtered EDLs by IP type"
+      tags:
+        - dev-test
+
+    - name: List domain-type external dynamic lists
+      cdot65.scm.external_dynamic_lists_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        types: ["domain"]
+      register: domain_type_result
+      tags:
+        - dev-test
+
+    - name: Display domain-type EDLs information
+      debug:
+        var: domain_type_result
+        verbosity: 1
+
+    # Verify domain type filtering
+    - name: Verify domain type filtering
+      assert:
+        that:
+          - domain_type_result.external_dynamic_lists | selectattr('name', 'equalto', 'Test_EDL_Domain') | list | length == 1
+          - domain_type_result.external_dynamic_lists | selectattr('name', 'equalto', 'Test_EDL_IP') | list | length == 0
+        fail_msg: "Failed to filter EDLs by domain type"
+        success_msg: "Successfully filtered EDLs by domain type"
+      tags:
+        - dev-test
+
+    # Test exact match option
+    - name: List EDLs with exact match option
+      cdot65.scm.external_dynamic_lists_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        exact_match: true
+      register: exact_match_result
+      tags:
+        - dev-test
+
+    - name: Display exact match results
+      debug:
+        var: exact_match_result
+        verbosity: 1
+
+    # Verify exact match filtering
+    - name: Verify exact match filtering
+      assert:
+        that:
+          - exact_match_result.external_dynamic_lists | selectattr('folder', 'equalto', test_folder) | list | length == exact_match_result.external_dynamic_lists | length
+        fail_msg: "Failed to apply exact match filtering"
+        success_msg: "Successfully applied exact match filtering"
+      tags:
+        - dev-test
+
+    # ==========================================
+    # CLEANUP
+    # ==========================================
+    # Clean up test data
+    - name: Remove test external dynamic lists
+      cdot65.scm.external_dynamic_lists:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      loop:
+        - "Test_EDL_IP"
+        - "Test_EDL_Domain"
+        - "Test_EDL_URL"
+      register: cleanup_result
+      tags:
+        - dev-cleanup
+
+    # Verify cleanup was successful
+    - name: Verify EDL cleanup
+      assert:
+        that:
+          - cleanup_result is succeeded
+        fail_msg: "Failed to clean up test EDLs"
+        success_msg: "Successfully cleaned up test EDLs"
+      tags:
+        - dev-test
