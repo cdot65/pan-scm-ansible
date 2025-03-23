@@ -51,7 +51,7 @@ options:
         required: false
         type: str
     gather_subset:
-        description: 
+        description:
             - Determines which information to gather about anti-spyware profiles.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.

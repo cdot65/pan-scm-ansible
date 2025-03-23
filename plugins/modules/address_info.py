@@ -50,7 +50,7 @@ options:
         required: false
         type: str
     gather_subset:
-        description: 
+        description:
             - Determines which information to gather about addresses.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.

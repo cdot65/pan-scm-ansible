@@ -51,7 +51,7 @@ options:
         required: false
         type: str
     gather_subset:
-        description: 
+        description:
             - Determines which information to gather about tags.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.
@@ -220,7 +220,7 @@ tags:
       - id: "123e4567-e89b-12d3-a456-426655440000"
         name: "Production"
         color: "Red"
-        comments: "Production environment tag" 
+        comments: "Production environment tag"
         folder: "Texas"
       - id: "234e5678-e89b-12d3-a456-426655440001"
         name: "Development"
