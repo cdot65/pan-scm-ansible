@@ -104,6 +104,8 @@ nav:
               - Application Group: collection/modules/application_group.md
               - Application Group Info: collection/modules/application_group_info.md
               - Dynamic User Group: collection/modules/dynamic_user_group.md
+              - External Dynamic Lists: collection/modules/external_dynamic_lists.md
+              - External Dynamic Lists Info: collection/modules/external_dynamic_lists_info.md
               - Service: collection/modules/service.md
               - Service Info: collection/modules/service_info.md
               - Service Group: collection/modules/service_group.md
