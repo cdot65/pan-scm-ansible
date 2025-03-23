@@ -1,25 +1,63 @@
-# Import errors for external dependencies - these are runtime requirements
-plugins/modules/address.py import-error
-plugins/modules/address_group.py import-error
-plugins/modules/address_group_info.py import-error
-plugins/modules/address_info.py import-error
-plugins/modules/anti_spyware_profile.py import-error
-plugins/modules/anti_spyware_profile_info.py import-error
-plugins/modules/application.py import-error
-plugins/modules/application_group.py import-error
-plugins/modules/application_group_info.py import-error
-plugins/modules/application_info.py import-error
-plugins/modules/service.py import-error
-plugins/modules/service_group.py import-error
-plugins/modules/service_group_info.py import-error
-plugins/modules/service_info.py import-error
-plugins/modules/tag.py import-error
-plugins/modules/tag_info.py import-error
+# This file contains a list of sanity test errors that should be ignored only for Ansible 2.18
 
-# Module util import errors
-plugins/module_utils/authenticate.py import-error
+# Specific module errors due to external dependencies - these are runtime requirements
+plugins/modules/address.py validate-modules:import-error
+plugins/modules/address_group.py validate-modules:import-error
+plugins/modules/address_group_info.py validate-modules:import-error
+plugins/modules/address_info.py validate-modules:import-error
+plugins/modules/anti_spyware_profile.py validate-modules:import-error
+plugins/modules/anti_spyware_profile_info.py validate-modules:import-error
+plugins/modules/application.py validate-modules:import-error
+plugins/modules/application_group.py validate-modules:import-error
+plugins/modules/application_group_info.py validate-modules:import-error
+plugins/modules/application_info.py validate-modules:import-error
+plugins/modules/service.py validate-modules:import-error
+plugins/modules/service_group.py validate-modules:import-error
+plugins/modules/service_group_info.py validate-modules:import-error
+plugins/modules/service_info.py validate-modules:import-error
+plugins/modules/tag.py validate-modules:import-error
+plugins/modules/tag_info.py validate-modules:import-error
 
-# Documentation format - these will be addressed in a future update
+# Imports for module utils - these are runtime requirements
+plugins/module_utils/authenticate.py import:import-error
+
+# Import order - these will be addressed in a future update
+plugins/modules/address.py validate-modules:import-before-documentation
+plugins/modules/address_group.py validate-modules:import-before-documentation
+plugins/modules/address_group_info.py validate-modules:import-before-documentation
+plugins/modules/address_info.py validate-modules:import-before-documentation
+plugins/modules/anti_spyware_profile.py validate-modules:import-before-documentation
+plugins/modules/anti_spyware_profile_info.py validate-modules:import-before-documentation
+plugins/modules/application.py validate-modules:import-before-documentation
+plugins/modules/application_group.py validate-modules:import-before-documentation
+plugins/modules/application_group_info.py validate-modules:import-before-documentation
+plugins/modules/application_info.py validate-modules:import-before-documentation
+plugins/modules/service.py validate-modules:import-before-documentation
+plugins/modules/service_group.py validate-modules:import-before-documentation
+plugins/modules/service_group_info.py validate-modules:import-before-documentation
+plugins/modules/service_info.py validate-modules:import-before-documentation
+plugins/modules/tag.py validate-modules:import-before-documentation
+plugins/modules/tag_info.py validate-modules:import-before-documentation
+
+# License headers - these will be addressed in a future update
+plugins/modules/address.py validate-modules:missing-gplv3-license
+plugins/modules/address_group.py validate-modules:missing-gplv3-license
+plugins/modules/address_group_info.py validate-modules:missing-gplv3-license
+plugins/modules/address_info.py validate-modules:missing-gplv3-license
+plugins/modules/anti_spyware_profile.py validate-modules:missing-gplv3-license
+plugins/modules/anti_spyware_profile_info.py validate-modules:missing-gplv3-license
+plugins/modules/application.py validate-modules:missing-gplv3-license
+plugins/modules/application_group.py validate-modules:missing-gplv3-license
+plugins/modules/application_group_info.py validate-modules:missing-gplv3-license
+plugins/modules/application_info.py validate-modules:missing-gplv3-license
+plugins/modules/service.py validate-modules:missing-gplv3-license
+plugins/modules/service_group.py validate-modules:missing-gplv3-license
+plugins/modules/service_group_info.py validate-modules:missing-gplv3-license
+plugins/modules/service_info.py validate-modules:missing-gplv3-license
+plugins/modules/tag.py validate-modules:missing-gplv3-license
+plugins/modules/tag_info.py validate-modules:missing-gplv3-license
+
+# Documentation format issues - future update
 plugins/modules/anti_spyware_profile.py validate-modules:invalid-documentation
 plugins/modules/application.py validate-modules:invalid-documentation
 plugins/modules/application_group.py validate-modules:invalid-documentation
@@ -27,87 +65,30 @@ plugins/modules/service.py validate-modules:invalid-documentation
 plugins/modules/service_group.py validate-modules:invalid-documentation
 plugins/modules/tag.py validate-modules:invalid-documentation
 
-# Import order - these will be addressed in a future update
-plugins/modules/address.py import-before-documentation
-plugins/modules/address_group.py import-before-documentation
-plugins/modules/address_group_info.py import-before-documentation
-plugins/modules/address_info.py import-before-documentation
-plugins/modules/anti_spyware_profile.py import-before-documentation
-plugins/modules/anti_spyware_profile_info.py import-before-documentation
-plugins/modules/application.py import-before-documentation
-plugins/modules/application_group.py import-before-documentation
-plugins/modules/application_group_info.py import-before-documentation
-plugins/modules/application_info.py import-before-documentation
-plugins/modules/service.py import-before-documentation
-plugins/modules/service_group.py import-before-documentation
-plugins/modules/service_group_info.py import-before-documentation
-plugins/modules/service_info.py import-before-documentation
-plugins/modules/tag.py import-before-documentation
-plugins/modules/tag_info.py import-before-documentation
+# Ignore PEP8 trailing whitespace issues
+plugins/modules/address_group_info.py pep8:W291
+plugins/modules/address_info.py pep8:W291
+plugins/modules/anti_spyware_profile_info.py pep8:W291
+plugins/modules/application_group_info.py pep8:W291
+plugins/modules/application_info.py pep8:W291
+plugins/modules/service_group_info.py pep8:W291
+plugins/modules/service_info.py pep8:W291
+plugins/modules/tag_info.py pep8:W291
 
-# License headers - these will be addressed in a future update
-plugins/modules/address.py missing-gplv3-license
-plugins/modules/address_group.py missing-gplv3-license
-plugins/modules/address_group_info.py missing-gplv3-license
-plugins/modules/address_info.py missing-gplv3-license
-plugins/modules/anti_spyware_profile.py missing-gplv3-license
-plugins/modules/anti_spyware_profile_info.py missing-gplv3-license
-plugins/modules/application.py missing-gplv3-license
-plugins/modules/application_group.py missing-gplv3-license
-plugins/modules/application_group_info.py missing-gplv3-license
-plugins/modules/application_info.py missing-gplv3-license
-plugins/modules/service.py missing-gplv3-license
-plugins/modules/service_group.py missing-gplv3-license
-plugins/modules/service_group_info.py missing-gplv3-license
-plugins/modules/service_info.py missing-gplv3-license
-plugins/modules/tag.py missing-gplv3-license
-plugins/modules/tag_info.py missing-gplv3-license
+# Skip doc tests
+ansible-doc:*
 
-# Ignore shellcheck issues in dev container scripts
-.devcontainer/library-scripts/common-debian.sh shellcheck
-check_installation.sh shellcheck
+# Ignore shellcheck issues for now
+.devcontainer/library-scripts/common-debian.sh shellcheck:SC2046
+.devcontainer/library-scripts/common-debian.sh shellcheck:SC2068
+.devcontainer/library-scripts/common-debian.sh shellcheck:SC2086
+.devcontainer/library-scripts/common-debian.sh shellcheck:SC2012
+.devcontainer/library-scripts/common-debian.sh shellcheck:SC2236
+.devcontainer/library-scripts/common-debian.sh shellcheck:SC2034
+.devcontainer/library-scripts/common-debian.sh shellcheck:SC2154
+
+check_installation.sh shellcheck:SC2001
+check_installation.sh shellcheck:SC2086
+check_installation.sh shellcheck:SC2010
+check_installation.sh shellcheck:SC2181
 check_installation.sh shebang
-
-# Ignore style issues - these will be addressed with a formatting tool
-plugins/module_utils/api_spec/address.py pep8:W293
-plugins/module_utils/api_spec/address.py pep8:W292
-plugins/module_utils/api_spec/anti_spyware_profile.py pep8:W292
-plugins/module_utils/api_spec/anti_spyware_profile_info.py pep8:W292
-plugins/module_utils/authenticate.py pep8:W291
-plugins/module_utils/authenticate.py pep8:W292
-plugins/module_utils/serialize_response.py pep8:W293
-plugins/modules/address.py pep8
-plugins/modules/address_group.py pep8
-plugins/modules/address_group_info.py pep8
-plugins/modules/address_info.py pep8
-plugins/modules/anti_spyware_profile_info.py pep8
-plugins/modules/application.py pep8
-plugins/modules/application_group_info.py pep8
-plugins/modules/application_info.py pep8
-plugins/modules/service_group_info.py pep8
-plugins/modules/service_info.py pep8
-plugins/modules/tag_info.py pep8
-
-# Ignore smart quotes issue for now - would be fixed with a tool
-LICENSE.md no-smart-quotes
-
-# Ignore pylint issues - these will be addressed with a formatting tool
-plugins/module_utils/api_spec/address.py pylint:unused-import
-plugins/module_utils/api_spec/address.py pylint:missing-final-newline
-plugins/module_utils/api_spec/anti_spyware_profile.py pylint:missing-final-newline
-plugins/module_utils/api_spec/anti_spyware_profile_info.py pylint:missing-final-newline
-plugins/module_utils/authenticate.py pylint:trailing-whitespace
-plugins/module_utils/authenticate.py pylint:missing-final-newline
-plugins/module_utils/serialize_response.py pylint:trailing-whitespace
-plugins/modules/address.py pylint:trailing-whitespace
-plugins/modules/address_group.py pylint:trailing-whitespace
-plugins/modules/address_group_info.py pylint:trailing-whitespace
-plugins/modules/address_group_info.py pylint:missing-final-newline
-plugins/modules/address_info.py pylint:trailing-whitespace
-plugins/modules/application.py pylint:trailing-whitespace
-plugins/modules/application_group_info.py pylint:trailing-whitespace
-plugins/modules/application_group_info.py pylint:missing-final-newline
-plugins/modules/application_info.py pylint:trailing-whitespace
-plugins/modules/application_info.py pylint:missing-final-newline
-plugins/modules/service_group.py pylint:unused-import
-plugins/modules/tag.py pylint:unused-import
