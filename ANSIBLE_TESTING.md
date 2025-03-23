@@ -1,136 +1,89 @@
-# Ansible Testing Compatibility Guide
+# Ansible Testing in pan-scm-ansible Collection
 
-## Overview
-
-This guide explains how to make the Palo Alto Networks Strata Cloud Manager Ansible Collection (`cdot65.scm`) compatible with Ansible's sanity tests.
+This document outlines the testing approach and compatibility requirements for the `cdot65.scm` Ansible collection.
 
 ## Version Requirements
 
-This collection is specifically designed for:
-- Python 3.11 or higher
-- Ansible Core 2.17 or higher
+This collection is designed for:
+- **Python 3.11+**
+- **Ansible 2.17+**
 
-While we focus on these modern versions, the included fix script helps ensure compatibility with Ansible's test framework, which may test against older Python versions.
+These requirements are specified in:
+- `galaxy.yml`: Collection metadata
+- `meta/runtime.yml`: Runtime requirements for Ansible
+- `.github/workflows/ansible-test.yml`: CI pipeline configuration
 
-## Issues and Solutions
+## Testing Approach
 
-### 1. Python Compatibility Issues
+### Sanity Tests
 
-The collection is designed for Python 3.11+, but Ansible's test framework requires compatibility with older Python versions (2.7, 3.5-3.11).
+The collection uses sanity tests to verify code quality and adherence to Ansible standards. We use ignore files for specific issues that either:
+1. Cannot be resolved due to runtime dependencies
+2. Will be addressed in future updates
 
-**Issues:**
-- F-strings (not supported in Python 2.7 or 3.5)
-- Type annotations (not supported in Python 2.7)
-- Python 3.6+ specific imports
+The ignore files are:
+- `tests/sanity/ignore-2.17.txt`: For Ansible 2.17 compatibility
+- `tests/sanity/ignore-2.18.txt`: For Ansible 2.18+ compatibility
 
-**Solutions:**
-- Replace f-strings with `.format()` method
-- Make type annotations conditional with try/except blocks
-- Add fallback definitions for older Python versions
+### Categories of Ignored Issues
 
-### 2. Missing Boilerplate
+The following issue types are present in the ignore files:
 
-Ansible modules require specific imports and declarations.
+#### Import Errors for External Dependencies
+These are runtime requirements that cannot be satisfied in the test environment:
+- `pan-scm-sdk`: The primary SDK for interacting with Strata Cloud Manager
+- `pydantic`: Used for validation
 
-**Issues:**
-- Missing `from __future__ import (absolute_import, division, print_function)`
-- Missing `__metaclass__ = type`
-- Missing GPL v3 license headers
+#### Documentation Format Issues
+Issues like:
+- Invalid `no_log` values (fixed for most but not all modules)
+- Documentation structure
 
-**Solutions:**
-- Add the required boilerplate to all Python files
-- Add GPL v3 license headers to all modules
+#### Import Order Issues
+All modules currently have imports before documentation, which will be fixed in a future update.
 
-### 3. External Dependencies
+#### License Headers
+All modules need GPL v3 license headers, which will be added in a future update.
 
-The test environment doesn't have access to required external packages.
-
-**Issues:**
-- Missing `scm` package (Palo Alto Networks SCM SDK)
-- Missing `pydantic` package
-- Import errors in test environment
-
-**Solutions:**
-- Add conditional imports with try/except
-- Add dependency checks in modules
-- Use clear error messages for missing dependencies
-
-### 4. Documentation Structure
-
-Ansible requires specific documentation structure.
-
-**Issues:**
-- Imports before documentation in modules
-- Invalid documentation format in some modules
-
-**Solutions:**
-- Ensure documentation variables come before imports
-- Validate and fix documentation structure
-
-### 5. Code Style Issues
-
-Various style and formatting issues flagged by linters.
-
-**Issues:**
+#### Style Issues
+Various PEP8 and pylint issues:
 - Trailing whitespace
 - Missing final newlines
-- Smart quotes in LICENSE.md
+- Unused imports
 
-**Solutions:**
-- Automatically fix whitespace and newline issues
-- Replace smart quotes with ASCII quotes
+### Running Tests Locally
 
-## Using the Fix Script
-
-We've provided a script to address these issues automatically:
+To test the collection locally:
 
 ```bash
-# Run the fix script
-./fix_ansible_tests.sh
+# Install dependencies
+poetry install
+
+# Run linting
+poetry run ruff check plugins tests
+
+# Format code
+poetry run ruff format plugins tests
+
+# Run Ansible tests
+ansible-test sanity --docker default --python 3.11 --ansible 2.17 --use-ignore-file
 ```
 
-This script:
-1. Adds necessary imports and boilerplate
-2. Fixes f-strings and type annotations
-3. Adds conditional imports for dependencies
-4. Fixes license headers and formatting issues
-5. Updates runtime.yml for older Ansible versions
-6. Fixes shebang and quote issues
+## Future Work
 
-## Remaining Manual Steps
+The following improvements are planned:
 
-Some issues may require manual intervention:
+1. **Import Order Fix**: Move documentation variables before imports
+2. **GPL v3 License Headers**: Add to all module files
+3. **Style Formatting**: Fix whitespace, newlines, and PEP8 issues
+4. **Documentation Format**: Fix all documentation validation issues
+5. **Smart Quotes**: Replace Unicode smart quotes with ASCII quotes
+6. **Shebang Issues**: Fix incorrect shebangs in shell scripts
+7. **Unused Imports**: Clean up unused imports
 
-1. **Import Order**:
-   If imports appear before documentation variables, you'll need to manually reorder the file structure.
+## Contributing
 
-2. **Documentation Validation**:
-   Some documentation format issues may require manual fixes:
-   - Fix `DOCUMENTATION.options.provider.suboptions.client_secret.no_log` issues
-
-## Development Guidelines
-
-When developing new modules:
-
-1. **Python Version Independence**:
-   - Avoid f-strings and use `.format()` instead
-   - Handle type annotations with try/except blocks
-   - Don't rely on Python 3.6+ only features
-
-2. **Documentation First**:
-   - Always put documentation variables (`DOCUMENTATION`, `EXAMPLES`, `RETURN`) before imports
-
-3. **Dependency Handling**:
-   - Always wrap external imports in try/except blocks
-   - Add appropriate dependency checks
-
-4. **Testing Before Submitting**:
-   - Run `ansible-test sanity` to verify changes
-
-## Library Requirements
-
-The collection requires:
-- pan-scm-sdk (Palo Alto Networks Strata Cloud Manager SDK)
-- pydantic (for validation in some modules)
-
-These are runtime dependencies and not required for passing tests, as we've added appropriate checks.
+When contributing to this collection, please ensure your changes:
+1. Are compatible with Python 3.11+ and Ansible 2.17+
+2. Pass the sanity tests with the ignore files
+3. Follow the established code style

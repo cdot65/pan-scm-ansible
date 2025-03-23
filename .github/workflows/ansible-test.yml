@@ -51,7 +51,7 @@ jobs:
       - name: Run sanity tests
         run: |
           cd ansible_collections/cdot65/scm
-          ansible-test sanity --docker default --python 3.11 --ansible 2.17 --use-ignore-file --skip-test ansible-doc
+          ansible-test sanity --docker default --python 3.11 --skip-test ansible-doc
 
   units:
     name: Unit Tests (Ansible Core 2.17+)
