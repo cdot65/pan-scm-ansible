@@ -1,5 +1,5 @@
 ---
-- name: Test Anti-Spyware Profile Module
+- name: Test Anti-Spyware Profile Module in Strata Cloud Manager
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -11,15 +11,44 @@
       tsg_id: "{{ tsg_id }}"
       log_level: "INFO"
   tasks:
-    - name: Clear existing profiles (if exist)
+    # First clean up any existing test profiles if they exist
+    - name: Remove test anti-spyware profiles if they exist
       cdot65.scm.anti_spyware_profile:
         provider: "{{ provider }}"
-        name: "Test-Spyware-Profile"
+        name: "{{ item }}"
+        rules: []
         folder: "Texas"
         state: "absent"
       ignore_errors: true
+      loop:
+        - "Test-Spyware-Profile"
+        - "Test-Secondary-Profile"
+      tags:
+        - dev-cleanup
+        - dev-test
+        
+    # Create required tags
+    - name: Create tags needed for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        color: "{{ item.color }}"
+        comments: "Test tag for anti-spyware profile module testing"
+        folder: "Texas"
+        state: "present"
+      ignore_errors: true
+      loop:
+        - { name: "dev-ansible", color: "Blue" }
+        - { name: "dev-automation", color: "Green" }
+        - { name: "dev-test", color: "Orange" }
+        - { name: "dev-cicd", color: "Red" }
+      tags:
+        - dev-ansible
+        - dev-automation
 
-    # Set the action as a string enum value
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
     - name: Create basic anti-spyware profile
       cdot65.scm.anti_spyware_profile:
         provider: "{{ provider }}"
@@ -37,6 +66,8 @@
         folder: "Texas"
         state: "present"
       register: create_result
+      tags:
+        - dev-test
 
     - name: Display create results
       debug:
@@ -54,8 +85,43 @@
           - create_result.anti_spyware_profile.cloud_inline_analysis == false
           - create_result.anti_spyware_profile.rules | length == 1
           - create_result.anti_spyware_profile.rules[0].name == "Critical-Threat-Rule"
+        fail_msg: "Failed to create anti-spyware profile"
+        success_msg: "Successfully created anti-spyware profile"
+      tags:
+        - dev-cicd
 
-    - name: Test idempotency (run same create again)
+    # Create another profile for testing
+    - name: Create secondary anti-spyware profile
+      cdot65.scm.anti_spyware_profile:
+        provider: "{{ provider }}"
+        name: "Test-Secondary-Profile"
+        description: "Secondary profile for comprehensive testing"
+        cloud_inline_analysis: true
+        inline_exception_edl_url: []
+        rules:
+          - name: "High-Severity-Rule"
+            severity: ["high"]
+            category: "command-and-control"
+            packet_capture: "disable"
+            threat_name: "test-high"
+            action: "block-ip"
+        folder: "Texas"
+        state: "present"
+      register: create_secondary_result
+      tags:
+        - dev-automation
+
+    - name: Verify secondary profile creation
+      assert:
+        that:
+          - create_secondary_result.changed == true
+          - create_secondary_result.anti_spyware_profile.name == "Test-Secondary-Profile"
+          - create_secondary_result.anti_spyware_profile.rules | length == 1
+        fail_msg: "Failed to create secondary anti-spyware profile"
+        success_msg: "Successfully created secondary anti-spyware profile"
+
+    # Test idempotency
+    - name: Test idempotency for anti-spyware profile (re-run same create)
       cdot65.scm.anti_spyware_profile:
         provider: "{{ provider }}"
         name: "Test-Spyware-Profile"
@@ -78,7 +144,14 @@
         that:
           - idempotency_result.changed is defined
           - idempotency_result.changed == false
+        fail_msg: "Anti-spyware profile module failed idempotency test"
+        success_msg: "Anti-spyware profile module passed idempotency test"
+      tags:
+        - dev-cicd
 
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
     - name: Update anti-spyware profile (add rule and change settings)
       cdot65.scm.anti_spyware_profile:
         provider: "{{ provider }}"
@@ -102,6 +175,8 @@
         folder: "Texas"
         state: "present"
       register: update_result
+      tags:
+        - dev-ansible
 
     - name: Display update results
       debug:
@@ -119,47 +194,15 @@
           - update_result.anti_spyware_profile.cloud_inline_analysis == true
           - update_result.anti_spyware_profile.rules | length == 2
           - update_result.anti_spyware_profile.rules[0].packet_capture == "extended-capture"
+        fail_msg: "Failed to update anti-spyware profile"
+        success_msg: "Successfully updated anti-spyware profile"
 
-    - name: Update a single field
+    # Add threat exceptions
+    - name: Add threat exceptions to profile
       cdot65.scm.anti_spyware_profile:
         provider: "{{ provider }}"
         name: "Test-Spyware-Profile"
-        description: "Changed just the description"
-        folder: "Texas"
-        inline_exception_edl_url: []
-        rules:
-          - name: "Critical-Threat-Rule"
-            severity: ["critical"]
-            category: "spyware"
-            packet_capture: "extended-capture"
-            threat_name: "test-threat"
-            action: "reset-both"
-          - name: "High-Threat-Rule"
-            severity: ["high"]
-            category: "command-and-control"
-            packet_capture: "single-packet"
-            threat_name: "test-high-threat"
-            action: "alert"
-        state: "present"
-      register: partial_update_result
-
-    - name: Display partial update results
-      debug:
-        var: partial_update_result
-        verbosity: 1
-
-    - name: Verify partial update operation
-      assert:
-        that:
-          - partial_update_result.changed is defined
-          - partial_update_result.changed == true
-          - partial_update_result.anti_spyware_profile.description == "Changed just the description"
-
-    - name: Add threat exceptions
-      cdot65.scm.anti_spyware_profile:
-        provider: "{{ provider }}"
-        name: "Test-Spyware-Profile"
-        description: "Changed just the description"
+        description: "Updated anti-spyware profile"
         folder: "Texas"
         inline_exception_edl_url: []
         rules:
@@ -182,6 +225,8 @@
             action: "allow"
         state: "present"
       register: exception_update_result
+      tags:
+        - dev-test
 
     - name: Display threat exception results
       debug:
@@ -196,21 +241,38 @@
           - exception_update_result.anti_spyware_profile.threat_exception is defined
           - exception_update_result.anti_spyware_profile.threat_exception | length == 1
           - exception_update_result.anti_spyware_profile.threat_exception[0].name == "exception-1"
+        fail_msg: "Failed to add threat exceptions"
+        success_msg: "Successfully added threat exceptions"
 
-    - name: Delete anti-spyware profile
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Delete anti-spyware profiles
       cdot65.scm.anti_spyware_profile:
         provider: "{{ provider }}"
-        name: "Test-Spyware-Profile"
+        name: "{{ item }}"
         folder: "Texas"
         state: "absent"
+      loop:
+        - "Test-Spyware-Profile"
+        - "Test-Secondary-Profile"
       register: delete_result
+      tags:
+        - dev-automation
 
     - name: Verify delete operation
       assert:
         that:
-          - delete_result.changed is defined
-          - delete_result.changed == true
+          - delete_result.results[0].changed is defined
+          - delete_result.results[0].changed == true
+          - delete_result.results[1].changed is defined
+          - delete_result.results[1].changed == true
+        fail_msg: "Failed to delete anti-spyware profiles"
+        success_msg: "Successfully deleted anti-spyware profiles"
+      tags:
+        - dev-cicd
 
+    # Test delete idempotency
     - name: Test delete idempotency
       cdot65.scm.anti_spyware_profile:
         provider: "{{ provider }}"
@@ -224,3 +286,21 @@
         that:
           - delete_idempotency_result.changed is defined
           - delete_idempotency_result.changed == false
+        fail_msg: "Anti-spyware profile deletion idempotency test failed"
+        success_msg: "Anti-spyware profile deletion idempotency test passed"
+
+    # Clean up test tags
+    - name: Remove tags created for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+      tags:
+        - dev-cleanup

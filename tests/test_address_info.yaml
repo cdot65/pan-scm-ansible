@@ -1,5 +1,5 @@
 ---
-- name: Test Address Info Module
+- name: Test Address Info Module in Strata Cloud Manager
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -11,7 +11,45 @@
       tsg_id: "{{ tsg_id }}"
       log_level: "INFO"
   tasks:
-    # First create some test data using the address module
+    # First clean up any existing test address objects if they exist
+    - name: Remove test address objects if they exist
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Test_Address_Netmask"
+        - "Test_Address_Range"
+        - "Test_Address_FQDN"
+        - "Test_Address_IP"
+      tags:
+        - dev-cleanup
+        - dev-test
+        
+    # Create required tags
+    - name: Create tags needed for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        color: "{{ item.color }}"
+        comments: "Test tag for address info module testing"
+        folder: "Texas"
+        state: "present"
+      ignore_errors: true
+      loop:
+        - { name: "dev-ansible", color: "Blue" }
+        - { name: "dev-automation", color: "Green" }
+        - { name: "dev-test", color: "Orange" }
+        - { name: "dev-cicd", color: "Red" }
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    # ==========================================
+    # CREATE address objects for info testing
+    # ==========================================
     - name: Create netmask address object
       cdot65.scm.address:
         provider: "{{ provider }}"
@@ -19,7 +57,11 @@
         description: "Test netmask address"
         ip_netmask: "192.168.1.0/24"
         folder: "Texas"
+        tag: ["dev-ansible", "dev-test"]
         state: "present"
+      register: create_netmask_result
+      tags:
+        - dev-test
       
     - name: Create range address object
       cdot65.scm.address:
@@ -28,7 +70,11 @@
         description: "Test range address"
         ip_range: "192.168.2.1-192.168.2.254"
         folder: "Texas"
+        tag: ["dev-automation", "dev-cicd"]
         state: "present"
+      register: create_range_result
+      tags:
+        - dev-automation
         
     - name: Create FQDN address object
       cdot65.scm.address:
@@ -37,19 +83,67 @@
         description: "Test FQDN address"
         fqdn: "example.com"
         folder: "Texas"
+        tag: ["dev-test", "dev-cicd"]
         state: "present"
+      register: create_fqdn_result
+      tags:
+        - dev-cicd
       
-    # Test retrieving a specific address
+    - name: Create IP address object
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "Test_Address_IP"
+        description: "Test IP address"
+        ip_netmask: "10.0.0.1"
+        folder: "Texas"
+        tag: ["dev-ansible"]
+        state: "present"
+      register: create_ip_result
+      tags:
+        - dev-ansible
+
+    # Verify address objects were created
+    - name: Verify address objects creation
+      assert:
+        that:
+          - create_netmask_result is changed
+          - create_range_result is changed
+          - create_fqdn_result is changed
+          - create_ip_result is changed
+        fail_msg: "Failed to create test address objects"
+        success_msg: "Successfully created test address objects"
+      
+    # ==========================================
+    # INFO queries
+    # ==========================================
+    # Get info about a specific address
     - name: Get information about a specific address
       cdot65.scm.address_info:
         provider: "{{ provider }}"
         name: "Test_Address_Netmask"
         folder: "Texas"
       register: specific_address_info
+      tags:
+        - dev-test
       
     - name: Display specific address information
       debug:
         var: specific_address_info
+        verbosity: 1
+      
+    # Verify specific address query
+    - name: Verify specific address query
+      assert:
+        that:
+          - specific_address_info.address.name == "Test_Address_Netmask"
+          - specific_address_info.address.description == "Test netmask address"
+          - specific_address_info.address.ip_netmask == "192.168.1.0/24"
+          - '"dev-ansible" in specific_address_info.address.tag'
+          - '"dev-test" in specific_address_info.address.tag'
+        fail_msg: "Failed to retrieve specific address information"
+        success_msg: "Successfully retrieved specific address information"
+      tags:
+        - dev-cicd
       
     # Test listing all addresses in a folder
     - name: List all address objects in the folder
@@ -57,11 +151,57 @@
         provider: "{{ provider }}"
         folder: "Texas"
       register: all_addresses_info
+      tags:
+        - dev-automation
     
     - name: Display all addresses information
       debug:
         var: all_addresses_info
+        verbosity: 1
       
+    # Verify all addresses listing
+    - name: Verify all addresses listing
+      assert:
+        that:
+          - all_addresses_info.addresses | length >= 4  # At least our test addresses
+          - all_addresses_info.addresses | selectattr('name', 'equalto', 'Test_Address_Netmask') | list | length == 1
+          - all_addresses_info.addresses | selectattr('name', 'equalto', 'Test_Address_Range') | list | length == 1
+          - all_addresses_info.addresses | selectattr('name', 'equalto', 'Test_Address_FQDN') | list | length == 1
+          - all_addresses_info.addresses | selectattr('name', 'equalto', 'Test_Address_IP') | list | length == 1
+        fail_msg: "Failed to retrieve all address information"
+        success_msg: "Successfully retrieved all address information"
+      tags:
+        - dev-ansible
+
+    # Test filtering by tag
+    - name: List addresses with specific tag
+      cdot65.scm.address_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        tags: ["dev-cicd"]
+      register: tagged_addresses_info
+      tags:
+        - dev-cicd
+    
+    - name: Display tagged addresses information
+      debug:
+        var: tagged_addresses_info
+        verbosity: 1
+      
+    # Verify tag filtering
+    - name: Verify tag filtering
+      assert:
+        that:
+          - tagged_addresses_info.addresses | length >= 2  # Range and FQDN objects
+          - tagged_addresses_info.addresses | selectattr('name', 'equalto', 'Test_Address_Range') | list | length == 1
+          - tagged_addresses_info.addresses | selectattr('name', 'equalto', 'Test_Address_FQDN') | list | length == 1
+          - tagged_addresses_info.addresses | selectattr('name', 'equalto', 'Test_Address_IP') | list | length == 0
+        fail_msg: "Failed to filter addresses by tag"
+        success_msg: "Successfully filtered addresses by tag"
+      
+    # ==========================================
+    # CLEANUP
+    # ==========================================
     # Clean up test data
     - name: Remove test address objects
       cdot65.scm.address:
@@ -73,3 +213,31 @@
         - "Test_Address_Netmask"
         - "Test_Address_Range"
         - "Test_Address_FQDN"
+        - "Test_Address_IP"
+      register: cleanup_result
+      tags:
+        - dev-cleanup
+    
+    # Verify cleanup was successful
+    - name: Verify address cleanup
+      assert:
+        that:
+          - cleanup_result is succeeded
+        fail_msg: "Failed to clean up test address objects"
+        success_msg: "Successfully cleaned up test address objects"
+
+    # Clean up test tags
+    - name: Remove tags created for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+      tags:
+        - dev-cleanup

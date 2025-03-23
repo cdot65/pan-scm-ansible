@@ -1,5 +1,5 @@
 ---
-- name: Test Application Info Module
+- name: Test Application Info Module in Strata Cloud Manager
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -11,7 +11,44 @@
       tsg_id: "{{ tsg_id }}"
       log_level: "INFO"
   tasks:
-    # Create test objects
+    # First clean up any existing test applications if they exist
+    - name: Remove test applications if they exist
+      cdot65.scm.application:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "test-app-info"
+        - "test-high-risk-app"
+        - "test-collaboration-app"
+      tags:
+        - dev-cleanup
+        - dev-test
+        
+    # Create required tags
+    - name: Create tags needed for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        color: "{{ item.color }}"
+        comments: "Test tag for application info module testing"
+        folder: "Texas"
+        state: "present"
+      ignore_errors: true
+      loop:
+        - { name: "dev-ansible", color: "Blue" }
+        - { name: "dev-automation", color: "Green" }
+        - { name: "dev-test", color: "Orange" }
+        - { name: "dev-cicd", color: "Red" }
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    # ==========================================
+    # CREATE test applications for info testing
+    # ==========================================
     - name: Create a custom application for testing
       cdot65.scm.application:
         provider: "{{ provider }}"
@@ -26,6 +63,9 @@
         folder: "Texas"
         transfers_files: true
         state: "present"
+      register: app_create_result
+      tags:
+        - dev-test
 
     - name: Create a high-risk application for testing
       cdot65.scm.application:
@@ -42,27 +82,57 @@
         has_known_vulnerabilities: true
         evasive: true
         state: "present"
+      register: high_risk_app_create_result
+      tags:
+        - dev-cicd
 
-    # Test application_info module functionality
+    - name: Create a collaboration application for testing
+      cdot65.scm.application:
+        provider: "{{ provider }}"
+        name: "test-collaboration-app"
+        category: "collaboration"
+        subcategory: "email"
+        technology: "browser-based"
+        risk: 2
+        description: "Collaboration application for testing"
+        ports:
+          - "tcp/25"
+          - "tcp/143"
+        folder: "Texas"
+        state: "present"
+      register: collab_app_create_result
+      tags:
+        - dev-automation
+
+    # Verify application creation
+    - name: Verify application creation
+      assert:
+        that:
+          - app_create_result is changed
+          - high_risk_app_create_result is changed
+          - collab_app_create_result is changed
+        fail_msg: "Failed to create test applications"
+        success_msg: "Successfully created test applications"
+      tags:
+        - dev-ansible
+
+    # ==========================================
+    # INFO queries
+    # ==========================================
+    # Get info about a specific application
     - name: Get information about a specific application
       cdot65.scm.application_info:
         provider: "{{ provider }}"
         name: "test-app-info"
         folder: "Texas"
       register: specific_info
+      tags:
+        - dev-test
 
     - name: Display specific application info
       debug:
         var: specific_info
-
-    - name: Debug application structure
-      debug:
-        msg: 
-          - "Application Name: {{ specific_info.application.name }}"
-          - "Ports: {{ specific_info.application.ports | default('Not defined') }}"
-          - "Ports Type: {{ specific_info.application.ports | type_debug if specific_info.application.ports is defined else 'Not defined' }}"
-          - "Transfers Files: {{ specific_info.application.transfers_files }}"
-          - "Transfers Files Type: {{ specific_info.application.transfers_files | type_debug }}"
+        verbosity: 1
 
     - name: Verify specific application info
       assert:
@@ -71,59 +141,93 @@
           - specific_info.application.name == "test-app-info"
           - specific_info.application.description == "Application for testing info module"
           - specific_info.application.risk == 3
-          # Skip the ports check since it's coming back as null
-          # - "'tcp/1521' in specific_info.application.ports"
-          # Skip the transfers_files check or adjust the expected value based on what the API returns
-          # - specific_info.application.transfers_files == false
+        fail_msg: "Failed to retrieve specific application information"
+        success_msg: "Successfully retrieved specific application information"
+      tags:
+        - dev-cicd
 
+    # List all applications
     - name: List all applications in the folder
       cdot65.scm.application_info:
         provider: "{{ provider }}"
         folder: "Texas"
       register: all_apps
+      tags:
+        - dev-automation
 
     - name: Display all applications
       debug:
         var: all_apps
+        verbosity: 1
 
-    - name: Verify all applications
+    - name: Verify all applications listing
       assert:
         that:
           - all_apps.applications is defined
+          - all_apps.applications | length >= 3  # Our test applications plus any existing
+          - all_apps.applications | selectattr('name', 'equalto', 'test-app-info') | list | length == 1
+          - all_apps.applications | selectattr('name', 'equalto', 'test-high-risk-app') | list | length == 1
+          - all_apps.applications | selectattr('name', 'equalto', 'test-collaboration-app') | list | length == 1
+        fail_msg: "Failed to retrieve all applications"
+        success_msg: "Successfully retrieved all applications"
+      tags:
+        - dev-ansible
 
+    # Filter by category
     - name: List applications by category
       cdot65.scm.application_info:
         provider: "{{ provider }}"
         folder: "Texas"
         category: ["business-systems"]
       register: business_apps
+      tags:
+        - dev-cicd
 
     - name: Display business applications
       debug:
         var: business_apps
+        verbosity: 1
 
-    - name: Verify business applications
+    - name: Verify business applications filter
       assert:
         that:
           - business_apps.applications is defined
-
+          - business_apps.applications | selectattr('name', 'equalto', 'test-app-info') | list | length == 1
+          - business_apps.applications | selectattr('name', 'equalto', 'test-high-risk-app') | list | length == 0
+          - business_apps.applications | selectattr('name', 'equalto', 'test-collaboration-app') | list | length == 0
+        fail_msg: "Failed to filter applications by category"
+        success_msg: "Successfully filtered applications by category"
+      
+    # Filter by risk level
     - name: List high-risk applications
       cdot65.scm.application_info:
         provider: "{{ provider }}"
         folder: "Texas"
         risk: [5]
       register: high_risk_apps
+      tags:
+        - dev-test
 
     - name: Display high-risk applications
       debug:
         var: high_risk_apps
+        verbosity: 1
 
-    - name: Verify high-risk applications
+    - name: Verify high-risk applications filter
       assert:
         that:
           - high_risk_apps.applications is defined
+          - high_risk_apps.applications | selectattr('name', 'equalto', 'test-high-risk-app') | list | length == 1
+          - high_risk_apps.applications | selectattr('name', 'equalto', 'test-app-info') | list | length == 0
+        fail_msg: "Failed to filter applications by risk level"
+        success_msg: "Successfully filtered applications by risk level"
+      tags:
+        - dev-automation
 
-    # Cleanup test objects
+    # ==========================================
+    # CLEANUP
+    # ==========================================
+    # Clean up test objects
     - name: Remove test applications
       cdot65.scm.application:
         provider: "{{ provider }}"
@@ -133,3 +237,30 @@
       loop:
         - "test-app-info"
         - "test-high-risk-app"
+        - "test-collaboration-app"
+      register: app_cleanup_result
+      tags:
+        - dev-cleanup
+
+    - name: Verify application cleanup
+      assert:
+        that:
+          - app_cleanup_result is succeeded
+        fail_msg: "Failed to clean up test applications"
+        success_msg: "Successfully cleaned up test applications"
+      
+    # Clean up test tags
+    - name: Remove tags created for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+      tags:
+        - dev-cleanup

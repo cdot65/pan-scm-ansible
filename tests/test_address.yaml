@@ -1,7 +1,10 @@
 ---
-- name: Manage Address Objects in Strata Cloud Manager
+# Playbook for testing Strata Cloud Manager address object operations
+# Usage: ansible-playbook tests/test_address.yaml
+
+- name: Test SCM Address Module CRUD Operations
   hosts: localhost
-  gather_facts: false
+  gather_facts: no
   vars_files:
     - vault.yaml
   vars:
@@ -10,52 +13,247 @@
       client_secret: "{{ client_secret }}"
       tsg_id: "{{ tsg_id }}"
       log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+    test_folder: "Texas"
   tasks:
+    # First clean up any existing test address objects if they exist
+    - name: Remove test address objects if they exist
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Test_Address_Netmask_{{ test_timestamp }}"
+        - "Test_Address_Range_{{ test_timestamp }}"
+        - "Test_Address_FQDN_{{ test_timestamp }}"
+      tags:
+        - dev-cleanup
+        - dev-test
+        
+    # Create required tags
+    - name: Create tags needed for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        color: "{{ item.color }}"
+        comments: "Test tag for address module testing"
+        folder: "{{ test_folder }}"
+        state: "present"
+      ignore_errors: true
+      loop:
+        - { name: "dev-ansible", color: "Blue" }
+        - { name: "dev-automation", color: "Green" }
+        - { name: "dev-test", color: "Orange" }
+        - { name: "dev-cicd", color: "Red" }
+      tags:
+        - dev-ansible
+        - dev-automation
 
+    # Brief pause to ensure all tags are available for use
+    - name: Pause for tag creation to complete
+      ansible.builtin.pause:
+        seconds: 2
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
     - name: Create an address object with ip_netmask
       cdot65.scm.address:
         provider: "{{ provider }}"
-        name: "Test_Address_Netmask"
+        name: "Test_Address_Netmask_{{ test_timestamp }}"
         description: "An address object with ip_netmask"
         ip_netmask: "192.168.1.0/24"
-        folder: "Texas"
+        folder: "{{ test_folder }}"
+        tag:
+          - "dev-ansible"
+          - "dev-automation"
         state: "present"
+      register: create_netmask_result
+      tags: 
+        - dev-test
+
+    - name: Debug netmask creation result
+      debug:
+        var: create_netmask_result
+        verbosity: 1
+
+    - name: Verify ip_netmask address object creation
+      ansible.builtin.assert:
+        that:
+          - create_netmask_result is changed
+          - create_netmask_result.address is defined
+          - create_netmask_result.address.description == "An address object with ip_netmask"
+        fail_msg: "Failed to create netmask address object"
+        success_msg: "Successfully created netmask address object"
+      tags:
+        - dev-cicd
 
     - name: Create an address object with ip_range
       cdot65.scm.address:
         provider: "{{ provider }}"
-        name: "Test_Address_Range"
+        name: "Test_Address_Range_{{ test_timestamp }}"
         description: "An address object with ip_range"
         ip_range: "192.168.2.1-192.168.2.254"
-        folder: "Texas"
+        folder: "{{ test_folder }}"
+        tag:
+          - "dev-test"
+          - "dev-cicd"
         state: "present"
+      register: create_range_result
+
+    - name: Debug range creation result
+      debug:
+        var: create_range_result
+        verbosity: 1
+
+    - name: Verify ip_range address object creation
+      ansible.builtin.assert:
+        that:
+          - create_range_result is changed
+          - create_range_result.address is defined
+          - create_range_result.address.description == "An address object with ip_range"
+        fail_msg: "Failed to create range address object"
+        success_msg: "Successfully created range address object"
+      tags: 
+        - dev-ansible
 
     - name: Create an address object with fqdn
       cdot65.scm.address:
         provider: "{{ provider }}"
-        name: "Test_Address_FQDN"
+        name: "Test_Address_FQDN_{{ test_timestamp }}"
         description: "An address object with fqdn"
         fqdn: "example.com"
-        folder: "Texas"
+        folder: "{{ test_folder }}"
+        tag: 
+          - "dev-automation"
         state: "present"
+      register: create_fqdn_result
+      tags:
+        - dev-automation
 
-    # First test just the regular CRUD operations
-    - name: Update the address object with new description
+    - name: Debug FQDN creation result
+      debug:
+        var: create_fqdn_result
+        verbosity: 1
+
+    - name: Verify fqdn address object creation
+      ansible.builtin.assert:
+        that:
+          - create_fqdn_result is changed
+          - create_fqdn_result.address is defined
+          - create_fqdn_result.address.description == "An address object with fqdn"
+        fail_msg: "Failed to create FQDN address object"
+        success_msg: "Successfully created FQDN address object"
+
+    # Set netmask name to a fixed variable after creation
+    - name: Set netmask name to existing name
+      ansible.builtin.set_fact:
+        netmask_name: "{{ create_netmask_result.address.name }}"
+        range_name: "{{ create_range_result.address.name }}"
+        fqdn_name: "{{ create_fqdn_result.address.name }}"
+    
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    - name: Update the netmask address object
       cdot65.scm.address:
         provider: "{{ provider }}"
-        name: "Test_Address_Netmask"
+        name: "{{ netmask_name }}"
         description: "Updated description for netmask address"
         ip_netmask: "192.168.1.0/24"
-        folder: "Texas"
+        folder: "{{ test_folder }}"
+        tag: 
+          - "dev-ansible"
+          - "dev-test"
+          - "dev-cicd"
         state: "present"
+      register: update_result
+      tags: 
+        - dev-cicd
+        - dev-test
 
-    - name: Clean up the address object
+    - name: Debug update result
+      debug:
+        var: update_result
+        verbosity: 1
+
+    - name: Verify address object update
+      ansible.builtin.assert:
+        that:
+          - update_result is changed
+          - update_result.address is defined
+          - update_result.address.description == "Updated description for netmask address"
+          - update_result.address.tag | length == 3
+        fail_msg: "Failed to update address object"
+        success_msg: "Successfully updated address object"
+
+    # Test idempotency
+    - name: Test idempotency on the updated address object (re-run same update)
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "{{ netmask_name }}"
+        description: "Updated description for netmask address"
+        ip_netmask: "192.168.1.0/24"
+        folder: "{{ test_folder }}"
+        tag: 
+          - "dev-ansible"
+          - "dev-test"
+          - "dev-cicd"
+        state: "present"
+      register: idempotency_result
+      tags:
+        - dev-cicd
+      
+    - name: Verify idempotency behavior
+      ansible.builtin.assert:
+        that:
+          - idempotency_result is not changed
+        fail_msg: "Address module failed idempotency test"
+        success_msg: "Address module passed idempotency test"
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Delete the address objects
       cdot65.scm.address:
         provider: "{{ provider }}"
         name: "{{ item }}"
-        folder: "Texas"
+        folder: "{{ test_folder }}"
         state: "absent"
       loop:
-        - "Test_Address_FQDN"
-        - "Test_Address_Range"
-        - "Test_Address_Netmask"
+        - "{{ netmask_name }}"
+        - "{{ range_name }}"
+        - "{{ fqdn_name }}"
+      register: delete_result
+      tags: 
+        - dev-test
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+        verbosity: 1
+
+    - name: Verify address objects were deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is succeeded
+        fail_msg: "Failed to delete some address objects"
+        success_msg: "Successfully deleted all address objects"
+
+    # Clean up test tags
+    - name: Remove tags created for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+      tags:
+        - dev-cleanup
