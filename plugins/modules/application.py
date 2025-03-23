@@ -139,7 +139,7 @@ options:
                 description: Client secret for authentication.
                 required: true
                 type: str
-                no_log: true
+                no_log: True
             tsg_id:
                 description: Tenant Service Group ID.
                 required: true
