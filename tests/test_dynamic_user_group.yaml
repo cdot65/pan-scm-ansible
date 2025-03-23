@@ -1,0 +1,290 @@
+---
+# Playbook for testing Strata Cloud Manager dynamic user group operations
+# Usage: ansible-playbook tests/test_dynamic_user_group.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM Dynamic User Group Module CRUD Operations
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_folder: "Texas"
+    test_dug_base_1: "Test_DUG_High_Risk_"
+    test_dug_base_2: "Test_DUG_Contractors_"
+    test_filter_1: "tag.criticality.high"
+    test_filter_2: "tag.user_type.contractor and (tag.criticality.high or tag.risk_score.gt.80)"
+    test_description_1: "Users with high risk classification"
+    test_description_2: "High risk contractors"
+    updated_filter_1: "tag.criticality.high or tag.risk_score.gt.90"
+    updated_description_1: "Updated user group for high risk classification"
+  tasks:
+    # First clean up any existing test objects if they exist
+    - name: Remove any test dynamic user group objects from previous runs
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "{{ item }}_*"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "{{ test_dug_base_1 }}"
+        - "{{ test_dug_base_2 }}"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
+    - name: Create timestamp for consistent object naming
+      set_fact:
+        timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+
+    - name: Set test dynamic user group names with consistent timestamp
+      set_fact:
+        test_dug_name_1: "{{ test_dug_base_1 }}{{ timestamp }}"
+        test_dug_name_2: "{{ test_dug_base_2 }}{{ timestamp }}"
+
+    - name: Create a dynamic user group with a simple filter
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "{{ test_dug_name_1 }}"
+        filter: "{{ test_filter_1 }}"
+        description: "{{ test_description_1 }}"
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_dug_1_result
+      tags:
+        - dev-test
+
+    - name: Debug simple filter creation result
+      debug:
+        var: create_dug_1_result
+        verbosity: 1
+
+    - name: Verify simple filter dynamic user group creation
+      ansible.builtin.assert:
+        that:
+          - create_dug_1_result is changed
+          - create_dug_1_result.dynamic_user_group is defined
+          - create_dug_1_result.dynamic_user_group.description == test_description_1
+        fail_msg: "Failed to create simple filter dynamic user group"
+        success_msg: "Successfully created simple filter dynamic user group"
+      tags:
+        - dev-cicd
+
+    - name: Create a dynamic user group with a complex filter
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "{{ test_dug_name_2 }}"
+        filter: "{{ test_filter_2 }}"
+        description: "{{ test_description_2 }}"
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_dug_2_result
+      tags:
+        - dev-test
+
+    - name: Debug complex filter creation result
+      debug:
+        var: create_dug_2_result
+        verbosity: 1
+
+    - name: Verify complex filter dynamic user group creation
+      ansible.builtin.assert:
+        that:
+          - create_dug_2_result is changed
+          - create_dug_2_result.dynamic_user_group is defined
+          - create_dug_2_result.dynamic_user_group.description == test_description_2
+        fail_msg: "Failed to create complex filter dynamic user group"
+        success_msg: "Successfully created complex filter dynamic user group"
+      tags:
+        - dev-ansible
+
+    - name: Debug created objects
+      debug:
+        msg: "Created dynamic user groups: {{ test_dug_name_1 }}, {{ test_dug_name_2 }}"
+        verbosity: 1
+
+    # ==========================================
+    # READ operation tests
+    # ==========================================
+    - name: Get information about a specific dynamic user group
+      cdot65.scm.dynamic_user_group_info:
+        provider: "{{ provider }}"
+        name: "{{ test_dug_name_1 }}"
+        folder: "{{ test_folder }}"
+      register: get_info_result
+      tags:
+        - dev-ansible
+
+    - name: Debug info result
+      debug:
+        var: get_info_result
+        verbosity: 1
+
+    - name: Verify dynamic user group info retrieval
+      ansible.builtin.assert:
+        that:
+          - get_info_result.dynamic_user_group is defined
+          - get_info_result.dynamic_user_group.name == test_dug_name_1
+          - get_info_result.dynamic_user_group.filter == test_filter_1
+        fail_msg: "Failed to retrieve dynamic user group info"
+        success_msg: "Successfully retrieved dynamic user group info"
+      tags:
+        - dev-test
+
+    - name: List all dynamic user groups in a folder
+      cdot65.scm.dynamic_user_group_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+      register: list_all_result
+      tags:
+        - dev-ansible
+
+    - name: Debug list all result
+      debug:
+        var: list_all_result
+        verbosity: 1
+
+    - name: Verify list all operation includes both created groups
+      ansible.builtin.assert:
+        that:
+          - list_all_result.dynamic_user_groups | selectattr('name', 'equalto', test_dug_name_1) | list | length == 1
+          - list_all_result.dynamic_user_groups | selectattr('name', 'equalto', test_dug_name_2) | list | length == 1
+        fail_msg: "Failed to list all dynamic user groups"
+        success_msg: "Successfully listed all dynamic user groups"
+      tags:
+        - dev-test
+
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    - name: Update the dynamic user group
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "{{ test_dug_name_1 }}"
+        filter: "{{ updated_filter_1 }}"
+        description: "{{ updated_description_1 }}"
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: update_result
+      tags:
+        - dev-cicd
+        - dev-test
+
+    - name: Debug update result
+      debug:
+        var: update_result
+        verbosity: 1
+
+    - name: Verify dynamic user group update
+      ansible.builtin.assert:
+        that:
+          - update_result is changed
+          - update_result.dynamic_user_group is defined
+          - update_result.dynamic_user_group.description == updated_description_1
+          - update_result.dynamic_user_group.filter == updated_filter_1
+        fail_msg: "Failed to update dynamic user group"
+        success_msg: "Successfully updated dynamic user group"
+
+    # Test idempotency
+    - name: Test idempotency on the updated dynamic user group (re-run same update)
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "{{ test_dug_name_1 }}"
+        filter: "{{ updated_filter_1 }}"
+        description: "{{ updated_description_1 }}"
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: idempotency_result
+      tags:
+        - dev-cicd
+
+    - name: Verify idempotency behavior
+      ansible.builtin.assert:
+        that:
+          - idempotency_result is not changed
+        fail_msg: "Dynamic user group module failed idempotency test"
+        success_msg: "Dynamic user group module passed idempotency test"
+
+    # ==========================================
+    # FILTER operation tests using info module
+    # ==========================================
+    - name: Filter dynamic user groups by filter expression
+      cdot65.scm.dynamic_user_group_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        filters: ["tag.risk_score.gt.90"]
+      register: filter_expr_result
+      tags:
+        - dev-ansible
+
+    - name: Debug filter expression result
+      debug:
+        var: filter_expr_result
+        verbosity: 1
+
+    - name: Verify filter by expression operation
+      ansible.builtin.assert:
+        that:
+          - filter_expr_result.dynamic_user_groups | selectattr('name', 'equalto', test_dug_name_1) | list | length == 1
+          - filter_expr_result.dynamic_user_groups | selectattr('name', 'equalto', test_dug_name_2) | list | length == 0
+        fail_msg: "Failed to filter dynamic user groups by expression"
+        success_msg: "Successfully filtered dynamic user groups by expression"
+      tags:
+        - dev-test
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Delete the dynamic user groups
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      loop:
+        - "{{ test_dug_name_1 }}"
+        - "{{ test_dug_name_2 }}"
+      register: delete_result
+      tags:
+        - dev-test
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+        verbosity: 1
+
+    - name: Verify dynamic user groups were deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is succeeded
+        fail_msg: "Failed to delete dynamic user groups"
+        success_msg: "Successfully deleted all dynamic user groups"
+
+    # ==========================================
+    # Verify deleted objects are gone
+    # ==========================================
+    - name: Check if dynamic user groups still exist
+      cdot65.scm.dynamic_user_group_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+      register: final_list_result
+      tags:
+        - dev-ansible
+
+    - name: Verify dynamic user groups are not in the final list
+      ansible.builtin.assert:
+        that:
+          - final_list_result.dynamic_user_groups | selectattr('name', 'equalto', test_dug_name_1) | list | length == 0
+          - final_list_result.dynamic_user_groups | selectattr('name', 'equalto', test_dug_name_2) | list | length == 0
+        fail_msg: "Failed to verify deletion of dynamic user groups"
+        success_msg: "Successfully verified all dynamic user groups were deleted"
+      tags:
+        - dev-test

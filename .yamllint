@@ -48,6 +48,7 @@ ignore: |
   .github/
   .venv/
   .pytest_cache/
+  .CLAUDE/
   __pycache__/
   tests/unit/
   dist/
@@ -55,4 +56,5 @@ ignore: |
   docs/
   ansible_collections/
   .ansible/
+  tests/
   venv/
