@@ -2,7 +2,15 @@
 
 ## Overview
 
-This guide explains how to make the Palo Alto Networks Strata Cloud Manager Ansible Collection (`cdot65.scm`) compatible with Ansible's sanity tests while preserving its Python 3.11+ functionality.
+This guide explains how to make the Palo Alto Networks Strata Cloud Manager Ansible Collection (`cdot65.scm`) compatible with Ansible's sanity tests.
+
+## Version Requirements
+
+This collection is specifically designed for:
+- Python 3.11 or higher
+- Ansible Core 2.17 or higher
+
+While we focus on these modern versions, the included fix script helps ensure compatibility with Ansible's test framework, which may test against older Python versions.
 
 ## Issues and Solutions
 
