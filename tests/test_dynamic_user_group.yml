@@ -1,0 +1,222 @@
+---
+# Integration tests for dynamic_user_group module
+- name: Test Dynamic User Group modules
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    - name: Create a dynamic user group with a simple filter
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "test_high_risk_users"
+        filter: "tag.criticality.high"
+        description: "Users with high risk classification"
+        folder: "Security"
+        tag: ["RiskManagement", "Security"]
+        state: "present"
+      register: create_result
+
+    - name: Debug create result
+      debug:
+        var: create_result
+
+    - name: Verify create result
+      assert:
+        that:
+          - create_result.changed == true
+          - create_result.dynamic_user_group.name == "test_high_risk_users"
+          - create_result.dynamic_user_group.filter == "tag.criticality.high"
+          - create_result.dynamic_user_group.description == "Users with high risk classification"
+          - create_result.dynamic_user_group.folder == "Security"
+          - "'RiskManagement' in create_result.dynamic_user_group.tag"
+          - "'Security' in create_result.dynamic_user_group.tag"
+
+    - name: Create a dynamic user group with a complex filter
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "test_risky_contractors"
+        filter: "tag.user_type.contractor and (tag.criticality.high or tag.risk_score.gt.80)"
+        description: "High risk contractors"
+        folder: "Security"
+        tag: ["RiskManagement", "Contractors"]
+        state: "present"
+      register: create_complex_result
+
+    - name: Debug create complex result
+      debug:
+        var: create_complex_result
+
+    - name: Verify create complex result
+      assert:
+        that:
+          - create_complex_result.changed == true
+          - create_complex_result.dynamic_user_group.name == "test_risky_contractors"
+          - create_complex_result.dynamic_user_group.filter == "tag.user_type.contractor and (tag.criticality.high or tag.risk_score.gt.80)"
+          - create_complex_result.dynamic_user_group.description == "High risk contractors"
+          - create_complex_result.dynamic_user_group.folder == "Security"
+          - "'RiskManagement' in create_complex_result.dynamic_user_group.tag"
+          - "'Contractors' in create_complex_result.dynamic_user_group.tag"
+
+    - name: Verify idempotence (create again should not change)
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "test_high_risk_users"
+        filter: "tag.criticality.high"
+        description: "Users with high risk classification"
+        folder: "Security"
+        tag: ["RiskManagement", "Security"]
+        state: "present"
+      register: idempotence_result
+
+    - name: Debug idempotence result
+      debug:
+        var: idempotence_result
+
+    - name: Verify idempotence result
+      assert:
+        that:
+          - idempotence_result.changed == false
+          - idempotence_result.dynamic_user_group.name == "test_high_risk_users"
+
+    - name: Update an existing dynamic user group's filter and tags
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "test_high_risk_users"
+        filter: "tag.criticality.high or tag.risk_score.gt.90"
+        description: "Updated user group for high risk classification"
+        folder: "Security"
+        tag: ["RiskManagement", "Security", "HighPriority"]
+        state: "present"
+      register: update_result
+
+    - name: Debug update result
+      debug:
+        var: update_result
+
+    - name: Verify update result
+      assert:
+        that:
+          - update_result.changed == true
+          - update_result.dynamic_user_group.name == "test_high_risk_users"
+          - update_result.dynamic_user_group.filter == "tag.criticality.high or tag.risk_score.gt.90"
+          - update_result.dynamic_user_group.description == "Updated user group for high risk classification"
+          - update_result.dynamic_user_group.folder == "Security"
+          - "'RiskManagement' in update_result.dynamic_user_group.tag"
+          - "'Security' in update_result.dynamic_user_group.tag"
+          - "'HighPriority' in update_result.dynamic_user_group.tag"
+
+    - name: Get information about a specific dynamic user group
+      cdot65.scm.dynamic_user_group_info:
+        provider: "{{ provider }}"
+        name: "test_high_risk_users"
+        folder: "Security"
+      register: get_info_result
+
+    - name: Debug get info result
+      debug:
+        var: get_info_result
+
+    - name: Verify get info result
+      assert:
+        that:
+          - get_info_result.dynamic_user_group.name == "test_high_risk_users"
+          - get_info_result.dynamic_user_group.filter == "tag.criticality.high or tag.risk_score.gt.90"
+          - get_info_result.dynamic_user_group.description == "Updated user group for high risk classification"
+          - get_info_result.dynamic_user_group.folder == "Security"
+          - "'RiskManagement' in get_info_result.dynamic_user_group.tag"
+          - "'Security' in get_info_result.dynamic_user_group.tag"
+          - "'HighPriority' in get_info_result.dynamic_user_group.tag"
+
+    - name: List all dynamic user group objects in a folder
+      cdot65.scm.dynamic_user_group_info:
+        provider: "{{ provider }}"
+        folder: "Security"
+      register: list_all_result
+
+    - name: Debug list all result
+      debug:
+        var: list_all_result
+
+    - name: Verify list all result contains both created groups
+      assert:
+        that:
+          - list_all_result.dynamic_user_groups | selectattr('name', 'equalto', 'test_high_risk_users') | list | length == 1
+          - list_all_result.dynamic_user_groups | selectattr('name', 'equalto', 'test_risky_contractors') | list | length == 1
+
+    - name: List dynamic user groups with tag filtering
+      cdot65.scm.dynamic_user_group_info:
+        provider: "{{ provider }}"
+        folder: "Security"
+        tags: ["Contractors"]
+      register: list_tagged_result
+
+    - name: Debug list tagged result
+      debug:
+        var: list_tagged_result
+
+    - name: Verify list tagged result
+      assert:
+        that:
+          - list_tagged_result.dynamic_user_groups | selectattr('name', 'equalto', 'test_risky_contractors') | list | length == 1
+          - list_tagged_result.dynamic_user_groups | selectattr('name', 'equalto', 'test_high_risk_users') | list | length == 0
+
+    - name: List dynamic user groups with filter expression filtering
+      cdot65.scm.dynamic_user_group_info:
+        provider: "{{ provider }}"
+        folder: "Security"
+        filters: ["tag.risk_score.gt.90"]
+      register: list_filtered_result
+
+    - name: Debug list filtered result
+      debug:
+        var: list_filtered_result
+
+    - name: Verify list filtered result
+      assert:
+        that:
+          - list_filtered_result.dynamic_user_groups | selectattr('name', 'equalto', 'test_high_risk_users') | list | length == 1
+          - list_filtered_result.dynamic_user_groups | selectattr('name', 'equalto', 'test_risky_contractors') | list | length == 0
+
+    - name: Delete dynamic user groups
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Security"
+        state: "absent"
+      register: delete_result
+      with_items:
+        - "test_high_risk_users"
+        - "test_risky_contractors"
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+
+    - name: Verify delete result
+      assert:
+        that:
+          - delete_result.results[0].changed == true
+          - delete_result.results[1].changed == true
+
+    - name: Verify dynamic user groups are deleted
+      cdot65.scm.dynamic_user_group_info:
+        provider: "{{ provider }}"
+        folder: "Security"
+      register: final_list_result
+
+    - name: Debug final list result
+      debug:
+        var: final_list_result
+
+    - name: Verify dynamic user groups are not in the final list
+      assert:
+        that:
+          - final_list_result.dynamic_user_groups | selectattr('name', 'equalto', 'test_high_risk_users') | list | length == 0
+          - final_list_result.dynamic_user_groups | selectattr('name', 'equalto', 'test_risky_contractors') | list | length == 0

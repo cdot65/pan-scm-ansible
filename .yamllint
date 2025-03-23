@@ -3,29 +3,52 @@
 extends: default
 
 rules:
-  # 80 chars should be enough for everyone
-  line-length:
-    max: 160
-    level: warning
-  # Prefer explicit to implicit
-  truthy: disable
-  comments:
-    min-spaces-from-content: 1
   braces:
-    min-spaces-inside: 0
     max-spaces-inside: 1
+    level: error
   brackets:
-    min-spaces-inside: 0
     max-spaces-inside: 1
+    level: error
+  colons:
+    max-spaces-after: -1
+    level: error
+  commas:
+    max-spaces-after: -1
+    level: error
+  comments:
+    require-starting-space: true
+    min-spaces-from-content: 1
+  comments-indentation: false # don't check comment indentation
+  document-end: disable
+  document-start:
+    level: error
+  empty-lines:
+    max: 3
+    level: error
+  hyphens:
+    level: error
   indentation:
-    spaces: 2
-    indent-sequences: consistent
+    spaces: consistent
+    indent-sequences: true
+    check-multi-line-strings: false
+  key-duplicates: enable
+  line-length: disable
+  new-line-at-end-of-file: enable
+  new-lines:
+    type: unix
+  trailing-spaces: enable
+  truthy:
+    allowed-values: ["true", "false", "yes", "no"]
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
 
 ignore: |
   .git/
   .github/
   .venv/
   .pytest_cache/
+  .CLAUDE/
   __pycache__/
   tests/unit/
   dist/
@@ -33,4 +56,5 @@ ignore: |
   docs/
   ansible_collections/
   .ansible/
+  tests/
   venv/

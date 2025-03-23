@@ -6,32 +6,37 @@ The Palo Alto Networks Strata Cloud Manager Ansible Collection provides a compre
 
 The modules are organized into these categories:
 
-- **Object Modules**: Manage address objects, address groups, services, tags, etc.
-- **Security Modules**: Manage security rules, security profiles, etc.
-- **Network Modules**: Manage zones, IKE gateways, IPsec tunnels, etc.
-- **Deployment Modules**: Manage remote networks, service connections, etc.
+### Network Objects
+These modules manage the fundamental building blocks of your network security policy:
 
-## Available Modules
+- **Address Objects**: [address](address.md), [address_info](address_info.md)
+- **Address Groups**: [address_group](address_group.md), [address_group_info](address_group_info.md)
+- **Applications**: [application](application.md), [application_info](application_info.md)
+- **Application Groups**: [application_group](application_group.md), [application_group_info](application_group_info.md)
+- **Services**: [service](service.md), [service_info](service_info.md)
+- **Service Groups**: [service_group](service_group.md), [service_group_info](service_group_info.md)
+- **Tags**: [tag](tag.md), [tag_info](tag_info.md)
 
-| Module Name | Description | Category |
-|-------------|-------------|----------|
-| [`address`](address.md) | Manage address objects | Object |
-| [`address_group`](address_group.md) | Manage address groups | Object |
-| [`application`](application.md) | Manage custom applications | Object |
-| [`application_group`](application_group.md) | Manage application groups | Object | 
-| [`anti_spyware_profile`](anti_spyware_profile.md) | Manage anti-spyware security profiles | Security |
-| [`bgp_routing`](bgp_routing.md) | Manage BGP routing configurations | Network |
-| [`ike_crypto_profile`](ike_crypto_profile.md) | Manage IKE crypto profiles | Network |
-| [`ike_gateway`](ike_gateway.md) | Manage IKE gateways | Network |
-| [`ipsec_crypto_profile`](ipsec_crypto_profile.md) | Manage IPSec crypto profiles | Network |
-| [`ipsec_tunnel`](ipsec_tunnel.md) | Manage IPSec tunnels | Network |
-| [`network_locations`](network_locations.md) | Manage network locations | Deployment |
-| [`remote_networks`](remote_networks.md) | Manage remote networks | Deployment |
-| [`security_rule`](security_rule.md) | Manage security rules | Security |
-| [`security_zone`](security_zone.md) | Manage security zones | Network |
-| [`service`](service.md) | Manage service objects | Object |
-| [`service_group`](service_group.md) | Manage service groups | Object |
-| [`tag`](tag.md) | Manage tags | Object |
+### Network Configuration
+These modules configure the network infrastructure and connectivity:
+
+- **Zones**: [security_zone](security_zone.md)
+- **VPN**: [ike_crypto_profile](ike_crypto_profile.md), [ike_gateway](ike_gateway.md), [ipsec_crypto_profile](ipsec_crypto_profile.md), [ipsec_tunnel](ipsec_tunnel.md)
+- **Routing**: [bgp_routing](bgp_routing.md)
+
+### Deployment
+These modules manage deployment-related configurations:
+
+- **Remote Networks**: [remote_networks](remote_networks.md)
+- **Network Locations**: [network_locations](network_locations.md)
+- **Service Connections**: [service_connections](service_connections.md)
+
+### Security Services
+These modules configure security policies and profiles:
+
+- **Security Rules**: [security_rule](security_rule.md), [security_rule_info](security_rule_info.md)
+- **Security Profiles**: [anti_spyware_profile](anti_spyware_profile.md), [anti_spyware_profile_info](anti_spyware_profile_info.md)
+- **Security Profile Groups**: [security_profiles_group](security_profiles_group.md)
 
 ## Common Module Parameters
 
@@ -66,19 +71,11 @@ Most modules require exactly one of the following location parameters:
 
 ## Information Modules
 
-These modules retrieve information from SCM without making changes:
+Information modules retrieve data without making changes:
 
-| Module Name | Description |
-|-------------|-------------|
-| [`address_info`](address_info.md) | Get information about address objects |
-| [`address_group_info`](address_group_info.md) | Get information about address groups |
-| [`anti_spyware_profile_info`](anti_spyware_profile_info.md) | Get information about anti-spyware profiles |
-| [`application_info`](application_info.md) | Get information about applications |
-| [`application_group_info`](application_group_info.md) | Get information about application groups |
-| [`security_rule_info`](security_rule_info.md) | Get information about security rules |
-| [`service_info`](service_info.md) | Get information about service objects |
-| [`service_group_info`](service_group_info.md) | Get information about service groups |
-| [`tag_info`](tag_info.md) | Get information about tags |
+- They follow the naming pattern `<resource>_info` (e.g., `address_info`)
+- They support filters to narrow down results
+- They return lists of matching objects or detailed information about specific objects
 
 ## Return Values
 
@@ -88,7 +85,6 @@ Most modules return these common values:
 |------|-------------|------|--------|
 | `changed` | Whether changes were made | boolean | `true` |
 | `scm_object` | The SCM object details | dictionary | `{"id": "123", "name": "test-address"}` |
-| `response` | The raw API response | dictionary | `{"status": "success", "data": {...}}` |
 
 ## Using Check Mode
 
