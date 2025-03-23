@@ -96,10 +96,15 @@ nav:
       - Modules:
           - Overview: collection/modules/index.md
           - Address: collection/modules/address.md
+          - Address Info: collection/modules/address_info.md
           - Address Group: collection/modules/address_group.md
+          - Address Group Info: collection/modules/address_group_info.md
           - Anti-Spyware Profile: collection/modules/anti_spyware_profile.md
+          - Anti-Spyware Profile Info: collection/modules/anti_spyware_profile_info.md
           - Application: collection/modules/application.md
+          - Application Info: collection/modules/application_info.md
           - Application Group: collection/modules/application_group.md
+          - Application Group Info: collection/modules/application_group_info.md
           - BGP Routing: collection/modules/bgp_routing.md
           - IKE Crypto Profile: collection/modules/ike_crypto_profile.md
           - IKE Gateway: collection/modules/ike_gateway.md
@@ -109,11 +114,15 @@ nav:
           - Remote Networks: collection/modules/remote_networks.md
           - Security Profiles Group: collection/modules/security_profiles_group.md
           - Security Rule: collection/modules/security_rule.md
+          - Security Rule Info: collection/modules/security_rule_info.md
           - Security Zone: collection/modules/security_zone.md
           - Service: collection/modules/service.md
+          - Service Info: collection/modules/service_info.md
           - Service Connections: collection/modules/service_connections.md
           - Service Group: collection/modules/service_group.md
+          - Service Group Info: collection/modules/service_group_info.md
           - Tag: collection/modules/tag.md
+          - Tag Info: collection/modules/tag_info.md
       - Roles:
           - Overview: collection/roles/index.md
           - Bootstrap: collection/roles/bootstrap.md
