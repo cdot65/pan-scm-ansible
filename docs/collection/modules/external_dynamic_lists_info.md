@@ -1,83 +1,39 @@
 # External Dynamic Lists Info Module
 
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [Query Parameters](#query-parameters)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
-   - [Retrieving a Specific EDL](#retrieving-a-specific-edl)
-   - [Listing All EDLs](#listing-all-edls)
-   - [Filtering by EDL Types](#filtering-by-edl-types)
-   - [Advanced Filtering](#advanced-filtering)
-   - [Combining Multiple Filters](#combining-multiple-filters)
-7. [Response Structure](#response-structure)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
-10. [Related Modules](#related-modules)
-
 ## Overview
 
-The External Dynamic Lists Info module provides read-only functionality to retrieve information about External Dynamic Lists (EDLs) in Palo Alto Networks' Strata Cloud Manager. This module supports retrieving detailed information about specific EDLs by name or listing all EDLs with various filtering options. It complements the External Dynamic Lists module, which handles create, update, and delete operations.
+The External Dynamic Lists Info module (`cdot65.scm.external_dynamic_lists_info`) provides a read-only interface to
+retrieve information about external dynamic lists (EDLs) in Palo Alto Networks' Strata Cloud Manager. This module allows
+you to retrieve detailed information about specific EDLs by name or list all EDLs with various filtering options.
 
-## Core Methods
+## Module Parameters
 
-| Method     | Description                          | Parameters                                | Return Type                            |
-|------------|--------------------------------------|-------------------------------------------|----------------------------------------|
-| `fetch()`  | Retrieves a specific EDL by name     | `name: str`, `folder/snippet/device: str` | `ExternalDynamicListResponseModel`     |
-| `list()`   | Lists EDLs with filtering            | `folder/snippet/device: str`, `**filters` | `List[ExternalDynamicListResponseModel]` |
-| `get()`    | Retrieves a specific EDL by ID       | `object_id: str`                          | `ExternalDynamicListResponseModel`     |
+| Parameter          | Type    | Required      | Default    | Choices                                                    | Description                                                 |
+|--------------------|---------|---------------|------------|------------------------------------------------------------|-------------------------------------------------------------|
+| `name`             | string  | No            |            |                                                            | Name of a specific EDL to retrieve                          |
+| `gather_subset`    | list    | No            | ['config'] | all, config                                                | Determines which information to gather                      |
+| `folder`           | string  | One Required* |            |                                                            | Filter EDLs by folder container                             |
+| `snippet`          | string  | One Required* |            |                                                            | Filter EDLs by snippet container                            |
+| `device`           | string  | One Required* |            |                                                            | Filter EDLs by device container                             |
+| `exact_match`      | boolean | No            | False      |                                                            | When True, only return objects defined exactly in container |
+| `exclude_folders`  | list    | No            |            |                                                            | List of folder names to exclude from results                |
+| `exclude_snippets` | list    | No            |            |                                                            | List of snippet values to exclude from results              |
+| `exclude_devices`  | list    | No            |            |                                                            | List of device values to exclude from results               |
+| `types`            | list    | No            |            | ip, domain, url, imsi, imei, predefined_ip, predefined_url | Filter by EDL types                                         |
+| `provider`         | dict    | Yes           |            |                                                            | Authentication credentials                                  |
 
-## Query Parameters
+*Note: A container parameter (`folder`, `snippet`, or `device`) is required when `name` is not specified.
 
-| Parameter          | Type       | Description                                           | Default |
-|-------------------|------------|-------------------------------------------------------|---------|
-| `name`            | str        | Name of a specific EDL to retrieve                    | None    |
-| `folder`          | str        | Filter EDLs by folder container                       | None    |
-| `snippet`         | str        | Filter EDLs by snippet container                      | None    |
-| `device`          | str        | Filter EDLs by device container                       | None    |
-| `types`           | List[str]  | Filter by EDL types (ip, domain, url, imsi, imei)     | None    |
-| `exact_match`     | bool       | Only return objects defined in the specified container| False   |
-| `exclude_folders` | List[str]  | List of folder names to exclude from results          | None    |
-| `exclude_snippets`| List[str]  | List of snippet values to exclude from results        | None    |
-| `exclude_devices` | List[str]  | List of device values to exclude from results         | None    |
-| `gather_subset`   | List[str]  | Determines which information to gather                | ["config"] |
+### Provider Dictionary
 
-## Exceptions
+| Parameter       | Type   | Required | Default | Description                      |
+|-----------------|--------|----------|---------|----------------------------------|
+| `client_id`     | string | Yes      |         | Client ID for authentication     |
+| `client_secret` | string | Yes      |         | Client secret for authentication |
+| `tsg_id`        | string | Yes      |         | Tenant Service Group ID          |
+| `log_level`     | string | No       | "INFO"  | Log level for the SDK            |
 
-| Exception                    | HTTP Code | Description                     |
-|------------------------------|-----------|-------------------------------- |
-| `ObjectNotPresentError`      | 404       | EDL not found                   |
-| `MissingQueryParameterError` | 400       | Missing required parameters     |
-| `InvalidObjectError`         | 400       | Invalid filter parameters       |
-| `AuthenticationError`        | 401       | Authentication failed           |
-| `ServerError`                | 500       | Internal server error           |
-
-## Basic Configuration
-
-The External Dynamic Lists Info module can be used to gather information about EDLs without making any changes to your configuration.
-
-<div class="termy">
-
-<!-- termynal -->
-
-```yaml
-- name: Gather External Dynamic Lists Information
-  cdot65.scm.external_dynamic_lists_info:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-      log_level: "INFO"
-    folder: "Texas"
-  register: edl_info
-```
-
-</div>
-
-## Usage Examples
+## Examples
 
 ### Retrieving a Specific EDL
 
@@ -100,7 +56,7 @@ The External Dynamic Lists Info module can be used to gather information about E
 
 </div>
 
-### Listing All EDLs
+### Listing All EDLs in a Folder
 
 <div class="termy">
 
@@ -152,7 +108,7 @@ The External Dynamic Lists Info module can be used to gather information about E
 
 </div>
 
-### Advanced Filtering
+### Using Advanced Filtering Options
 
 <div class="termy">
 
@@ -210,11 +166,9 @@ The External Dynamic Lists Info module can be used to gather information about E
 
 </div>
 
-## Response Structure
+## Return Values
 
-The module returns information in two different formats depending on the query parameters:
-
-### Single EDL Response (when name is specified)
+### When Requesting a Specific EDL by Name
 
 <div class="termy">
 
@@ -222,23 +176,24 @@ The module returns information in two different formats depending on the query p
 
 ```yaml
 external_dynamic_list:
-  id: "123e4567-e89b-12d3-a456-426655440000"
-  name: "malicious-ips"
-  type:
-    ip:
-      url: "https://threatfeeds.example.com/ips.txt"
-      description: "Known malicious IPs"
-      recurring:
-        hourly: {}
-      exception_list:
-        - "192.168.1.100"
-        - "10.0.0.1"
-  folder: "Texas"
+    description: Information about the requested external dynamic list.
+    returned: success, when name is specified
+    type: dict
+    sample:
+        id: "123e4567-e89b-12d3-a456-426655440000"
+        name: "malicious-ips"
+        type:
+          ip:
+            url: "https://threatfeeds.example.com/ips.txt"
+            description: "Known malicious IPs"
+            recurring:
+              hourly: {}
+        folder: "Texas"
 ```
 
 </div>
 
-### Multiple EDLs Response (when name is not specified)
+### When Listing Multiple EDLs
 
 <div class="termy">
 
@@ -246,31 +201,120 @@ external_dynamic_list:
 
 ```yaml
 external_dynamic_lists:
-  - id: "123e4567-e89b-12d3-a456-426655440000"
-    name: "malicious-ips"
-    type:
-      ip:
-        url: "https://threatfeeds.example.com/ips.txt"
-        description: "Known malicious IPs"
-        recurring:
-          hourly: {}
-    folder: "Texas"
-  - id: "234e5678-e89b-12d3-a456-426655440001"
-    name: "blocked-domains"
-    type:
-      domain:
-        url: "https://threatfeeds.example.com/domains.txt"
-        description: "Blocked domains list"
-        recurring:
-          daily:
-            at: "03"
-        expand_domain: true
-    folder: "Texas"
+    description: List of external dynamic list objects matching the filter criteria.
+    returned: success, when name is not specified
+    type: list
+    elements: dict
+    sample:
+      - id: "123e4567-e89b-12d3-a456-426655440000"
+        name: "malicious-ips"
+        type:
+          ip:
+            url: "https://threatfeeds.example.com/ips.txt"
+            description: "Known malicious IPs"
+            recurring:
+              hourly: {}
+        folder: "Texas"
+      - id: "234e5678-e89b-12d3-a456-426655440001"
+        name: "blocked-domains"
+        type:
+          domain:
+            url: "https://threatfeeds.example.com/domains.txt"
+            description: "Blocked domains list"
+            recurring:
+              daily:
+                at: "03"
+            expand_domain: true
+        folder: "Texas"
+```
+
+</div>
+
+## Complete Playbook Example
+
+This example demonstrates comprehensive use of the EDL info module to retrieve and filter results:
+
+<div class="termy">
+
+<!-- termynal -->
+
+```yaml
+---
+# Playbook for retrieving External Dynamic Lists information in SCM
+- name: Gather External Dynamic Lists Information in SCM
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # Get information about a specific EDL
+    - name: Get information about a specific external dynamic list
+      cdot65.scm.external_dynamic_lists_info:
+        provider: "{{ provider }}"
+        name: "malicious-ips"
+        folder: "Texas"
+      register: edl_info
+      ignore_errors: true
+      
+    - name: Display EDL details if found
+      debug:
+        var: edl_info.external_dynamic_list
+      when: not edl_info.failed
+        
+    # List all EDLs in the folder
+    - name: List all external dynamic lists in the folder
+      cdot65.scm.external_dynamic_lists_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_edls
+      
+    - name: Count total EDLs
+      debug:
+        msg: "Found {{ all_edls.external_dynamic_lists | length }} external dynamic lists"
+        
+    # Filter by EDL type
+    - name: Get only IP-based EDLs
+      cdot65.scm.external_dynamic_lists_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        types: ["ip"]
+      register: ip_edls
+      
+    - name: Create summary list of IP-based EDLs
+      set_fact:
+        ip_edl_names: "{{ ip_edls.external_dynamic_lists | map(attribute='name') | list }}"
+        
+    - name: Display IP EDL names
+      debug:
+        var: ip_edl_names
+        
+    # Advanced filtering example
+    - name: Filter EDLs with multiple criteria
+      cdot65.scm.external_dynamic_lists_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        exact_match: true
+        exclude_folders: ["All"]
+      register: filtered_edls
+      
+    - name: Create an inventory of all EDLs
+      copy:
+        content: "{{ filtered_edls | to_nice_yaml }}"
+        dest: "./edl_inventory.yml"
 ```
 
 </div>
 
 ## Error Handling
+
+When the module fails to retrieve information (for example, when a specified EDL doesn't exist), an error will be
+returned. You can handle these errors using Ansible's standard error handling mechanisms:
 
 <div class="termy">
 
@@ -302,42 +346,32 @@ external_dynamic_lists:
     - name: Handle EDL not found
       debug:
         msg: "EDL not found or another error occurred: {{ ansible_failed_result.msg }}"
-    - name: Take remedial action
-      # Additional tasks for error handling
 ```
 
 </div>
 
-## Best Practices
+## Notes and Limitations
 
-1. **Container Specification**
-   - Always specify exactly one container (folder, snippet, or device)
-   - Use consistent container names across operations
-   - Favor folder-based filtering when possible
+### Container Parameters
 
-2. **Efficient Filtering**
-   - Use specific filters to limit result sets
-   - Prefer `exact_match: true` when only looking for objects defined directly in a container
-   - Combine `types` filter with container filters for faster queries
-   - Use `exclude_folders` to filter out shared or common folders
+- When retrieving a specific EDL by name, you must also specify exactly one container parameter (`folder`, `snippet`, or
+  `device`)
+- When listing EDLs without a name, at least one container parameter is required to scope the query
 
-3. **Performance**
-   - When querying large environments, use specific filtering
-   - Avoid multiple queries by retrieving all needed data in a single query
-   - Cache query results when executing multiple operations against the same dataset
+### Filtering Behavior
 
-4. **Error Handling**
-   - Always handle potential errors, especially `ObjectNotPresentError`
-   - Use descriptive error messages when handling failures
-   - Implement retry logic for transient errors
+- The `exact_match` parameter only returns objects defined directly in the specified container, excluding inherited
+  objects
+- Exclusion filters (`exclude_folders`, `exclude_snippets`, `exclude_devices`) are applied after the initial query
+- Type filtering with `types` parameter is case-sensitive - use lowercase types as shown in the choices
 
-5. **Integration with Other Modules**
-   - Use `register` to store results for use with other tasks
-   - Combine with `external_dynamic_lists` module for full lifecycle management
-   - Use jinja2 filters to process and transform result data
+### Performance Considerations
 
-## Related Modules
+- For large environments, consider using specific filtering to reduce the result set size
+- When retrieving only specific EDL types or from specific containers, add these filters to improve query performance
 
-- [external_dynamic_lists](external_dynamic_lists.md) - Create, update, and delete External Dynamic Lists
-- [address](address.md) - Manage address objects that may be used in security policies with EDLs
-- [security_rule](security_rule.md) - Configure security rules that utilize External Dynamic Lists
+## Related Information
+
+- [External Dynamic Lists module](external_dynamic_lists.md) - For creating, updating, and deleting external dynamic
+  lists
+- [Security Rule module](security_rule.md) - For configuring security rules that utilize external dynamic lists

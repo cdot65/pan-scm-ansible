@@ -1,12 +1,15 @@
 # Modules Overview
 
-The Palo Alto Networks Strata Cloud Manager Ansible Collection provides a comprehensive set of modules for managing SCM configuration objects. These modules enable you to automate the creation, modification, and deletion of various network and security components.
+The Palo Alto Networks Strata Cloud Manager Ansible Collection provides a comprehensive set of modules for managing SCM
+configuration objects. These modules enable you to automate the creation, modification, and deletion of various network
+and security components.
 
 ## Module Categories
 
 The modules are organized into these categories:
 
 ### Network Objects
+
 These modules manage the fundamental building blocks of your network security policy:
 
 - **Address Objects**: [address](address.md), [address_info](address_info.md)
@@ -14,19 +17,23 @@ These modules manage the fundamental building blocks of your network security po
 - **Applications**: [application](application.md), [application_info](application_info.md)
 - **Application Groups**: [application_group](application_group.md), [application_group_info](application_group_info.md)
 - **Dynamic User Groups**: [dynamic_user_group](dynamic_user_group.md)
-- **External Dynamic Lists**: [external_dynamic_lists](external_dynamic_lists.md), [external_dynamic_lists_info](external_dynamic_lists_info.md)
+- **External Dynamic Lists
+  **: [external_dynamic_lists](external_dynamic_lists.md), [external_dynamic_lists_info](external_dynamic_lists_info.md)
 - **Services**: [service](service.md), [service_info](service_info.md)
 - **Service Groups**: [service_group](service_group.md), [service_group_info](service_group_info.md)
 - **Tags**: [tag](tag.md), [tag_info](tag_info.md)
 
 ### Network Configuration
+
 These modules configure the network infrastructure and connectivity:
 
 - **Zones**: [security_zone](security_zone.md)
-- **VPN**: [ike_crypto_profile](ike_crypto_profile.md), [ike_gateway](ike_gateway.md), [ipsec_crypto_profile](ipsec_crypto_profile.md), [ipsec_tunnel](ipsec_tunnel.md)
+- **VPN
+  **: [ike_crypto_profile](ike_crypto_profile.md), [ike_gateway](ike_gateway.md), [ipsec_crypto_profile](ipsec_crypto_profile.md), [ipsec_tunnel](ipsec_tunnel.md)
 - **Routing**: [bgp_routing](bgp_routing.md)
 
 ### Deployment
+
 These modules manage deployment-related configurations:
 
 - **Remote Networks**: [remote_networks](remote_networks.md)
@@ -34,10 +41,12 @@ These modules manage deployment-related configurations:
 - **Service Connections**: [service_connections](service_connections.md)
 
 ### Security Services
+
 These modules configure security policies and profiles:
 
 - **Security Rules**: [security_rule](security_rule.md), [security_rule_info](security_rule_info.md)
-- **Security Profiles**: [anti_spyware_profile](anti_spyware_profile.md), [anti_spyware_profile_info](anti_spyware_profile_info.md)
+- **Security Profiles
+  **: [anti_spyware_profile](anti_spyware_profile.md), [anti_spyware_profile_info](anti_spyware_profile_info.md)
 - **Security Profile Groups**: [security_profiles_group](security_profiles_group.md)
 
 ## Common Module Parameters
@@ -83,14 +92,15 @@ Information modules retrieve data without making changes:
 
 Most modules return these common values:
 
-| Name | Description | Type | Sample |
-|------|-------------|------|--------|
-| `changed` | Whether changes were made | boolean | `true` |
-| `scm_object` | The SCM object details | dictionary | `{"id": "123", "name": "test-address"}` |
+| Name         | Description               | Type       | Sample                                  |
+|--------------|---------------------------|------------|-----------------------------------------|
+| `changed`    | Whether changes were made | boolean    | `true`                                  |
+| `scm_object` | The SCM object details    | dictionary | `{"id": "123", "name": "test-address"}` |
 
 ## Using Check Mode
 
-All modules support Ansible's check mode. When run with `--check`, the module will report what changes would be made without actually making them:
+All modules support Ansible's check mode. When run with `--check`, the module will report what changes would be made
+without actually making them:
 
 ```yaml
 - name: Check what would change (without making changes)
