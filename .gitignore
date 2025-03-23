@@ -83,3 +83,4 @@ venv/*
 collections
 scripts
 /.env
+/ansible_collections/
