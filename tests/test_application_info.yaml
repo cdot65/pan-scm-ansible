@@ -26,7 +26,7 @@
       tags:
         - dev-cleanup
         - dev-test
-        
+
     # Create required tags
     - name: Create tags needed for testing
       cdot65.scm.tag:
@@ -197,7 +197,7 @@
           - business_apps.applications | selectattr('name', 'equalto', 'test-collaboration-app') | list | length == 0
         fail_msg: "Failed to filter applications by category"
         success_msg: "Successfully filtered applications by category"
-      
+
     # Filter by risk level
     - name: List high-risk applications
       cdot65.scm.application_info:
@@ -248,7 +248,7 @@
           - app_cleanup_result is succeeded
         fail_msg: "Failed to clean up test applications"
         success_msg: "Successfully cleaned up test applications"
-      
+
     # Clean up test tags
     - name: Remove tags created for testing
       cdot65.scm.tag:

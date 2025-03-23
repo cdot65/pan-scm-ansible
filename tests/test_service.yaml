@@ -26,7 +26,7 @@
       tags:
         - dev-cleanup
         - dev-test
-        
+
     # Create required tags
     - name: Create tags needed for testing
       cdot65.scm.tag:
@@ -283,7 +283,7 @@
           - udp_delete_result.changed == true
         fail_msg: "Failed to delete UDP service"
         success_msg: "Successfully deleted UDP service"
-          
+
     # Clean up test tags
     - name: Remove tags created for testing
       cdot65.scm.tag:

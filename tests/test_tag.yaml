@@ -29,7 +29,7 @@
         - "dev-cicd"
       tags:
         - dev-cleanup
-        
+
     # ==========================================
     # CREATE operation tests
     # ==========================================
@@ -57,7 +57,7 @@
           - create_dev_tags_result is succeeded
         fail_msg: "Failed to create dev tags"
         success_msg: "Successfully created dev tags"
-      
+
     - name: Create a new production tag
       cdot65.scm.tag:
         provider: "{{ provider }}"

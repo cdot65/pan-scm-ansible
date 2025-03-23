@@ -48,7 +48,7 @@
         - "{{ dev_service_names[3] }}"
       tags:
         - dev-cleanup
-        
+
     # ==========================================
     # CREATE services for information gathering
     # ==========================================
@@ -72,7 +72,7 @@
       tags:
         - dev-ansible
         - dev-automation
-      
+
     - name: Create a TCP web service
       cdot65.scm.service:
         provider: "{{ provider }}"
@@ -246,7 +246,7 @@
       register: web_tagged_services
       tags:
         - dev-automation
-        
+
     - name: Display Web-tagged services
       debug:
         var: web_tagged_services
@@ -268,10 +268,10 @@
       register: all_services_for_filtering
       tags:
         - dev-automation
-        
+
     - name: Filter services for dev- prefix in memory
       set_fact:
-        dev_services: 
+        dev_services:
           services: "{{ all_services_for_filtering.services | selectattr('name', 'match', 'dev-.*') | list }}"
 
     - name: Display dev services

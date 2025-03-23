@@ -36,7 +36,7 @@
       loop:
         - "ansible_test_network1"
         - "ansible_test_network2"
-        
+
     # Create required tags
     - name: Create tags needed for testing
       cdot65.scm.tag:

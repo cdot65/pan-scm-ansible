@@ -30,7 +30,7 @@
         - "dev-cicd"
       tags:
         - dev-cleanup
-        
+
     # ==========================================
     # CREATE tags for information gathering
     # ==========================================
@@ -51,7 +51,7 @@
       tags:
         - dev-ansible
         - dev-automation
-      
+
     - name: Create a production tag
       cdot65.scm.tag:
         provider: "{{ provider }}"
@@ -203,10 +203,10 @@
       register: all_tags_for_filtering
       tags:
         - dev-automation
-        
+
     - name: Filter tags for dev- prefix in memory
       set_fact:
-        dev_tags: 
+        dev_tags:
           tags: "{{ all_tags_for_filtering.tags | selectattr('name', 'match', '^dev-.*') | list }}"
 
     - name: Display dev tags

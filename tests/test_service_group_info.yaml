@@ -46,7 +46,7 @@
         - "{{ dev_group_names[3] }}"
       tags:
         - dev-cleanup
-        
+
     # Create services for service groups
     - name: Create TCP web service
       cdot65.scm.service:
@@ -81,7 +81,7 @@
         tag: ["DNS", "Network"]
         state: "present"
       register: create_dns_service_result
-        
+
     # ==========================================
     # CREATE service groups for information gathering
     # ==========================================
@@ -89,7 +89,7 @@
       cdot65.scm.service_group:
         provider: "{{ provider }}"
         name: "{{ item.name }}"
-        members: 
+        members:
           - "{{ web_service_name }}"
         folder: "Texas"
         tag: ["dev-tag"]
@@ -103,7 +103,7 @@
       tags:
         - dev-ansible
         - dev-automation
-      
+
     - name: Create a web service group
       cdot65.scm.service_group:
         provider: "{{ provider }}"
@@ -111,7 +111,7 @@
         members:
           - "{{ web_service_name }}"
           - "HTTP"
-          - "HTTPS" 
+          - "HTTPS"
         folder: "Texas"
         tag: ["Web", "Production"]
         state: "present"
@@ -234,7 +234,7 @@
       register: web_tagged_groups
       tags:
         - dev-automation
-        
+
     - name: Display Web-tagged service groups
       debug:
         var: web_tagged_groups
@@ -256,10 +256,10 @@
       register: all_groups_for_filtering
       tags:
         - dev-automation
-        
+
     - name: Filter service groups for dev- prefix in memory
       set_fact:
-        dev_groups: 
+        dev_groups:
           service_groups: "{{ all_groups_for_filtering.service_groups | selectattr('name', 'match', 'dev-.*') | list }}"
 
     - name: Display dev service groups
@@ -297,7 +297,7 @@
       register: service_group_cleanup_result
       tags:
         - dev-cleanup
-        
+
     - name: Remove all test services
       cdot65.scm.service:
         provider: "{{ provider }}"

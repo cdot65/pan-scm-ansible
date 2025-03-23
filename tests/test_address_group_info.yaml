@@ -38,7 +38,7 @@
         - "ansible_test_network2"
       tags:
         - dev-cleanup
-        
+
     # Create required tags
     - name: Create tags needed for testing
       cdot65.scm.tag:
