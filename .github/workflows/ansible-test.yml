@@ -29,12 +29,6 @@ jobs:
         with:
           path: ansible_collections/cdot65/scm
 
-      - name: Run fix script
-        run: |
-          cd ansible_collections/cdot65/scm
-          chmod +x fix_ansible_tests.sh
-          ./fix_ansible_tests.sh
-
       - name: Install dependencies
         run: |
           cd ansible_collections/cdot65/scm
@@ -72,12 +66,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ansible_collections/cdot65/scm
-
-      - name: Run fix script
-        run: |
-          cd ansible_collections/cdot65/scm
-          chmod +x fix_ansible_tests.sh
-          ./fix_ansible_tests.sh
 
       - name: Install dependencies
         run: |
