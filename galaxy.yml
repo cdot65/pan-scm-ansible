@@ -11,8 +11,6 @@ namespace: cdot65
 name: scm
 repository: https://github.com/cdot65/pan-scm-ansible
 readme: README.md
-requires_ansible: ">=2.17.0"
-python_requires: ">=3.11"
 tags:
   - stratacloudmanager
   - firewall
