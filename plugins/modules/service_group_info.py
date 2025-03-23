@@ -10,9 +10,9 @@
 # All rights reserved.
 
 """
-Ansible module for gathering information about tag objects in SCM.
+Ansible module for gathering information about service group objects in SCM.
 
-This module provides functionality to retrieve information about tag objects
+This module provides functionality to retrieve information about service group objects
 in the SCM (Strata Cloud Manager) system with various filtering options.
 """
 
@@ -22,7 +22,9 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.tag_info import TagInfoSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.service_group_info import (
+    ServiceGroupInfoSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
@@ -31,27 +33,27 @@ from scm.exceptions import InvalidObjectError, MissingQueryParameterError, Objec
 
 DOCUMENTATION = r"""
 ---
-module: tag_info
+module: service_group_info
 
-short_description: Gather information about tag objects in SCM.
+short_description: Gather information about service group objects in SCM.
 
 version_added: "0.1.0"
 
 description:
-    - Gather information about tag objects within Strata Cloud Manager (SCM).
-    - Supports retrieving a specific tag by name or listing tags with various filters.
+    - Gather information about service group objects within Strata Cloud Manager (SCM).
+    - Supports retrieving a specific service group by name or listing service groups with various filters.
     - Provides additional client-side filtering capabilities for exact matches and exclusions.
-    - Returns detailed information about each tag object.
+    - Returns detailed information about each service group object.
     - This is an info module that only retrieves information and does not modify anything.
 
 options:
     name:
-        description: The name of a specific tag object to retrieve.
+        description: The name of a specific service group object to retrieve.
         required: false
         type: str
     gather_subset:
         description: 
-            - Determines which information to gather about tags.
+            - Determines which information to gather about service groups.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.
         type: list
@@ -59,15 +61,15 @@ options:
         default: ['config']
         choices: ['all', 'config']
     folder:
-        description: Filter tags by folder container.
+        description: Filter service groups by folder container.
         required: false
         type: str
     snippet:
-        description: Filter tags by snippet container.
+        description: Filter service groups by snippet container.
         required: false
         type: str
     device:
-        description: Filter tags by device container.
+        description: Filter service groups by device container.
         required: false
         type: str
     exact_match:
@@ -90,53 +92,16 @@ options:
         required: false
         type: list
         elements: str
-    colors:
-        description: Filter by tag colors.
+    members:
+        description: Filter by service members contained in the groups.
         required: false
         type: list
         elements: str
-        choices:
-          - Azure Blue
-          - Black
-          - Blue
-          - Blue Gray
-          - Blue Violet
-          - Brown
-          - Burnt Sienna
-          - Cerulean Blue
-          - Chestnut
-          - Cobalt Blue
-          - Copper
-          - Cyan
-          - Forest Green
-          - Gold
-          - Gray
-          - Green
-          - Lavender
-          - Light Gray
-          - Light Green
-          - Lime
-          - Magenta
-          - Mahogany
-          - Maroon
-          - Medium Blue
-          - Medium Rose
-          - Medium Violet
-          - Midnight Blue
-          - Olive
-          - Orange
-          - Orchid
-          - Peach
-          - Purple
-          - Red
-          - Red Violet
-          - Red-Orange
-          - Salmon
-          - Thistle
-          - Turquoise Blue
-          - Violet Blue
-          - Yellow
-          - Yellow-Orange
+    tags:
+        description: Filter by tags.
+        required: false
+        type: list
+        elements: str
     provider:
         description: Authentication credentials.
         required: true
@@ -166,7 +131,7 @@ author:
 
 EXAMPLES = r"""
 ---
-- name: Gather Tag Information in Strata Cloud Manager
+- name: Gather Service Group Information in Strata Cloud Manager
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -179,63 +144,70 @@ EXAMPLES = r"""
       log_level: "INFO"
   tasks:
 
-    - name: Get information about a specific tag
-      cdot65.scm.tag_info:
+    - name: Get information about a specific service group
+      cdot65.scm.service_group_info:
         provider: "{{ provider }}"
-        name: "Production"
+        name: "web-services"
         folder: "Texas"
-      register: tag_info
+      register: service_group_info
 
-    - name: List all tag objects in a folder
-      cdot65.scm.tag_info:
-        provider: "{{ provider }}"
-        folder: "Texas"
-      register: all_tags
-
-    - name: List only tags with specific colors
-      cdot65.scm.tag_info:
+    - name: List all service group objects in a folder
+      cdot65.scm.service_group_info:
         provider: "{{ provider }}"
         folder: "Texas"
-        colors: ["Red", "Blue"]
-      register: colored_tags
+      register: all_service_groups
 
-    - name: List tags with exact match and exclusions
-      cdot65.scm.tag_info:
+    - name: List service groups containing a specific member
+      cdot65.scm.service_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        members: ["HTTPS"]
+      register: https_service_groups
+
+    - name: List service groups with specific tags
+      cdot65.scm.service_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        tags: ["Production", "Web"]
+      register: tagged_service_groups
+
+    - name: List service groups with exact match and exclusions
+      cdot65.scm.service_group_info:
         provider: "{{ provider }}"
         folder: "Texas"
         exact_match: true
         exclude_folders: ["All"]
         exclude_snippets: ["default"]
-      register: filtered_tags
+      register: filtered_service_groups
 """
 
 RETURN = r"""
-tags:
-    description: List of tag objects matching the filter criteria (returned when name is not specified).
+service_groups:
+    description: List of service group objects matching the filter criteria (returned when name is not specified).
     returned: success, when name is not specified
     type: list
     elements: dict
     sample:
       - id: "123e4567-e89b-12d3-a456-426655440000"
-        name: "Production"
-        color: "Red"
-        comments: "Production environment tag" 
+        name: "web-services"
+        members: ["HTTPS", "SSH", "web-custom-service"]
         folder: "Texas"
+        tag: ["Web", "Production"]
       - id: "234e5678-e89b-12d3-a456-426655440001"
-        name: "Development"
-        color: "Blue"
-        comments: "Development environment tag"
+        name: "database-services"
+        members: ["SQL", "mysql-custom", "Oracle"]
         folder: "Texas"
-tag:
-    description: Information about the requested tag (returned when name is specified).
+        tag: ["Database", "Production"]
+service_group:
+    description: Information about the requested service group (returned when name is specified).
     returned: success, when name is specified
     type: dict
     sample:
         id: "123e4567-e89b-12d3-a456-426655440000"
-        name: "Production"
-        color: "Red"
-        comments: "Production environment tag"
+        name: "web-services"
+        members: ["HTTPS", "SSH", "web-custom-service"]
         folder: "Texas"
+        tag: ["Web", "Production"]
 """
 
 
@@ -247,7 +219,9 @@ def build_filter_params(module_params):
         module_params (dict): Dictionary of module parameters
 
     Returns:
-        dict: Filtered dictionary containing only relevant filter parameters
+        tuple: (container_params, filter_params)
+            container_params: Dictionary containing container parameters
+            filter_params: Dictionary containing filter parameters
     """
     # Container params
     container_params = {}
@@ -261,25 +235,29 @@ def build_filter_params(module_params):
         if module_params.get(filter_param) is not None:
             filter_params[filter_param] = module_params[filter_param]
 
-    # Convert "colors" parameter for SDK
-    if module_params.get("colors") is not None:
-        filter_params["colors"] = module_params["colors"]
+    # Convert "tags" parameter for SDK
+    if module_params.get("tags") is not None:
+        filter_params["tags"] = module_params["tags"]
+
+    # Convert "members" parameter for SDK
+    if module_params.get("members") is not None:
+        filter_params["members"] = module_params["members"]
 
     return container_params, filter_params
 
 
 def main():
     """
-    Main execution path for the tag_info module.
+    Main execution path for the service_group_info module.
 
-    This module provides functionality to gather information about tag objects
+    This module provides functionality to gather information about service group objects
     in the SCM (Strata Cloud Manager) system with various filtering options.
 
     :return: Ansible module exit data
     :rtype: dict
     """
     module = AnsibleModule(
-        argument_spec=TagInfoSpec.spec(),
+        argument_spec=ServiceGroupInfoSpec.spec(),
         supports_check_mode=True,
         mutually_exclusive=[["folder", "snippet", "device"]],
         # Only require a container if we're not provided with a specific name
@@ -292,25 +270,25 @@ def main():
         # Handle check mode - return empty result since this is a read-only module
         if module.check_mode:
             if module.params.get("name"):
-                result["tag"] = {
+                result["service_group"] = {
                     "id": "00000000-0000-0000-0000-000000000000",
                     "name": module.params.get("name"),
-                    "color": "Red",
-                    "comments": "Check mode - no actual data retrieved",
+                    "members": ["example-service-1", "example-service-2"],
                     "folder": module.params.get("folder"),
                     "snippet": module.params.get("snippet"),
                     "device": module.params.get("device"),
+                    "tag": ["example-tag"],
                 }
             else:
-                result["tags"] = [
+                result["service_groups"] = [
                     {
                         "id": "00000000-0000-0000-0000-000000000000",
-                        "name": "example-tag",
-                        "color": "Red",
-                        "comments": "Check mode - no actual data retrieved",
+                        "name": "example-service-group",
+                        "members": ["example-service-1", "example-service-2"],
                         "folder": module.params.get("folder"),
                         "snippet": module.params.get("snippet"),
                         "device": module.params.get("device"),
+                        "tag": ["example-tag"],
                     }
                 ]
             module.exit_json(**result)
@@ -318,7 +296,7 @@ def main():
 
         client = get_scm_client(module)
 
-        # Check if we're fetching a specific tag by name
+        # Check if we're fetching a specific service group by name
         if module.params.get("name"):
             name = module.params["name"]
             container_params = {}
@@ -329,28 +307,28 @@ def main():
                     container_params[container] = module.params[container]
 
             try:
-                # Fetch a specific tag
-                tag = client.tag.fetch(name=name, **container_params)
+                # Fetch a specific service group
+                service_group = client.service_group.fetch(name=name, **container_params)
 
                 # Serialize response for Ansible output
-                result["tag"] = serialize_response(tag)
+                result["service_group"] = serialize_response(service_group)
 
             except ObjectNotPresentError:
                 module.fail_json(
-                    msg=f"Tag with name '{name}' not found in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
+                    msg=f"Service group with name '{name}' not found in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
                 )
             except (MissingQueryParameterError, InvalidObjectError) as e:
                 module.fail_json(msg=str(e))
 
         else:
-            # List tags with filtering
+            # List service groups with filtering
             container_params, filter_params = build_filter_params(module.params)
 
             try:
-                tags = client.tag.list(**container_params, **filter_params)
+                service_groups = client.service_group.list(**container_params, **filter_params)
 
                 # Serialize response for Ansible output
-                result["tags"] = [serialize_response(tag) for tag in tags]
+                result["service_groups"] = [serialize_response(sg) for sg in service_groups]
 
             except MissingQueryParameterError as e:
                 module.fail_json(msg=f"Missing required parameter: {str(e)}")

@@ -144,9 +144,9 @@ EXAMPLES = r"""
         provider: "{{ provider }}"
         name: "web-services"
         members:
-          - "HTTP"
-          - "HTTPS"
+          - "HTTPS"  # References to existing service objects
           - "SSH"
+          - "web-custom-service"  # Custom service previously created
         folder: "Texas"
         tag:
           - "Web"
@@ -158,10 +158,10 @@ EXAMPLES = r"""
         provider: "{{ provider }}"
         name: "web-services"
         members:
-          - "HTTP"
           - "HTTPS"
           - "SSH"
-          - "FTP"
+          - "FTP"  # Add FTP service to the group
+          - "web-custom-service"
         folder: "Texas"
         state: "present"
 
@@ -198,9 +198,9 @@ service_group:
         id: "123e4567-e89b-12d3-a456-426655440000"
         name: "web-services"
         members:
-          - "HTTP"
           - "HTTPS"
           - "SSH"
+          - "web-custom-service"
         folder: "Texas"
         tag: ["Web", "Automation"]
 """
@@ -265,11 +265,14 @@ def needs_update(existing, params):
         if container_value is not None:
             update_data[container] = container_value
 
+    # No additional parameters to update for service groups
+
     # Handle members field
     current_members = getattr(existing, "members", None)
     update_data["members"] = [] if current_members is None else current_members
 
     if "members" in params and params["members"] is not None:
+        # Compare sets to ignore order
         if set(current_members or []) != set(params["members"]):
             update_data["members"] = params["members"]
             changed = True
@@ -279,6 +282,7 @@ def needs_update(existing, params):
     update_data["tag"] = [] if current_tag is None else current_tag
 
     if "tag" in params and params["tag"] is not None:
+        # Compare sets to ignore order
         if set(current_tag or []) != set(params["tag"]):
             update_data["tag"] = params["tag"]
             changed = True
@@ -356,6 +360,12 @@ def main():
                 # Create new service group
                 if not module.check_mode:
                     try:
+                        # Validate using Pydantic
+                        try:
+                            ServiceGroupCreateModel(**service_group_data)
+                        except ValidationError as e:
+                            module.fail_json(msg=f"Validation error: {str(e)}")
+
                         new_service_group = client.service_group.create(data=service_group_data)
                         result["service_group"] = serialize_response(new_service_group)
                         result["changed"] = True

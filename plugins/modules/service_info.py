@@ -10,9 +10,9 @@
 # All rights reserved.
 
 """
-Ansible module for gathering information about tag objects in SCM.
+Ansible module for gathering information about service objects in SCM.
 
-This module provides functionality to retrieve information about tag objects
+This module provides functionality to retrieve information about service objects
 in the SCM (Strata Cloud Manager) system with various filtering options.
 """
 
@@ -22,7 +22,9 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.tag_info import TagInfoSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.service_info import (
+    ServiceInfoSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
@@ -31,27 +33,27 @@ from scm.exceptions import InvalidObjectError, MissingQueryParameterError, Objec
 
 DOCUMENTATION = r"""
 ---
-module: tag_info
+module: service_info
 
-short_description: Gather information about tag objects in SCM.
+short_description: Gather information about service objects in SCM.
 
 version_added: "0.1.0"
 
 description:
-    - Gather information about tag objects within Strata Cloud Manager (SCM).
-    - Supports retrieving a specific tag by name or listing tags with various filters.
+    - Gather information about service objects within Strata Cloud Manager (SCM).
+    - Supports retrieving a specific service by name or listing services with various filters.
     - Provides additional client-side filtering capabilities for exact matches and exclusions.
-    - Returns detailed information about each tag object.
+    - Returns detailed information about each service object.
     - This is an info module that only retrieves information and does not modify anything.
 
 options:
     name:
-        description: The name of a specific tag object to retrieve.
+        description: The name of a specific service object to retrieve.
         required: false
         type: str
     gather_subset:
         description: 
-            - Determines which information to gather about tags.
+            - Determines which information to gather about services.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.
         type: list
@@ -59,15 +61,15 @@ options:
         default: ['config']
         choices: ['all', 'config']
     folder:
-        description: Filter tags by folder container.
+        description: Filter services by folder container.
         required: false
         type: str
     snippet:
-        description: Filter tags by snippet container.
+        description: Filter services by snippet container.
         required: false
         type: str
     device:
-        description: Filter tags by device container.
+        description: Filter services by device container.
         required: false
         type: str
     exact_match:
@@ -90,53 +92,17 @@ options:
         required: false
         type: list
         elements: str
-    colors:
-        description: Filter by tag colors.
+    protocol_types:
+        description: Filter by protocol types.
         required: false
         type: list
         elements: str
-        choices:
-          - Azure Blue
-          - Black
-          - Blue
-          - Blue Gray
-          - Blue Violet
-          - Brown
-          - Burnt Sienna
-          - Cerulean Blue
-          - Chestnut
-          - Cobalt Blue
-          - Copper
-          - Cyan
-          - Forest Green
-          - Gold
-          - Gray
-          - Green
-          - Lavender
-          - Light Gray
-          - Light Green
-          - Lime
-          - Magenta
-          - Mahogany
-          - Maroon
-          - Medium Blue
-          - Medium Rose
-          - Medium Violet
-          - Midnight Blue
-          - Olive
-          - Orange
-          - Orchid
-          - Peach
-          - Purple
-          - Red
-          - Red Violet
-          - Red-Orange
-          - Salmon
-          - Thistle
-          - Turquoise Blue
-          - Violet Blue
-          - Yellow
-          - Yellow-Orange
+        choices: ["tcp", "udp"]
+    tags:
+        description: Filter by tags.
+        required: false
+        type: list
+        elements: str
     provider:
         description: Authentication credentials.
         required: true
@@ -166,7 +132,7 @@ author:
 
 EXAMPLES = r"""
 ---
-- name: Gather Tag Information in Strata Cloud Manager
+- name: Gather Service Information in Strata Cloud Manager
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -179,63 +145,87 @@ EXAMPLES = r"""
       log_level: "INFO"
   tasks:
 
-    - name: Get information about a specific tag
-      cdot65.scm.tag_info:
+    - name: Get information about a specific service
+      cdot65.scm.service_info:
         provider: "{{ provider }}"
-        name: "Production"
+        name: "web-service"
         folder: "Texas"
-      register: tag_info
+      register: service_info
 
-    - name: List all tag objects in a folder
-      cdot65.scm.tag_info:
-        provider: "{{ provider }}"
-        folder: "Texas"
-      register: all_tags
-
-    - name: List only tags with specific colors
-      cdot65.scm.tag_info:
+    - name: List all service objects in a folder
+      cdot65.scm.service_info:
         provider: "{{ provider }}"
         folder: "Texas"
-        colors: ["Red", "Blue"]
-      register: colored_tags
+      register: all_services
 
-    - name: List tags with exact match and exclusions
-      cdot65.scm.tag_info:
+    - name: List only TCP service objects
+      cdot65.scm.service_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        protocol_types: ["tcp"]
+      register: tcp_services
+
+    - name: List services with specific tags
+      cdot65.scm.service_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        tags: ["Production", "Web"]
+      register: tagged_services
+
+    - name: List services with exact match and exclusions
+      cdot65.scm.service_info:
         provider: "{{ provider }}"
         folder: "Texas"
         exact_match: true
         exclude_folders: ["All"]
         exclude_snippets: ["default"]
-      register: filtered_tags
+      register: filtered_services
 """
 
 RETURN = r"""
-tags:
-    description: List of tag objects matching the filter criteria (returned when name is not specified).
+services:
+    description: List of service objects matching the filter criteria (returned when name is not specified).
     returned: success, when name is not specified
     type: list
     elements: dict
     sample:
       - id: "123e4567-e89b-12d3-a456-426655440000"
-        name: "Production"
-        color: "Red"
-        comments: "Production environment tag" 
+        name: "web-service"
+        description: "Web service ports"
+        protocol:
+          tcp:
+            port: "80,443"
+            override:
+              timeout: 30
+              halfclose_timeout: 15
         folder: "Texas"
+        tag: ["Web", "Production"]
       - id: "234e5678-e89b-12d3-a456-426655440001"
-        name: "Development"
-        color: "Blue"
-        comments: "Development environment tag"
+        name: "dns-service"
+        description: "DNS service"
+        protocol:
+          udp:
+            port: "53"
+            override:
+              timeout: 60
         folder: "Texas"
-tag:
-    description: Information about the requested tag (returned when name is specified).
+        tag: ["DNS", "Network"]
+service:
+    description: Information about the requested service (returned when name is specified).
     returned: success, when name is specified
     type: dict
     sample:
         id: "123e4567-e89b-12d3-a456-426655440000"
-        name: "Production"
-        color: "Red"
-        comments: "Production environment tag"
+        name: "web-service"
+        description: "Web service ports"
+        protocol:
+          tcp:
+            port: "80,443"
+            override:
+              timeout: 30
+              halfclose_timeout: 15
         folder: "Texas"
+        tag: ["Web", "Production"]
 """
 
 
@@ -247,7 +237,9 @@ def build_filter_params(module_params):
         module_params (dict): Dictionary of module parameters
 
     Returns:
-        dict: Filtered dictionary containing only relevant filter parameters
+        tuple: (container_params, filter_params)
+            container_params: Dictionary containing container parameters
+            filter_params: Dictionary containing filter parameters
     """
     # Container params
     container_params = {}
@@ -261,25 +253,29 @@ def build_filter_params(module_params):
         if module_params.get(filter_param) is not None:
             filter_params[filter_param] = module_params[filter_param]
 
-    # Convert "colors" parameter for SDK
-    if module_params.get("colors") is not None:
-        filter_params["colors"] = module_params["colors"]
+    # Convert "tags" parameter for SDK
+    if module_params.get("tags") is not None:
+        filter_params["tags"] = module_params["tags"]
+
+    # Convert "protocol_types" parameter for SDK
+    if module_params.get("protocol_types") is not None:
+        filter_params["protocol_types"] = module_params["protocol_types"]
 
     return container_params, filter_params
 
 
 def main():
     """
-    Main execution path for the tag_info module.
+    Main execution path for the service_info module.
 
-    This module provides functionality to gather information about tag objects
+    This module provides functionality to gather information about service objects
     in the SCM (Strata Cloud Manager) system with various filtering options.
 
     :return: Ansible module exit data
     :rtype: dict
     """
     module = AnsibleModule(
-        argument_spec=TagInfoSpec.spec(),
+        argument_spec=ServiceInfoSpec.spec(),
         supports_check_mode=True,
         mutually_exclusive=[["folder", "snippet", "device"]],
         # Only require a container if we're not provided with a specific name
@@ -292,25 +288,45 @@ def main():
         # Handle check mode - return empty result since this is a read-only module
         if module.check_mode:
             if module.params.get("name"):
-                result["tag"] = {
+                result["service"] = {
                     "id": "00000000-0000-0000-0000-000000000000",
                     "name": module.params.get("name"),
-                    "color": "Red",
-                    "comments": "Check mode - no actual data retrieved",
+                    "description": "Check mode - no actual data retrieved",
+                    "protocol": {
+                        "tcp": {
+                            "port": "80",
+                            "override": {
+                                "timeout": 3600,
+                                "halfclose_timeout": 120,
+                                "timewait_timeout": 15,
+                            },
+                        }
+                    },
                     "folder": module.params.get("folder"),
                     "snippet": module.params.get("snippet"),
                     "device": module.params.get("device"),
+                    "tag": ["example-tag"],
                 }
             else:
-                result["tags"] = [
+                result["services"] = [
                     {
                         "id": "00000000-0000-0000-0000-000000000000",
-                        "name": "example-tag",
-                        "color": "Red",
-                        "comments": "Check mode - no actual data retrieved",
+                        "name": "example-service",
+                        "description": "Check mode - no actual data retrieved",
+                        "protocol": {
+                            "tcp": {
+                                "port": "80",
+                                "override": {
+                                    "timeout": 3600,
+                                    "halfclose_timeout": 120,
+                                    "timewait_timeout": 15,
+                                },
+                            }
+                        },
                         "folder": module.params.get("folder"),
                         "snippet": module.params.get("snippet"),
                         "device": module.params.get("device"),
+                        "tag": ["example-tag"],
                     }
                 ]
             module.exit_json(**result)
@@ -318,7 +334,7 @@ def main():
 
         client = get_scm_client(module)
 
-        # Check if we're fetching a specific tag by name
+        # Check if we're fetching a specific service by name
         if module.params.get("name"):
             name = module.params["name"]
             container_params = {}
@@ -329,28 +345,28 @@ def main():
                     container_params[container] = module.params[container]
 
             try:
-                # Fetch a specific tag
-                tag = client.tag.fetch(name=name, **container_params)
+                # Fetch a specific service
+                service = client.service.fetch(name=name, **container_params)
 
                 # Serialize response for Ansible output
-                result["tag"] = serialize_response(tag)
+                result["service"] = serialize_response(service)
 
             except ObjectNotPresentError:
                 module.fail_json(
-                    msg=f"Tag with name '{name}' not found in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
+                    msg=f"Service with name '{name}' not found in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
                 )
             except (MissingQueryParameterError, InvalidObjectError) as e:
                 module.fail_json(msg=str(e))
 
         else:
-            # List tags with filtering
+            # List services with filtering
             container_params, filter_params = build_filter_params(module.params)
 
             try:
-                tags = client.tag.list(**container_params, **filter_params)
+                services = client.service.list(**container_params, **filter_params)
 
                 # Serialize response for Ansible output
-                result["tags"] = [serialize_response(tag) for tag in tags]
+                result["services"] = [serialize_response(service) for service in services]
 
             except MissingQueryParameterError as e:
                 module.fail_json(msg=f"Missing required parameter: {str(e)}")
