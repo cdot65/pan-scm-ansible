@@ -25,7 +25,7 @@
       tags:
         - dev-cleanup
         - dev-test
-        
+
     # Create required tags
     - name: Create tags needed for testing
       cdot65.scm.tag:
@@ -130,7 +130,7 @@
     - name: Verify application response (known non-idempotent behavior)
       ansible.builtin.assert:
         that:
-          - idempotency_result.application is defined 
+          - idempotency_result.application is defined
           - idempotency_result.application.name == "custom-app"
         fail_msg: "Application module response incorrect"
         success_msg: "Application module returned expected object (note: module is non-idempotent)"

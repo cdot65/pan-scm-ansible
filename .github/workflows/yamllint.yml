@@ -2,9 +2,9 @@ name: YAML Lint
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, rebrand ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, rebrand ]
 
 jobs:
   yamllint:
@@ -17,3 +17,6 @@ jobs:
           python-version: "3.x"
       - name: Run yaml-lint
         uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .
+          config_file: .yamllint

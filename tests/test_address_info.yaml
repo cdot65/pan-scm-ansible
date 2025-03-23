@@ -27,7 +27,7 @@
       tags:
         - dev-cleanup
         - dev-test
-        
+
     # Create required tags
     - name: Create tags needed for testing
       cdot65.scm.tag:
@@ -62,7 +62,7 @@
       register: create_netmask_result
       tags:
         - dev-test
-      
+
     - name: Create range address object
       cdot65.scm.address:
         provider: "{{ provider }}"
@@ -75,7 +75,7 @@
       register: create_range_result
       tags:
         - dev-automation
-        
+
     - name: Create FQDN address object
       cdot65.scm.address:
         provider: "{{ provider }}"
@@ -88,7 +88,7 @@
       register: create_fqdn_result
       tags:
         - dev-cicd
-      
+
     - name: Create IP address object
       cdot65.scm.address:
         provider: "{{ provider }}"
@@ -112,7 +112,7 @@
           - create_ip_result is changed
         fail_msg: "Failed to create test address objects"
         success_msg: "Successfully created test address objects"
-      
+
     # ==========================================
     # INFO queries
     # ==========================================
@@ -125,12 +125,12 @@
       register: specific_address_info
       tags:
         - dev-test
-      
+
     - name: Display specific address information
       debug:
         var: specific_address_info
         verbosity: 1
-      
+
     # Verify specific address query
     - name: Verify specific address query
       assert:
@@ -144,7 +144,7 @@
         success_msg: "Successfully retrieved specific address information"
       tags:
         - dev-cicd
-      
+
     # Test listing all addresses in a folder
     - name: List all address objects in the folder
       cdot65.scm.address_info:
@@ -153,12 +153,12 @@
       register: all_addresses_info
       tags:
         - dev-automation
-    
+
     - name: Display all addresses information
       debug:
         var: all_addresses_info
         verbosity: 1
-      
+
     # Verify all addresses listing
     - name: Verify all addresses listing
       assert:
@@ -182,12 +182,12 @@
       register: tagged_addresses_info
       tags:
         - dev-cicd
-    
+
     - name: Display tagged addresses information
       debug:
         var: tagged_addresses_info
         verbosity: 1
-      
+
     # Verify tag filtering
     - name: Verify tag filtering
       assert:
@@ -198,7 +198,7 @@
           - tagged_addresses_info.addresses | selectattr('name', 'equalto', 'Test_Address_IP') | list | length == 0
         fail_msg: "Failed to filter addresses by tag"
         success_msg: "Successfully filtered addresses by tag"
-      
+
     # ==========================================
     # CLEANUP
     # ==========================================
@@ -217,7 +217,7 @@
       register: cleanup_result
       tags:
         - dev-cleanup
-    
+
     # Verify cleanup was successful
     - name: Verify address cleanup
       assert:

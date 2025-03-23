@@ -26,7 +26,7 @@
       tags:
         - dev-cleanup
         - dev-test
-        
+
     # Create required tags
     - name: Create tags needed for testing
       cdot65.scm.tag:
@@ -80,7 +80,7 @@
         rules:
           - name: "High-Rule"
             severity: ["high"]
-            category: "command-and-control" 
+            category: "command-and-control"
             packet_capture: "disable"
             threat_name: "test-high-rule-threat"
             action: "reset-both"
@@ -217,7 +217,7 @@
           - filtered_profiles.anti_spyware_profiles | selectattr('name', 'equalto', 'Test-Spyware-Profile-2') | list | length == 0
         fail_msg: "Failed to filter profiles by cloud inline analysis"
         success_msg: "Successfully filtered profiles by cloud inline analysis"
-      
+
     # Filter by tag
     - name: Filter profiles by tag
       cdot65.scm.anti_spyware_profile_info:
@@ -269,7 +269,7 @@
           - profile_cleanup_result is succeeded
         fail_msg: "Failed to clean up test anti-spyware profiles"
         success_msg: "Successfully cleaned up test anti-spyware profiles"
-      
+
     # Clean up test tags
     - name: Remove tags created for testing
       cdot65.scm.tag:

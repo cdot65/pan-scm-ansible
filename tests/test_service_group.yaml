@@ -25,7 +25,7 @@
       tags:
         - dev-cleanup
         - dev-test
-    
+
     - name: Remove test services if they exist
       cdot65.scm.service:
         provider: "{{ provider }}"
@@ -39,7 +39,7 @@
         - "ssh-service"
       tags:
         - dev-cleanup
-        
+
     # Create required tags
     - name: Create tags needed for testing
       cdot65.scm.tag:
@@ -150,7 +150,7 @@
       debug:
         var: create_result
         verbosity: 1
-        
+
     - name: Verify service group created correctly
       assert:
         that:
@@ -244,7 +244,7 @@
       debug:
         var: update_result
         verbosity: 1
-        
+
     - name: Verify service group updated correctly
       assert:
         that:

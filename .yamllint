@@ -1,57 +1,36 @@
-# .ansible-lint configuration for pan-scm-ansible
 ---
-# Exclude paths from linting
-exclude_paths:
-  - .git/
-  - .github/
-  - .venv/
-  - .pytest_cache/
-  - __pycache__/
-  - tests/unit/
-  - dist/
-  - .idea/
-  - docs/
+# YAML Lint configuration for pan-scm-ansible
+extends: default
 
-# Enable specific rules
-enable_list:
-  - empty-string-compare
-  - no-log-password
-  - no-same-owner
-  - yaml
+rules:
+  # 80 chars should be enough for everyone
+  line-length:
+    max: 160
+    level: warning
+  # Prefer explicit to implicit
+  truthy: disable
+  comments:
+    min-spaces-from-content: 1
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
 
-# Disable specific rules
-skip_list:
-  - yaml[line-length]
-  - experimental
-  - meta-runtime
-  - schema[meta]
-  - fqcn-builtins
-  - role-name
-
-# Set verbosity level
-verbosity: 1
-
-# Use default rules
-use_default_rules: true
-
-# Set linting mode (strict or normal)
-strict: false
-
-# Suppress warnings for specific rules
-warn_list:
-  - command-instead-of-module
-  - command-instead-of-shell
-  - deprecated-command-syntax
-  - inline-env-var
-  - no-changed-when
-  - no-handler
-  - var-naming[no-role-prefix]
-
-# Custom settings (adjust as needed)
-parseable: true
-# Removed use_gitignore: true as it's not supported
-loop_var_prefix: ^(item|ansible_loop)
-
-# Set path to write findings to (can pass to CI)
-write_list:
-  - "ansible-lint.txt"
+ignore: |
+  .git/
+  .github/
+  .venv/
+  .pytest_cache/
+  __pycache__/
+  tests/unit/
+  dist/
+  .idea/
+  docs/
+  ansible_collections/
+  .ansible/
+  venv/

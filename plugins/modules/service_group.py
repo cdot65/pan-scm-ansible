@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # This code is part of Ansible, but is an independent component.
 # This particular file snippet, and this file snippet only, is Apache2.0 licensed.
@@ -32,7 +33,6 @@ from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
-from scm.config.objects.service_group import ServiceGroup
 from scm.exceptions import InvalidObjectError, NameNotUniqueError, ObjectNotPresentError
 from scm.models.objects.service_group import ServiceGroupCreateModel, ServiceGroupUpdateModel
 

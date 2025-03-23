@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-
+# -*- coding: utf-8 -*-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 # This code is part of Ansible, but is an independent component.
 # This particular file snippet, and this file snippet only, is Apache2.0 licensed.
 # Modules you write using this snippet, which is embedded dynamically by Ansible

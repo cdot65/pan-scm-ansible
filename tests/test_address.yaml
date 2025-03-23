@@ -31,7 +31,7 @@
       tags:
         - dev-cleanup
         - dev-test
-        
+
     # Create required tags
     - name: Create tags needed for testing
       cdot65.scm.tag:
@@ -71,7 +71,7 @@
           - "dev-automation"
         state: "present"
       register: create_netmask_result
-      tags: 
+      tags:
         - dev-test
 
     - name: Debug netmask creation result
@@ -116,7 +116,7 @@
           - create_range_result.address.description == "An address object with ip_range"
         fail_msg: "Failed to create range address object"
         success_msg: "Successfully created range address object"
-      tags: 
+      tags:
         - dev-ansible
 
     - name: Create an address object with fqdn
@@ -126,7 +126,7 @@
         description: "An address object with fqdn"
         fqdn: "example.com"
         folder: "{{ test_folder }}"
-        tag: 
+        tag:
           - "dev-automation"
         state: "present"
       register: create_fqdn_result
@@ -153,7 +153,7 @@
         netmask_name: "{{ create_netmask_result.address.name }}"
         range_name: "{{ create_range_result.address.name }}"
         fqdn_name: "{{ create_fqdn_result.address.name }}"
-    
+
     # ==========================================
     # UPDATE operation tests
     # ==========================================
@@ -164,13 +164,13 @@
         description: "Updated description for netmask address"
         ip_netmask: "192.168.1.0/24"
         folder: "{{ test_folder }}"
-        tag: 
+        tag:
           - "dev-ansible"
           - "dev-test"
           - "dev-cicd"
         state: "present"
       register: update_result
-      tags: 
+      tags:
         - dev-cicd
         - dev-test
 
@@ -197,7 +197,7 @@
         description: "Updated description for netmask address"
         ip_netmask: "192.168.1.0/24"
         folder: "{{ test_folder }}"
-        tag: 
+        tag:
           - "dev-ansible"
           - "dev-test"
           - "dev-cicd"
@@ -205,7 +205,7 @@
       register: idempotency_result
       tags:
         - dev-cicd
-      
+
     - name: Verify idempotency behavior
       ansible.builtin.assert:
         that:
@@ -227,7 +227,7 @@
         - "{{ range_name }}"
         - "{{ fqdn_name }}"
       register: delete_result
-      tags: 
+      tags:
         - dev-test
 
     - name: Debug delete result
