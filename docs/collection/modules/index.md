@@ -16,7 +16,7 @@ These modules manage the fundamental building blocks of your network security po
 - **Address Groups**: [address_group](address_group.md), [address_group_info](address_group_info.md)
 - **Applications**: [application](application.md), [application_info](application_info.md)
 - **Application Groups**: [application_group](application_group.md), [application_group_info](application_group_info.md)
-- **Dynamic User Groups**: [dynamic_user_group](dynamic_user_group.md)
+- **Dynamic User Groups**: [dynamic_user_group](dynamic_user_group.md), [dynamic_user_group_info](dynamic_user_group_info.md)
 - **External Dynamic Lists
   **: [external_dynamic_lists](external_dynamic_lists.md), [external_dynamic_lists_info](external_dynamic_lists_info.md)
 - **Services**: [service](service.md), [service_info](service_info.md)

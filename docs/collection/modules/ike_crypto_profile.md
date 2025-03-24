@@ -2,28 +2,30 @@
 
 ## Overview
 
-The `ike_crypto_profile` module enables management of Internet Key Exchange (IKE) Crypto Profiles in Palo Alto Networks Strata Cloud Manager (SCM). IKE Crypto Profiles define the encryption and authentication algorithms to be used during the IKE Phase-1 negotiation when establishing a secure VPN tunnel.
+The `ike_crypto_profile` module enables management of Internet Key Exchange (IKE) Crypto Profiles in Palo Alto Networks
+Strata Cloud Manager (SCM). IKE Crypto Profiles define the encryption and authentication algorithms to be used during
+the IKE Phase-1 negotiation when establishing a secure VPN tunnel.
 
 ## Core Methods
 
-| Method | Description |
-|--------|-------------|
-| `create` | Creates a new IKE Crypto Profile in SCM |
-| `update` | Modifies an existing IKE Crypto Profile |
-| `delete` | Removes an IKE Crypto Profile from SCM |
-| `get` | Retrieves information about a specific IKE Crypto Profile |
-| `list` | Returns a list of all configured IKE Crypto Profiles |
+| Method   | Description                                               |
+|----------|-----------------------------------------------------------|
+| `create` | Creates a new IKE Crypto Profile in SCM                   |
+| `update` | Modifies an existing IKE Crypto Profile                   |
+| `delete` | Removes an IKE Crypto Profile from SCM                    |
+| `get`    | Retrieves information about a specific IKE Crypto Profile |
+| `list`   | Returns a list of all configured IKE Crypto Profiles      |
 
 ## Model Attributes
 
-| Attribute | Type | Description | Required |
-|-----------|------|-------------|----------|
-| `name` | String | Name of the IKE Crypto Profile | Yes |
-| `description` | String | Description of the profile | No |
-| `encryption` | List | List of encryption algorithms | Yes |
-| `authentication` | List | List of authentication algorithms | Yes |
-| `dh_group` | List | List of Diffie-Hellman groups | Yes |
-| `lifetime` | Dict | IKE SA lifetime settings | No |
+| Attribute        | Type   | Description                       | Required |
+|------------------|--------|-----------------------------------|----------|
+| `name`           | String | Name of the IKE Crypto Profile    | Yes      |
+| `description`    | String | Description of the profile        | No       |
+| `encryption`     | List   | List of encryption algorithms     | Yes      |
+| `authentication` | List   | List of authentication algorithms | Yes      |
+| `dh_group`       | List   | List of Diffie-Hellman groups     | Yes      |
+| `lifetime`       | Dict   | IKE SA lifetime settings          | No       |
 
 ## Configuration Examples
 

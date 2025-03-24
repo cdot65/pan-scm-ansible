@@ -18,34 +18,40 @@
 
 ## Overview
 
-The `tag_info` module provides functionality to gather information about tag objects in Palo Alto Networks' Strata Cloud Manager. This is an information-gathering module that doesn't make any changes to the system. It supports retrieving a specific tag by name or listing all tags with various filter options including color, container type, and exclusion filters.
+The `tag_info` module provides functionality to gather information about tag objects in Palo Alto Networks' Strata Cloud
+Manager. This is an information-gathering module that doesn't make any changes to the system. It supports retrieving a
+specific tag by name or listing all tags with various filter options including color, container type, and exclusion
+filters.
 
 ## Module Parameters
 
-| Parameter              | Required | Type  | Choices                                                                                              | Default    | Comments                                                           |
-|------------------------|----------|-------|------------------------------------------------------------------------------------------------------|------------|-------------------------------------------------------------------|
-| name                   | no       | str   |                                                                                                      |            | The name of a specific tag object to retrieve.                     |
-| gather_subset          | no       | list  | all, config                                                                                          | ['config'] | Determines which information to gather about tags.                 |
-| folder                 | no*      | str   |                                                                                                      |            | Filter tags by folder container.                                   |
-| snippet                | no*      | str   |                                                                                                      |            | Filter tags by snippet container.                                  |
-| device                 | no*      | str   |                                                                                                      |            | Filter tags by device container.                                   |
-| exact_match            | no       | bool  |                                                                                                      | false      | Only return objects defined exactly in the specified container.    |
-| exclude_folders        | no       | list  |                                                                                                      |            | List of folder names to exclude from results.                      |
-| exclude_snippets       | no       | list  |                                                                                                      |            | List of snippet values to exclude from results.                    |
-| exclude_devices        | no       | list  |                                                                                                      |            | List of device values to exclude from results.                     |
-| colors                 | no       | list  | Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, etc.                                         |            | Filter by tag colors.                                              |
-| provider               | yes      | dict  |                                                                                                      |            | Authentication credentials.                                        |
-| provider.client_id     | yes      | str   |                                                                                                      |            | Client ID for authentication.                                      |
-| provider.client_secret | yes      | str   |                                                                                                      |            | Client secret for authentication.                                  |
-| provider.tsg_id        | yes      | str   |                                                                                                      |            | Tenant Service Group ID.                                           |
-| provider.log_level     | no       | str   |                                                                                                      | INFO       | Log level for the SDK.                                             |
+| Parameter              | Required | Type | Choices                                                      | Default    | Comments                                                        |
+|------------------------|----------|------|--------------------------------------------------------------|------------|-----------------------------------------------------------------|
+| name                   | no       | str  |                                                              |            | The name of a specific tag object to retrieve.                  |
+| gather_subset          | no       | list | all, config                                                  | ['config'] | Determines which information to gather about tags.              |
+| folder                 | no*      | str  |                                                              |            | Filter tags by folder container.                                |
+| snippet                | no*      | str  |                                                              |            | Filter tags by snippet container.                               |
+| device                 | no*      | str  |                                                              |            | Filter tags by device container.                                |
+| exact_match            | no       | bool |                                                              | false      | Only return objects defined exactly in the specified container. |
+| exclude_folders        | no       | list |                                                              |            | List of folder names to exclude from results.                   |
+| exclude_snippets       | no       | list |                                                              |            | List of snippet values to exclude from results.                 |
+| exclude_devices        | no       | list |                                                              |            | List of device values to exclude from results.                  |
+| colors                 | no       | list | Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, etc. |            | Filter by tag colors.                                           |
+| provider               | yes      | dict |                                                              |            | Authentication credentials.                                     |
+| provider.client_id     | yes      | str  |                                                              |            | Client ID for authentication.                                   |
+| provider.client_secret | yes      | str  |                                                              |            | Client secret for authentication.                               |
+| provider.tsg_id        | yes      | str  |                                                              |            | Tenant Service Group ID.                                        |
+| provider.log_level     | no       | str  |                                                              | INFO       | Log level for the SDK.                                          |
 
-**Available tag colors:** Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, Burnt Sienna, Cerulean Blue, Chestnut, Cobalt Blue, Copper, Cyan, Forest Green, Gold, Gray, Green, Lavender, Light Gray, Light Green, Lime, Magenta, Mahogany, Maroon, Medium Blue, Medium Rose, Medium Violet, Midnight Blue, Olive, Orange, Orchid, Peach, Purple, Red, Red Violet, Red-Orange, Salmon, Thistle, Turquoise Blue, Violet Blue, Yellow, Yellow-Orange
+**Available tag colors:** Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, Burnt Sienna, Cerulean Blue, Chestnut,
+Cobalt Blue, Copper, Cyan, Forest Green, Gold, Gray, Green, Lavender, Light Gray, Light Green, Lime, Magenta, Mahogany,
+Maroon, Medium Blue, Medium Rose, Medium Violet, Midnight Blue, Olive, Orange, Orchid, Peach, Purple, Red, Red Violet,
+Red-Orange, Salmon, Thistle, Turquoise Blue, Violet Blue, Yellow, Yellow-Orange
 
 !!! note
-    - If `name` is not specified, one container type (`folder`, `snippet`, or `device`) must be provided.
-    - Container parameters (`folder`, `snippet`, `device`) are mutually exclusive.
-    - The `colors` parameter accepts a wide range of color values as listed above.
+- If `name` is not specified, one container type (`folder`, `snippet`, or `device`) must be provided.
+- Container parameters (`folder`, `snippet`, `device`) are mutually exclusive.
+- The `colors` parameter accepts a wide range of color values as listed above.
 
 ## Requirements
 
@@ -212,21 +218,21 @@ The `tag_info` module provides functionality to gather information about tag obj
 
 ## Return Values
 
-| Name  | Description                                                | Type | Returned                         | Sample                                                                                                                                       |
-|-------|------------------------------------------------------------|------|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| tags  | List of tag objects matching the filter criteria.          | list | when name is not specified       | [{"id": "123e4567-e89b-12d3-a456-426655440000", "name": "Production", "color": "Red", "comments": "Production environment tag", "folder": "Texas"}, {...}] |
-| tag   | Information about the requested tag.                       | dict | when name is specified           | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "Production", "color": "Red", "comments": "Production environment tag", "folder": "Texas"} |
+| Name | Description                                       | Type | Returned                   | Sample                                                                                                                                                     |
+|------|---------------------------------------------------|------|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| tags | List of tag objects matching the filter criteria. | list | when name is not specified | [{"id": "123e4567-e89b-12d3-a456-426655440000", "name": "Production", "color": "Red", "comments": "Production environment tag", "folder": "Texas"}, {...}] |
+| tag  | Information about the requested tag.              | dict | when name is specified     | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "Production", "color": "Red", "comments": "Production environment tag", "folder": "Texas"}          |
 
 ## Error Handling
 
 Common errors you might encounter when using this module:
 
-| Error | Description | Resolution |
-|-------|-------------|------------|
-| Tag not found | Specified tag does not exist in the given container | Verify the tag name and container location |
-| Invalid color | Provided color not in list of valid colors | Check valid color options in module documentation |
-| Missing query parameter | Required parameter not provided | Ensure all required parameters are specified |
-| Invalid filter parameters | Filter parameters in incorrect format | Check parameter format requirements |
+| Error                     | Description                                         | Resolution                                        |
+|---------------------------|-----------------------------------------------------|---------------------------------------------------|
+| Tag not found             | Specified tag does not exist in the given container | Verify the tag name and container location        |
+| Invalid color             | Provided color not in list of valid colors          | Check valid color options in module documentation |
+| Missing query parameter   | Required parameter not provided                     | Ensure all required parameters are specified      |
+| Invalid filter parameters | Filter parameters in incorrect format               | Check parameter format requirements               |
 
 <div class="termy">
 
@@ -254,34 +260,34 @@ Common errors you might encounter when using this module:
 ## Best Practices
 
 1. **Querying Strategies**
-   - Use name parameter for querying specific tags
-   - Use container filters (folder, snippet, device) for listing tags
-   - Combine with JMESPath filters in Ansible for advanced filtering
-   - Create utility tasks for common filtering operations
+    - Use name parameter for querying specific tags
+    - Use container filters (folder, snippet, device) for listing tags
+    - Combine with JMESPath filters in Ansible for advanced filtering
+    - Create utility tasks for common filtering operations
 
 2. **Performance Optimization**
-   - Include specific container parameters to narrow search scope
-   - Use exact_match parameter when possible to improve performance
-   - Use exclusion filters to narrow down results when querying large systems
-   - Cache results when making multiple queries on the same dataset
+    - Include specific container parameters to narrow search scope
+    - Use exact_match parameter when possible to improve performance
+    - Use exclusion filters to narrow down results when querying large systems
+    - Cache results when making multiple queries on the same dataset
 
 3. **Color Filtering**
-   - Remember colors are case-sensitive in filter parameters
-   - Use list notation even for single color filtering
-   - Combine color filtering with other filters for precise results
-   - Consider creating color variables or dictionaries for consistency
+    - Remember colors are case-sensitive in filter parameters
+    - Use list notation even for single color filtering
+    - Combine color filtering with other filters for precise results
+    - Consider creating color variables or dictionaries for consistency
 
 4. **Testing and Validation**
-   - Use assert tasks to validate results as shown in examples
-   - Include proper error handling for non-existent tags
-   - Set up test tags with a variety of attributes for thorough testing
-   - Use meaningful tag names that reflect their purpose
+    - Use assert tasks to validate results as shown in examples
+    - Include proper error handling for non-existent tags
+    - Set up test tags with a variety of attributes for thorough testing
+    - Use meaningful tag names that reflect their purpose
 
 5. **Integration with Other Modules**
-   - Use tag_info module output as input for tag module operations
-   - Chain tag_info queries with other modules to automate complex workflows
-   - Leverage the registered variables for conditional tasks
-   - Consider creating custom filters for common tag operations
+    - Use tag_info module output as input for tag module operations
+    - Chain tag_info queries with other modules to automate complex workflows
+    - Leverage the registered variables for conditional tasks
+    - Consider creating custom filters for common tag operations
 
 ## Related Modules
 

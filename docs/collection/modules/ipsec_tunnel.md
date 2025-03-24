@@ -2,31 +2,33 @@
 
 ## Overview
 
-The `ipsec_tunnel` module enables management of IPSec tunnels in Palo Alto Networks Strata Cloud Manager (SCM). IPSec tunnels define secure connections between networks and leverage IKE Gateway and Crypto Profile configurations to establish encrypted communications.
+The `ipsec_tunnel` module enables management of IPSec tunnels in Palo Alto Networks Strata Cloud Manager (SCM). IPSec
+tunnels define secure connections between networks and leverage IKE Gateway and Crypto Profile configurations to
+establish encrypted communications.
 
 ## Core Methods
 
-| Method | Description |
-|--------|-------------|
-| `create` | Creates a new IPSec tunnel in SCM |
-| `update` | Modifies an existing IPSec tunnel |
-| `delete` | Removes an IPSec tunnel from SCM |
-| `get` | Retrieves information about a specific IPSec tunnel |
-| `list` | Returns a list of all configured IPSec tunnels |
+| Method   | Description                                         |
+|----------|-----------------------------------------------------|
+| `create` | Creates a new IPSec tunnel in SCM                   |
+| `update` | Modifies an existing IPSec tunnel                   |
+| `delete` | Removes an IPSec tunnel from SCM                    |
+| `get`    | Retrieves information about a specific IPSec tunnel |
+| `list`   | Returns a list of all configured IPSec tunnels      |
 
 ## Model Attributes
 
-| Attribute | Type | Description | Required |
-|-----------|------|-------------|----------|
-| `name` | String | Name of the IPSec tunnel | Yes |
-| `tunnel_interface` | String | Tunnel interface to use | Yes |
-| `ike_gateway` | String | Name of the IKE Gateway to use | Yes |
-| `ipsec_crypto_profile` | String | Name of the IPSec Crypto Profile to use | Yes |
-| `tunnel_monitor` | Dict | Tunnel monitoring configuration | No |
-| `anti_replay` | Boolean | Enable/disable anti-replay protection | No |
-| `copy_tos` | Boolean | Copy TOS field from inner packet to IPSec packet | No |
-| `enable_gre_encapsulation` | Boolean | Enable GRE encapsulation | No |
-| `proxy_ids` | List | List of Proxy IDs for this tunnel | No |
+| Attribute                  | Type    | Description                                      | Required |
+|----------------------------|---------|--------------------------------------------------|----------|
+| `name`                     | String  | Name of the IPSec tunnel                         | Yes      |
+| `tunnel_interface`         | String  | Tunnel interface to use                          | Yes      |
+| `ike_gateway`              | String  | Name of the IKE Gateway to use                   | Yes      |
+| `ipsec_crypto_profile`     | String  | Name of the IPSec Crypto Profile to use          | Yes      |
+| `tunnel_monitor`           | Dict    | Tunnel monitoring configuration                  | No       |
+| `anti_replay`              | Boolean | Enable/disable anti-replay protection            | No       |
+| `copy_tos`                 | Boolean | Copy TOS field from inner packet to IPSec packet | No       |
+| `enable_gre_encapsulation` | Boolean | Enable GRE encapsulation                         | No       |
+| `proxy_ids`                | List    | List of Proxy IDs for this tunnel                | No       |
 
 ## Configuration Examples
 

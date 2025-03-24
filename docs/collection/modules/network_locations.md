@@ -1,32 +1,36 @@
 # Network Locations Configuration Object
 
 ## 1. Overview
-The Network Locations module allows you to manage network location objects within Strata Cloud Manager (SCM). Network locations represent geographic regions and are used for routing decisions, service connectivity, and resource allocation. This module primarily provides read capabilities and limited management functions, as network locations are often system-defined.
+
+The Network Locations module allows you to manage network location objects within Strata Cloud Manager (SCM). Network
+locations represent geographic regions and are used for routing decisions, service connectivity, and resource
+allocation. This module primarily provides read capabilities and limited management functions, as network locations are
+often system-defined.
 
 ## 2. Core Methods
 
-| Method     | Description                         | Parameters                | Return Type            |
-|------------|-------------------------------------|---------------------------|------------------------|
-| `list()`   | Lists available network locations    | `filters: Dict[str, Any]` | `List[ResponseModel]`  |
-| `get()`    | Retrieves location by ID            | `location_id: str`        | `ResponseModel`        |
-| `fetch()`  | Retrieves location by value         | `value: str`              | `ResponseModel`        |
+| Method    | Description                       | Parameters                | Return Type           |
+|-----------|-----------------------------------|---------------------------|-----------------------|
+| `list()`  | Lists available network locations | `filters: Dict[str, Any]` | `List[ResponseModel]` |
+| `get()`   | Retrieves location by ID          | `location_id: str`        | `ResponseModel`       |
+| `fetch()` | Retrieves location by value       | `value: str`              | `ResponseModel`       |
 
 ## 3. Model Attributes
 
-| Attribute      | Type              | Description                                            |
-|----------------|-------------------|--------------------------------------------------------|
-| `id`           | str               | Unique identifier for the network location              |
-| `value`        | str               | Location value/code (e.g., "us-east-1")                 |
-| `display`      | str               | Display name of the location (e.g., "US East")          |
-| `continent`    | str               | Continent where the location is situated                |
-| `country`      | str               | Country code where the location is situated             |
-| `city`         | str               | City where the location is situated                     |
-| `state`        | str               | State/province where the location is situated           |
-| `latitude`     | float             | Latitude coordinates                                    |
-| `longitude`    | float             | Longitude coordinates                                    |
-| `tier`         | int               | Service tier of the location                            |
-| `type`         | str               | Type of location ("default", "custom", etc.)            |
-| `status`       | str               | Current status of the location                          |
+| Attribute   | Type  | Description                                    |
+|-------------|-------|------------------------------------------------|
+| `id`        | str   | Unique identifier for the network location     |
+| `value`     | str   | Location value/code (e.g., "us-east-1")        |
+| `display`   | str   | Display name of the location (e.g., "US East") |
+| `continent` | str   | Continent where the location is situated       |
+| `country`   | str   | Country code where the location is situated    |
+| `city`      | str   | City where the location is situated            |
+| `state`     | str   | State/province where the location is situated  |
+| `latitude`  | float | Latitude coordinates                           |
+| `longitude` | float | Longitude coordinates                          |
+| `tier`      | int   | Service tier of the location                   |
+| `type`      | str   | Type of location ("default", "custom", etc.)   |
+| `status`    | str   | Current status of the location                 |
 
 ## 4. Basic Usage
 
@@ -191,29 +195,29 @@ The Network Locations module allows you to manage network location objects withi
 ## 7. Best Practices
 
 1. **Location Selection**
-   - Choose network locations based on geographic proximity to your users and resources
-   - Consider latency requirements when selecting locations
-   - Use locations with tier 1 for critical workloads for better performance
+    - Choose network locations based on geographic proximity to your users and resources
+    - Consider latency requirements when selecting locations
+    - Use locations with tier 1 for critical workloads for better performance
 
 2. **Redundancy Planning**
-   - Select multiple locations for redundancy
-   - Choose locations in different geographic regions for disaster recovery
-   - Understand the capabilities and limitations of each location
+    - Select multiple locations for redundancy
+    - Choose locations in different geographic regions for disaster recovery
+    - Understand the capabilities and limitations of each location
 
 3. **Integration with Other Resources**
-   - Use location information when configuring remote networks
-   - Reference location values correctly in other resources
-   - Validate location values before using them in configurations
+    - Use location information when configuring remote networks
+    - Reference location values correctly in other resources
+    - Validate location values before using them in configurations
 
 4. **Automation**
-   - Use variables or facts to store location information
-   - Create a centralized location selection strategy
-   - Document which locations are used and why
+    - Use variables or facts to store location information
+    - Create a centralized location selection strategy
+    - Document which locations are used and why
 
 5. **Monitoring**
-   - Regularly check the status of network locations
-   - Have a plan for location unavailability
-   - Automate failover to alternative locations when needed
+    - Regularly check the status of network locations
+    - Have a plan for location unavailability
+    - Automate failover to alternative locations when needed
 
 ## 8. Related Models
 

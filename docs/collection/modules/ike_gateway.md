@@ -1,42 +1,45 @@
 # IKE Gateway Configuration Object
 
 ## 1. Overview
-The IKE Gateway module allows you to manage Internet Key Exchange (IKE) gateway configuration objects within Strata Cloud Manager (SCM). IKE gateways define the parameters for establishing IPsec VPN tunnels with remote endpoints, including authentication methods, encryption settings, and peer identities.
+
+The IKE Gateway module allows you to manage Internet Key Exchange (IKE) gateway configuration objects within Strata
+Cloud Manager (SCM). IKE gateways define the parameters for establishing IPsec VPN tunnels with remote endpoints,
+including authentication methods, encryption settings, and peer identities.
 
 ## 2. Core Methods
 
-| Method     | Description                    | Parameters                | Return Type            |
-|------------|--------------------------------|---------------------------|------------------------|
-| `create()` | Creates a new IKE gateway      | `data: Dict[str, Any]`    | `ResponseModel`        |
-| `get()`    | Retrieves gateway by name      | `name: str, folder: str`  | `ResponseModel`        |
-| `update()` | Updates an existing gateway    | `ike_gateway: Model`      | `ResponseModel`        |
-| `delete()` | Deletes an IKE gateway         | `id: str`                 | `None`                 |
+| Method     | Description                 | Parameters               | Return Type     |
+|------------|-----------------------------|--------------------------|-----------------|
+| `create()` | Creates a new IKE gateway   | `data: Dict[str, Any]`   | `ResponseModel` |
+| `get()`    | Retrieves gateway by name   | `name: str, folder: str` | `ResponseModel` |
+| `update()` | Updates an existing gateway | `ike_gateway: Model`     | `ResponseModel` |
+| `delete()` | Deletes an IKE gateway      | `id: str`                | `None`          |
 
 ## 3. Model Attributes
 
-| Attribute            | Type              | Required | Description                                           |
-|----------------------|-------------------|----------|-------------------------------------------------------|
-| `name`               | str               | Yes      | Name of the IKE gateway                               |
-| `description`        | str               | No       | Description of the IKE gateway                        |
-| `version`            | str               | Yes      | IKE version (ikev1, ikev2, or ikev2-preferred)        |
-| `peer_address`       | str               | Yes      | Peer IP address or FQDN                               |
-| `interface`          | str               | Yes      | Interface for the connection                          |
-| `local_id_type`      | str               | No       | Local identifier type (ipaddr, fqdn, ufqdn, keyid)    |
-| `local_id_value`     | str               | No       | Local identifier value                                |
-| `peer_id_type`       | str               | No       | Peer identifier type (ipaddr, fqdn, ufqdn, keyid)     |
-| `peer_id_value`      | str               | No       | Peer identifier value                                 |
-| `pre_shared_key`     | str               | Yes*     | Pre-shared key for authentication                     |
-| `certificate_name`   | str               | Yes*     | Certificate name for authentication                    |
-| `crypto_profile`     | str               | No       | IKE crypto profile name                               |
-| `enable_nat_traversal`| bool             | No       | Enable NAT traversal                                  |
-| `nat_traversal_keep_alive`| int          | No       | NAT traversal keepalive interval                     |
-| `nat_traversal_enable_udp_checksum`| bool | No      | Enable UDP checksum for NAT traversal                 |
-| `enable_fragmentation`| bool             | No       | Enable IKE fragmentation                              |
-| `enable_liveness_check`| bool            | No       | Enable IKE liveness check                             |
-| `liveness_check_interval`| int           | No       | Liveness check interval                               |
-| `folder`             | str               | No**     | The folder in which the resource is defined           |
-| `snippet`            | str               | No**     | The snippet in which the resource is defined          |
-| `device`             | str               | No**     | The device in which the resource is defined           |
+| Attribute                           | Type | Required | Description                                        |
+|-------------------------------------|------|----------|----------------------------------------------------|
+| `name`                              | str  | Yes      | Name of the IKE gateway                            |
+| `description`                       | str  | No       | Description of the IKE gateway                     |
+| `version`                           | str  | Yes      | IKE version (ikev1, ikev2, or ikev2-preferred)     |
+| `peer_address`                      | str  | Yes      | Peer IP address or FQDN                            |
+| `interface`                         | str  | Yes      | Interface for the connection                       |
+| `local_id_type`                     | str  | No       | Local identifier type (ipaddr, fqdn, ufqdn, keyid) |
+| `local_id_value`                    | str  | No       | Local identifier value                             |
+| `peer_id_type`                      | str  | No       | Peer identifier type (ipaddr, fqdn, ufqdn, keyid)  |
+| `peer_id_value`                     | str  | No       | Peer identifier value                              |
+| `pre_shared_key`                    | str  | Yes*     | Pre-shared key for authentication                  |
+| `certificate_name`                  | str  | Yes*     | Certificate name for authentication                |
+| `crypto_profile`                    | str  | No       | IKE crypto profile name                            |
+| `enable_nat_traversal`              | bool | No       | Enable NAT traversal                               |
+| `nat_traversal_keep_alive`          | int  | No       | NAT traversal keepalive interval                   |
+| `nat_traversal_enable_udp_checksum` | bool | No       | Enable UDP checksum for NAT traversal              |
+| `enable_fragmentation`              | bool | No       | Enable IKE fragmentation                           |
+| `enable_liveness_check`             | bool | No       | Enable IKE liveness check                          |
+| `liveness_check_interval`           | int  | No       | Liveness check interval                            |
+| `folder`                            | str  | No**     | The folder in which the resource is defined        |
+| `snippet`                           | str  | No**     | The snippet in which the resource is defined       |
+| `device`                            | str  | No**     | The device in which the resource is defined        |
 
 \* Exactly one of `pre_shared_key` or `certificate_name` must be provided.  
 \** Exactly one of `folder`, `snippet`, or `device` must be provided.
@@ -210,35 +213,35 @@ The IKE Gateway module allows you to manage Internet Key Exchange (IKE) gateway 
 ## 7. Best Practices
 
 1. **Authentication**
-   - Use strong pre-shared keys or certificates for authentication
-   - Consider using certificates for higher security
-   - Rotate pre-shared keys periodically
-   - Store secrets securely using Ansible Vault
+    - Use strong pre-shared keys or certificates for authentication
+    - Consider using certificates for higher security
+    - Rotate pre-shared keys periodically
+    - Store secrets securely using Ansible Vault
 
 2. **IKE Version**
-   - Use IKEv2 when possible for better security and features
-   - Only use IKEv1 for compatibility with legacy devices
-   - Consider ikev2-preferred for maximum compatibility
+    - Use IKEv2 when possible for better security and features
+    - Only use IKEv1 for compatibility with legacy devices
+    - Consider ikev2-preferred for maximum compatibility
 
 3. **Identifiers**
-   - Always configure explicit identifiers for both local and peer endpoints
-   - Use IP addresses as identifiers when possible for simplicity
-   - Ensure peer identifiers match exactly what the remote device uses
+    - Always configure explicit identifiers for both local and peer endpoints
+    - Use IP addresses as identifiers when possible for simplicity
+    - Ensure peer identifiers match exactly what the remote device uses
 
 4. **Crypto Profiles**
-   - Use strong encryption algorithms and DH groups
-   - Follow current security best practices for crypto settings
-   - Create custom crypto profiles instead of using defaults
+    - Use strong encryption algorithms and DH groups
+    - Follow current security best practices for crypto settings
+    - Create custom crypto profiles instead of using defaults
 
 5. **High Availability**
-   - Configure liveness checks to ensure tunnel availability
-   - Set appropriate liveness check intervals (not too short, not too long)
-   - Consider NAT traversal settings when tunnels cross NAT devices
+    - Configure liveness checks to ensure tunnel availability
+    - Set appropriate liveness check intervals (not too short, not too long)
+    - Consider NAT traversal settings when tunnels cross NAT devices
 
 6. **Organization**
-   - Use descriptive names for IKE gateways
-   - Include purpose and remote site in gateway descriptions
-   - Organize gateways in appropriate folders
+    - Use descriptive names for IKE gateways
+    - Include purpose and remote site in gateway descriptions
+    - Organize gateways in appropriate folders
 
 ## 8. Related Models
 

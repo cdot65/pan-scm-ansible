@@ -16,8 +16,8 @@
 
 ## Overview
 
-The `address` module provides functionality to manage address objects in Palo Alto Networks' Strata Cloud Manager. This 
-module allows you to create, update, and delete address objects of various types including IP/Netmask, IP Range, 
+The `address` module provides functionality to manage address objects in Palo Alto Networks' Strata Cloud Manager. This
+module allows you to create, update, and delete address objects of various types including IP/Netmask, IP Range,
 IP Wildcard, and FQDN (Fully Qualified Domain Name).
 
 ## Module Parameters
@@ -42,8 +42,8 @@ IP Wildcard, and FQDN (Fully Qualified Domain Name).
 | state                  | yes      | str  | present, absent |         | Desired state of the address object.                                 |
 
 !!! note
-    - Exactly one address type (`ip_netmask`, `ip_range`, `ip_wildcard`, or `fqdn`) must be provided when state is present.
-    - Exactly one container type (`folder`, `snippet`, or `device`) must be provided.
+- Exactly one address type (`ip_netmask`, `ip_range`, `ip_wildcard`, or `fqdn`) must be provided when state is present.
+- Exactly one container type (`folder`, `snippet`, or `device`) must be provided.
 
 ## Requirements
 
@@ -172,12 +172,12 @@ IP Wildcard, and FQDN (Fully Qualified Domain Name).
 
 Common errors you might encounter when using this module:
 
-| Error | Description | Resolution |
-|-------|-------------|------------|
-| Invalid address data | The address parameters don't match required formats | Verify the format of address values (e.g., correct CIDR notation) |
-| Address name already exists | Attempt to create an address with a name that already exists | Use a unique name or update the existing address |
-| Address not found | Attempt to update or delete an address that doesn't exist | Verify the address name and container location |
-| Missing required parameter | Required parameter not provided | Ensure all required parameters are specified |
+| Error                       | Description                                                  | Resolution                                                        |
+|-----------------------------|--------------------------------------------------------------|-------------------------------------------------------------------|
+| Invalid address data        | The address parameters don't match required formats          | Verify the format of address values (e.g., correct CIDR notation) |
+| Address name already exists | Attempt to create an address with a name that already exists | Use a unique name or update the existing address                  |
+| Address not found           | Attempt to update or delete an address that doesn't exist    | Verify the address name and container location                    |
+| Missing required parameter  | Required parameter not provided                              | Ensure all required parameters are specified                      |
 
 <div class="termy">
 
@@ -207,30 +207,30 @@ Common errors you might encounter when using this module:
 ## Best Practices
 
 1. **Container Management**
-   - Always specify exactly one container (folder, snippet, or device)
-   - Use consistent container names across operations
-   - Validate container existence before operations
+    - Always specify exactly one container (folder, snippet, or device)
+    - Use consistent container names across operations
+    - Validate container existence before operations
 
 2. **Address Types**
-   - Specify exactly one address type per object
-   - Use appropriate address format for each type
-   - Validate address formats before creation
+    - Specify exactly one address type per object
+    - Use appropriate address format for each type
+    - Validate address formats before creation
 
 3. **Using Tags**
-   - Leverage tags for classification and filtering
-   - Keep tag names consistent across objects
-   - Consider creating tag conventions (environment, purpose, etc.)
+    - Leverage tags for classification and filtering
+    - Keep tag names consistent across objects
+    - Consider creating tag conventions (environment, purpose, etc.)
 
 4. **Module Usage**
-   - Use idempotent operations to safely run playbooks multiple times
-   - Leverage check mode (`--check`) to preview changes before executing them
-   - Implement proper error handling with block/rescue
-   - Generate unique names when creating multiple similar objects
+    - Use idempotent operations to safely run playbooks multiple times
+    - Leverage check mode (`--check`) to preview changes before executing them
+    - Implement proper error handling with block/rescue
+    - Generate unique names when creating multiple similar objects
 
 5. **Performance Optimization**
-   - Use loops efficiently when creating multiple address objects
-   - Consider using roles for standardized address object creation
-   - Organize related address objects in the same folders
+    - Use loops efficiently when creating multiple address objects
+    - Consider using roles for standardized address object creation
+    - Organize related address objects in the same folders
 
 ## Related Modules
 

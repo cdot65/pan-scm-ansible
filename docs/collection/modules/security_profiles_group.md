@@ -2,32 +2,34 @@
 
 ## Overview
 
-The `security_profiles_group` module enables management of Security Profiles Groups in Palo Alto Networks Strata Cloud Manager (SCM). Security Profiles Groups allow you to bundle multiple security profiles (Anti-Spyware, Vulnerability Protection, URL Filtering, etc.) into a single group that can be applied to security rules.
+The `security_profiles_group` module enables management of Security Profiles Groups in Palo Alto Networks Strata Cloud
+Manager (SCM). Security Profiles Groups allow you to bundle multiple security profiles (Anti-Spyware, Vulnerability
+Protection, URL Filtering, etc.) into a single group that can be applied to security rules.
 
 ## Core Methods
 
-| Method | Description |
-|--------|-------------|
-| `create` | Creates a new Security Profiles Group in SCM |
-| `update` | Modifies an existing Security Profiles Group |
-| `delete` | Removes a Security Profiles Group from SCM |
-| `get` | Retrieves information about a specific Security Profiles Group |
-| `list` | Returns a list of all configured Security Profiles Groups |
+| Method   | Description                                                    |
+|----------|----------------------------------------------------------------|
+| `create` | Creates a new Security Profiles Group in SCM                   |
+| `update` | Modifies an existing Security Profiles Group                   |
+| `delete` | Removes a Security Profiles Group from SCM                     |
+| `get`    | Retrieves information about a specific Security Profiles Group |
+| `list`   | Returns a list of all configured Security Profiles Groups      |
 
 ## Model Attributes
 
-| Attribute | Type | Description | Required |
-|-----------|------|-------------|----------|
-| `name` | String | Name of the Security Profiles Group | Yes |
-| `description` | String | Description of the group | No |
-| `anti_spyware_profile` | String | Name of the Anti-Spyware profile to include | No |
-| `anti_virus_profile` | String | Name of the Anti-Virus profile to include | No |
-| `vulnerability_profile` | String | Name of the Vulnerability profile to include | No |
-| `url_filtering_profile` | String | Name of the URL Filtering profile to include | No |
-| `file_blocking_profile` | String | Name of the File Blocking profile to include | No |
-| `wildfire_analysis_profile` | String | Name of the WildFire Analysis profile to include | No |
-| `data_filtering_profile` | String | Name of the Data Filtering profile to include | No |
-| `tags` | List | List of tags to apply to the group | No |
+| Attribute                   | Type   | Description                                      | Required |
+|-----------------------------|--------|--------------------------------------------------|----------|
+| `name`                      | String | Name of the Security Profiles Group              | Yes      |
+| `description`               | String | Description of the group                         | No       |
+| `anti_spyware_profile`      | String | Name of the Anti-Spyware profile to include      | No       |
+| `anti_virus_profile`        | String | Name of the Anti-Virus profile to include        | No       |
+| `vulnerability_profile`     | String | Name of the Vulnerability profile to include     | No       |
+| `url_filtering_profile`     | String | Name of the URL Filtering profile to include     | No       |
+| `file_blocking_profile`     | String | Name of the File Blocking profile to include     | No       |
+| `wildfire_analysis_profile` | String | Name of the WildFire Analysis profile to include | No       |
+| `data_filtering_profile`    | String | Name of the Data Filtering profile to include    | No       |
+| `tags`                      | List   | List of tags to apply to the group               | No       |
 
 ## Configuration Examples
 

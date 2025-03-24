@@ -2,28 +2,30 @@
 
 ## Overview
 
-The `anti_spyware_profile` module enables management of Anti-Spyware profiles in Palo Alto Networks Strata Cloud Manager (SCM). Anti-Spyware profiles are security components that detect and block spyware and other malicious software on the network.
+The `anti_spyware_profile` module enables management of Anti-Spyware profiles in Palo Alto Networks Strata Cloud
+Manager (SCM). Anti-Spyware profiles are security components that detect and block spyware and other malicious software
+on the network.
 
 ## Core Methods
 
-| Method | Description |
-|--------|-------------|
-| `create` | Creates a new Anti-Spyware profile in SCM |
-| `update` | Modifies an existing Anti-Spyware profile |
-| `delete` | Removes an Anti-Spyware profile from SCM |
-| `get` | Retrieves information about a specific Anti-Spyware profile |
-| `list` | Returns a list of all configured Anti-Spyware profiles |
+| Method   | Description                                                 |
+|----------|-------------------------------------------------------------|
+| `create` | Creates a new Anti-Spyware profile in SCM                   |
+| `update` | Modifies an existing Anti-Spyware profile                   |
+| `delete` | Removes an Anti-Spyware profile from SCM                    |
+| `get`    | Retrieves information about a specific Anti-Spyware profile |
+| `list`   | Returns a list of all configured Anti-Spyware profiles      |
 
 ## Model Attributes
 
-| Attribute | Type | Description | Required |
-|-----------|------|-------------|----------|
-| `name` | String | Name of the Anti-Spyware profile | Yes |
-| `description` | String | Description of the profile | No |
-| `threat_exceptions` | List | List of threat exceptions | No |
-| `rules` | List | List of Anti-Spyware rules | Yes |
-| `botnet_lists` | List | Botnet domain lists to use | No |
-| `packet_capture` | Boolean | Enable/disable packet capture | No |
+| Attribute           | Type    | Description                      | Required |
+|---------------------|---------|----------------------------------|----------|
+| `name`              | String  | Name of the Anti-Spyware profile | Yes      |
+| `description`       | String  | Description of the profile       | No       |
+| `threat_exceptions` | List    | List of threat exceptions        | No       |
+| `rules`             | List    | List of Anti-Spyware rules       | Yes      |
+| `botnet_lists`      | List    | Botnet domain lists to use       | No       |
+| `packet_capture`    | Boolean | Enable/disable packet capture    | No       |
 
 ## Configuration Examples
 

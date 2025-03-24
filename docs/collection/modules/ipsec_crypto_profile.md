@@ -2,29 +2,31 @@
 
 ## Overview
 
-The `ipsec_crypto_profile` module enables management of IPSec Crypto Profiles in Palo Alto Networks Strata Cloud Manager (SCM). IPSec Crypto Profiles define the encryption and authentication algorithms to be used during the IPSec Phase-2 negotiation when establishing a secure VPN tunnel.
+The `ipsec_crypto_profile` module enables management of IPSec Crypto Profiles in Palo Alto Networks Strata Cloud
+Manager (SCM). IPSec Crypto Profiles define the encryption and authentication algorithms to be used during the IPSec
+Phase-2 negotiation when establishing a secure VPN tunnel.
 
 ## Core Methods
 
-| Method | Description |
-|--------|-------------|
-| `create` | Creates a new IPSec Crypto Profile in SCM |
-| `update` | Modifies an existing IPSec Crypto Profile |
-| `delete` | Removes an IPSec Crypto Profile from SCM |
-| `get` | Retrieves information about a specific IPSec Crypto Profile |
-| `list` | Returns a list of all configured IPSec Crypto Profiles |
+| Method   | Description                                                 |
+|----------|-------------------------------------------------------------|
+| `create` | Creates a new IPSec Crypto Profile in SCM                   |
+| `update` | Modifies an existing IPSec Crypto Profile                   |
+| `delete` | Removes an IPSec Crypto Profile from SCM                    |
+| `get`    | Retrieves information about a specific IPSec Crypto Profile |
+| `list`   | Returns a list of all configured IPSec Crypto Profiles      |
 
 ## Model Attributes
 
-| Attribute | Type | Description | Required |
-|-----------|------|-------------|----------|
-| `name` | String | Name of the IPSec Crypto Profile | Yes |
-| `description` | String | Description of the profile | No |
-| `esp_encryption` | List | List of ESP encryption algorithms | Yes |
-| `esp_authentication` | List | List of ESP authentication algorithms | No |
-| `ah_authentication` | List | List of AH authentication algorithms | No |
-| `dh_group` | String | Diffie-Hellman group for Perfect Forward Secrecy | No |
-| `lifetime` | Dict | IPSec SA lifetime settings | No |
+| Attribute            | Type   | Description                                      | Required |
+|----------------------|--------|--------------------------------------------------|----------|
+| `name`               | String | Name of the IPSec Crypto Profile                 | Yes      |
+| `description`        | String | Description of the profile                       | No       |
+| `esp_encryption`     | List   | List of ESP encryption algorithms                | Yes      |
+| `esp_authentication` | List   | List of ESP authentication algorithms            | No       |
+| `ah_authentication`  | List   | List of AH authentication algorithms             | No       |
+| `dh_group`           | String | Diffie-Hellman group for Perfect Forward Secrecy | No       |
+| `lifetime`           | Dict   | IPSec SA lifetime settings                       | No       |
 
 ## Configuration Examples
 

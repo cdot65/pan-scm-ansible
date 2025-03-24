@@ -17,32 +17,36 @@
 
 ## Overview
 
-The `address_group` module provides functionality to manage address group objects in Palo Alto Networks' Strata Cloud Manager. This module allows you to create, update, and delete both static and dynamic address groups. Static address groups contain a fixed list of address objects, while dynamic address groups use tag-based filters to automatically include addresses based on their tags.
+The `address_group` module provides functionality to manage address group objects in Palo Alto Networks' Strata Cloud
+Manager. This module allows you to create, update, and delete both static and dynamic address groups. Static address
+groups contain a fixed list of address objects, while dynamic address groups use tag-based filters to automatically
+include addresses based on their tags.
 
 ## Module Parameters
 
-| Parameter              | Required | Type | Choices         | Default | Comments                                                  |
-|------------------------|----------|------|-----------------|---------|-----------------------------------------------------------|
-| name                   | yes      | str  |                 |         | The name of the address group.                            |
-| description            | no       | str  |                 |         | Description of the address group.                         |
-| tag                    | no       | list |                 |         | List of tags associated with the address group.           |
-| dynamic                | no       | dict |                 |         | Dynamic filter defining group membership.                 |
-| dynamic.filter         | yes      | str  |                 |         | Tag-based filter defining group membership.               |
-| static                 | no       | list |                 |         | List of static addresses in the group.                    |
-| folder                 | no       | str  |                 |         | The folder in which the resource is defined.              |
-| snippet                | no       | str  |                 |         | The snippet in which the resource is defined.             |
-| device                 | no       | str  |                 |         | The device in which the resource is defined.              |
-| provider               | yes      | dict |                 |         | Authentication credentials.                               |
-| provider.client_id     | yes      | str  |                 |         | Client ID for authentication.                             |
-| provider.client_secret | yes      | str  |                 |         | Client secret for authentication.                         |
-| provider.tsg_id        | yes      | str  |                 |         | Tenant Service Group ID.                                  |
-| provider.log_level     | no       | str  |                 | INFO    | Log level for the SDK.                                    |
-| state                  | yes      | str  | present, absent |         | Desired state of the address group object.                |
+| Parameter              | Required | Type | Choices         | Default | Comments                                        |
+|------------------------|----------|------|-----------------|---------|-------------------------------------------------|
+| name                   | yes      | str  |                 |         | The name of the address group.                  |
+| description            | no       | str  |                 |         | Description of the address group.               |
+| tag                    | no       | list |                 |         | List of tags associated with the address group. |
+| dynamic                | no       | dict |                 |         | Dynamic filter defining group membership.       |
+| dynamic.filter         | yes      | str  |                 |         | Tag-based filter defining group membership.     |
+| static                 | no       | list |                 |         | List of static addresses in the group.          |
+| folder                 | no       | str  |                 |         | The folder in which the resource is defined.    |
+| snippet                | no       | str  |                 |         | The snippet in which the resource is defined.   |
+| device                 | no       | str  |                 |         | The device in which the resource is defined.    |
+| provider               | yes      | dict |                 |         | Authentication credentials.                     |
+| provider.client_id     | yes      | str  |                 |         | Client ID for authentication.                   |
+| provider.client_secret | yes      | str  |                 |         | Client secret for authentication.               |
+| provider.tsg_id        | yes      | str  |                 |         | Tenant Service Group ID.                        |
+| provider.log_level     | no       | str  |                 | INFO    | Log level for the SDK.                          |
+| state                  | yes      | str  | present, absent |         | Desired state of the address group object.      |
 
 !!! note
-    - Exactly one of `static` or `dynamic` must be provided when state is present.
-    - Exactly one of `folder`, `snippet`, or `device` must be provided.
-    - For dynamic address groups, the filter expression uses tag names in single quotes with operators like 'and', 'or', and 'not'.
+- Exactly one of `static` or `dynamic` must be provided when state is present.
+- Exactly one of `folder`, `snippet`, or `device` must be provided.
+- For dynamic address groups, the filter expression uses tag names in single quotes with operators like 'and', 'or',
+and 'not'.
 
 ## Requirements
 
@@ -54,7 +58,8 @@ The `address_group` module provides functionality to manage address group object
 
 ### Creating Static Address Groups
 
-Static address groups contain a fixed list of address objects. These address objects must already exist in the same container (folder, snippet, or device).
+Static address groups contain a fixed list of address objects. These address objects must already exist in the same
+container (folder, snippet, or device).
 
 <div class="termy">
 
@@ -78,7 +83,8 @@ Static address groups contain a fixed list of address objects. These address obj
 
 ### Creating Dynamic Address Groups
 
-Dynamic address groups use tag-based filters to automatically include address objects based on their tags. Any address object with tags matching the filter will be included in the group.
+Dynamic address groups use tag-based filters to automatically include address objects based on their tags. Any address
+object with tags matching the filter will be included in the group.
 
 <div class="termy">
 
@@ -100,7 +106,8 @@ Dynamic address groups use tag-based filters to automatically include address ob
 
 ### Updating Address Groups
 
-You can update an existing address group to modify its description, tags, or members. When updating a static group, you provide the complete list of members that should be in the group.
+You can update an existing address group to modify its description, tags, or members. When updating a static group, you
+provide the complete list of members that should be in the group.
 
 <div class="termy">
 
@@ -143,21 +150,21 @@ You can update an existing address group to modify its description, tags, or mem
 
 ## Return Values
 
-| Name         | Description                          | Type | Returned              | Sample                                                                                                                                                                     |
-|--------------|--------------------------------------|------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| changed      | Whether any changes were made        | bool | always                | true                                                                                                                                                                       |
-| address_group| Details about the address group      | dict | when state is present | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "Test_Static_Group", "description": "A static address group", "static": ["test_network1", "test_network2"], "folder": "Texas", "tag": ["dev-automation", "dev-cicd"]} |
+| Name          | Description                     | Type | Returned              | Sample                                                                                                                                                                                                                       |
+|---------------|---------------------------------|------|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| changed       | Whether any changes were made   | bool | always                | true                                                                                                                                                                                                                         |
+| address_group | Details about the address group | dict | when state is present | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "Test_Static_Group", "description": "A static address group", "static": ["test_network1", "test_network2"], "folder": "Texas", "tag": ["dev-automation", "dev-cicd"]} |
 
 ## Error Handling
 
 Common errors you might encounter when using this module:
 
-| Error | Description | Resolution |
-|-------|-------------|------------|
-| Invalid address group data | The address group parameters don't meet validation requirements | Verify parameters, especially static/dynamic settings |
-| Address group name already exists | Attempting to create a group with a name that already exists | Use a unique name or update the existing group |
-| Address not found in static group | Referenced address doesn't exist in the container | Ensure referenced addresses exist before adding to a group |
-| Invalid filter expression | Incorrect syntax in dynamic group filter | Use proper syntax with quoted tag names and operators |
+| Error                             | Description                                                     | Resolution                                                 |
+|-----------------------------------|-----------------------------------------------------------------|------------------------------------------------------------|
+| Invalid address group data        | The address group parameters don't meet validation requirements | Verify parameters, especially static/dynamic settings      |
+| Address group name already exists | Attempting to create a group with a name that already exists    | Use a unique name or update the existing group             |
+| Address not found in static group | Referenced address doesn't exist in the container               | Ensure referenced addresses exist before adding to a group |
+| Invalid filter expression         | Incorrect syntax in dynamic group filter                        | Use proper syntax with quoted tag names and operators      |
 
 <div class="termy">
 
@@ -188,34 +195,34 @@ Common errors you might encounter when using this module:
 ## Best Practices
 
 1. **Group Organization**
-   - Use descriptive names for address groups
-   - Include purpose in the description field
-   - Apply consistent tagging strategies
-   - Group related addresses together for easier management
+    - Use descriptive names for address groups
+    - Include purpose in the description field
+    - Apply consistent tagging strategies
+    - Group related addresses together for easier management
 
 2. **Static vs Dynamic Groups**
-   - Use static groups for fixed sets of addresses
-   - Use dynamic groups for addresses that share attributes
-   - Use clear, understandable filter expressions for dynamic groups
-   - Test filters before deployment to ensure they include the expected addresses
+    - Use static groups for fixed sets of addresses
+    - Use dynamic groups for addresses that share attributes
+    - Use clear, understandable filter expressions for dynamic groups
+    - Test filters before deployment to ensure they include the expected addresses
 
 3. **Security Considerations**
-   - Review address groups regularly to ensure they include only necessary addresses
-   - Document the purpose of each address group
-   - Limit the number of addresses in a group to improve performance
-   - Be careful with dynamic groups to prevent unintended inclusions
+    - Review address groups regularly to ensure they include only necessary addresses
+    - Document the purpose of each address group
+    - Limit the number of addresses in a group to improve performance
+    - Be careful with dynamic groups to prevent unintended inclusions
 
 4. **Management Efficiency**
-   - Create address objects before referencing them in groups
-   - Use consistent container (folder/snippet/device) across related objects
-   - Leverage idempotent operations to safely run playbooks multiple times
-   - Implement proper error handling with block/rescue
+    - Create address objects before referencing them in groups
+    - Use consistent container (folder/snippet/device) across related objects
+    - Leverage idempotent operations to safely run playbooks multiple times
+    - Implement proper error handling with block/rescue
 
 5. **Dynamic Group Filters**
-   - Keep filter expressions simple and readable
-   - Use parentheses to clarify complex expressions
-   - Test filter expressions thoroughly before deployment
-   - Document the expected behavior of filter expressions
+    - Keep filter expressions simple and readable
+    - Use parentheses to clarify complex expressions
+    - Test filter expressions thoroughly before deployment
+    - Document the expected behavior of filter expressions
 
 ## Related Modules
 

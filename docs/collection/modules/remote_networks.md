@@ -1,36 +1,39 @@
 # Remote Networks Configuration Object
 
 ## 1. Overview
-The Remote Networks module allows you to manage remote network connections within Strata Cloud Manager (SCM). Remote networks enable secure connectivity between your SCM-managed infrastructure and external networks, typically through IPsec VPN tunnels. This module helps you create, configure, and manage these connections.
+
+The Remote Networks module allows you to manage remote network connections within Strata Cloud Manager (SCM). Remote
+networks enable secure connectivity between your SCM-managed infrastructure and external networks, typically through
+IPsec VPN tunnels. This module helps you create, configure, and manage these connections.
 
 ## 2. Core Methods
 
-| Method     | Description                    | Parameters                | Return Type            |
-|------------|--------------------------------|---------------------------|------------------------|
-| `create()` | Creates a new remote network   | `data: Dict[str, Any]`    | `ResponseModel`        |
-| `get()`    | Retrieves network by name      | `name: str`               | `ResponseModel`        |
-| `update()` | Updates an existing network    | `network: Model`          | `ResponseModel`        |
-| `delete()` | Deletes a remote network       | `id: str`                 | `None`                 |
-| `list()`   | Lists remote networks          | `filters: Dict[str, Any]` | `List[ResponseModel]`  |
+| Method     | Description                  | Parameters                | Return Type           |
+|------------|------------------------------|---------------------------|-----------------------|
+| `create()` | Creates a new remote network | `data: Dict[str, Any]`    | `ResponseModel`       |
+| `get()`    | Retrieves network by name    | `name: str`               | `ResponseModel`       |
+| `update()` | Updates an existing network  | `network: Model`          | `ResponseModel`       |
+| `delete()` | Deletes a remote network     | `id: str`                 | `None`                |
+| `list()`   | Lists remote networks        | `filters: Dict[str, Any]` | `List[ResponseModel]` |
 
 ## 3. Model Attributes
 
-| Attribute               | Type              | Required | Description                                    |
-|-------------------------|-------------------|----------|------------------------------------------------|
-| `name`                  | str               | Yes      | Name of the remote network                     |
-| `description`           | str               | No       | Description of the remote network              |
-| `status`                | str               | No       | Status of the remote network (read-only)       |
-| `license_type`          | str               | No       | License type for the remote network            |
-| `region`                | str               | Yes      | Region where the network is located            |
-| `spn_name`              | str               | No       | Service provider name                          |
-| `ike_gateway`           | str               | Yes      | IKE gateway for the VPN connection             |
-| `ipsec_crypto_profile`  | str               | Yes      | IPsec crypto profile for encryption            |
-| `tunnel_interface`      | str               | Yes      | Tunnel interface name                          |
-| `subnets`               | List[str]         | No       | Subnets within the remote network              |
-| `bgp_peer`              | Dict              | No       | BGP peer configuration                         |
-| `ecmp_load_balancing`   | bool              | No       | Enable ECMP load balancing                     |
-| `protocol`              | Dict              | No       | Protocol configuration for the connection      |
-| `secondary_wan_config`  | Dict              | No       | Secondary WAN configuration                     |
+| Attribute              | Type      | Required | Description                               |
+|------------------------|-----------|----------|-------------------------------------------|
+| `name`                 | str       | Yes      | Name of the remote network                |
+| `description`          | str       | No       | Description of the remote network         |
+| `status`               | str       | No       | Status of the remote network (read-only)  |
+| `license_type`         | str       | No       | License type for the remote network       |
+| `region`               | str       | Yes      | Region where the network is located       |
+| `spn_name`             | str       | No       | Service provider name                     |
+| `ike_gateway`          | str       | Yes      | IKE gateway for the VPN connection        |
+| `ipsec_crypto_profile` | str       | Yes      | IPsec crypto profile for encryption       |
+| `tunnel_interface`     | str       | Yes      | Tunnel interface name                     |
+| `subnets`              | List[str] | No       | Subnets within the remote network         |
+| `bgp_peer`             | Dict      | No       | BGP peer configuration                    |
+| `ecmp_load_balancing`  | bool      | No       | Enable ECMP load balancing                |
+| `protocol`             | Dict      | No       | Protocol configuration for the connection |
+| `secondary_wan_config` | Dict      | No       | Secondary WAN configuration               |
 
 ## 4. Basic Configuration
 
@@ -215,34 +218,34 @@ The Remote Networks module allows you to manage remote network connections withi
 ## 7. Best Practices
 
 1. **Planning and Design**
-   - Plan IP addressing to avoid overlaps between remote networks
-   - Design BGP peering relationships carefully
-   - Choose appropriate regions based on geographic proximity
-   - Document network topology and VPN configuration details
+    - Plan IP addressing to avoid overlaps between remote networks
+    - Design BGP peering relationships carefully
+    - Choose appropriate regions based on geographic proximity
+    - Document network topology and VPN configuration details
 
 2. **Security Configuration**
-   - Use strong IPsec crypto profiles
-   - Configure appropriate security rules for remote network traffic
-   - Implement principle of least privilege for remote network access
-   - Regularly review and audit remote network connections
+    - Use strong IPsec crypto profiles
+    - Configure appropriate security rules for remote network traffic
+    - Implement principle of least privilege for remote network access
+    - Regularly review and audit remote network connections
 
 3. **High Availability**
-   - Consider redundant tunnels for critical connections
-   - Implement secondary WAN configurations where needed
-   - Monitor tunnel status and connectivity
-   - Create backup plans for connection failures
+    - Consider redundant tunnels for critical connections
+    - Implement secondary WAN configurations where needed
+    - Monitor tunnel status and connectivity
+    - Create backup plans for connection failures
 
 4. **BGP Configuration**
-   - Use private AS numbers for BGP peering
-   - Configure route filters to control route advertisements
-   - Consider BGP authentication mechanisms
-   - Test BGP routing changes before implementation
+    - Use private AS numbers for BGP peering
+    - Configure route filters to control route advertisements
+    - Consider BGP authentication mechanisms
+    - Test BGP routing changes before implementation
 
 5. **Maintenance**
-   - Schedule maintenance windows for configuration changes
-   - Test changes in a staging environment when possible
-   - Keep IKE and IPsec settings in sync with remote endpoints
-   - Maintain documentation of remote network configurations
+    - Schedule maintenance windows for configuration changes
+    - Test changes in a staging environment when possible
+    - Keep IKE and IPsec settings in sync with remote endpoints
+    - Maintain documentation of remote network configurations
 
 ## 8. Related Models
 

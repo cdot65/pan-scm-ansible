@@ -1,24 +1,27 @@
 # BGP Routing Configuration Object
 
 ## 1. Overview
-The BGP Routing module allows you to manage BGP (Border Gateway Protocol) routing configuration within Strata Cloud Manager (SCM). This module provides capabilities to configure BGP routing preferences, backbone routing options, outbound routes for services, and other key BGP parameters.
+
+The BGP Routing module allows you to manage BGP (Border Gateway Protocol) routing configuration within Strata Cloud
+Manager (SCM). This module provides capabilities to configure BGP routing preferences, backbone routing options,
+outbound routes for services, and other key BGP parameters.
 
 ## 2. Core Methods
 
-| Method     | Description                    | Parameters                | Return Type            |
-|------------|--------------------------------|---------------------------|------------------------|
-| `get()`    | Retrieves BGP configuration    | -                         | `ResponseModel`        |
-| `update()` | Updates BGP configuration      | `data: Dict[str, Any]`    | `ResponseModel`        |
+| Method     | Description                 | Parameters             | Return Type     |
+|------------|-----------------------------|------------------------|-----------------|
+| `get()`    | Retrieves BGP configuration | -                      | `ResponseModel` |
+| `update()` | Updates BGP configuration   | `data: Dict[str, Any]` | `ResponseModel` |
 
 ## 3. Model Attributes
 
-| Attribute                    | Type                 | Required | Description                                         |
-|------------------------------|----------------------|----------|-----------------------------------------------------|
-| `routing_preference`         | Dict[str, Any]       | No       | BGP routing preferences configuration                |
-| `backbone_routing`           | str                  | No       | Backbone routing mode                               |
-| `accept_route_over_SC`       | bool                 | No       | Accept routes over service connections              |
-| `outbound_routes_for_services` | List[str]          | No       | Outbound routes advertised for services             |
-| `onboarding_status`          | str                  | No       | BGP onboarding status (read-only)                   |
+| Attribute                      | Type           | Required | Description                             |
+|--------------------------------|----------------|----------|-----------------------------------------|
+| `routing_preference`           | Dict[str, Any] | No       | BGP routing preferences configuration   |
+| `backbone_routing`             | str            | No       | Backbone routing mode                   |
+| `accept_route_over_SC`         | bool           | No       | Accept routes over service connections  |
+| `outbound_routes_for_services` | List[str]      | No       | Outbound routes advertised for services |
+| `onboarding_status`            | str            | No       | BGP onboarding status (read-only)       |
 
 ### Routing Preference Options
 
@@ -173,29 +176,29 @@ The BGP Routing module allows you to manage BGP (Border Gateway Protocol) routin
 ## 7. Best Practices
 
 1. **Understand Routing Models**
-   - Hot Potato Routing: Traffic exits the network at the closest point to the source
-   - Cold Potato Routing: Traffic exits at specific designated regions
-   - Choose the routing model based on your application requirements and network topology
+    - Hot Potato Routing: Traffic exits the network at the closest point to the source
+    - Cold Potato Routing: Traffic exits at specific designated regions
+    - Choose the routing model based on your application requirements and network topology
 
 2. **Backbone Routing Configuration**
-   - Symmetric Routing: Ensures traffic flows through the same path in both directions
-   - Asymmetric Routing: Allows different paths for inbound and outbound traffic
-   - Asymmetric Routing with Load Share: Distributes traffic across multiple paths
+    - Symmetric Routing: Ensures traffic flows through the same path in both directions
+    - Asymmetric Routing: Allows different paths for inbound and outbound traffic
+    - Asymmetric Routing with Load Share: Distributes traffic across multiple paths
 
 3. **Service Connection Routes**
-   - Carefully plan which networks should be advertised over service connections
-   - Avoid advertising overlapping routes
-   - Only advertise routes that need to be accessible through service connections
+    - Carefully plan which networks should be advertised over service connections
+    - Avoid advertising overlapping routes
+    - Only advertise routes that need to be accessible through service connections
 
 4. **Testing and Validation**
-   - Test BGP routing changes during maintenance windows
-   - Validate routing behavior after making changes
-   - Monitor routing stability and convergence times
+    - Test BGP routing changes during maintenance windows
+    - Validate routing behavior after making changes
+    - Monitor routing stability and convergence times
 
 5. **Documentation**
-   - Document your BGP routing design and configuration choices
-   - Maintain records of any BGP-related changes
-   - Document peering relationships and advertised routes
+    - Document your BGP routing design and configuration choices
+    - Maintain records of any BGP-related changes
+    - Document peering relationships and advertised routes
 
 ## 8. Related Models
 

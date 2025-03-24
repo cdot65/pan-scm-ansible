@@ -16,40 +16,43 @@
 
 ## Overview
 
-The `application` module provides functionality to manage custom application objects in Palo Alto Networks' Strata Cloud Manager. This module allows you to create, update, and delete application objects with various attributes such as category, subcategory, technology, risk level, and behavioral characteristics. Custom applications can be used in security policies to control application-specific traffic.
+The `application` module provides functionality to manage custom application objects in Palo Alto Networks' Strata Cloud
+Manager. This module allows you to create, update, and delete application objects with various attributes such as
+category, subcategory, technology, risk level, and behavioral characteristics. Custom applications can be used in
+security policies to control application-specific traffic.
 
 ## Module Parameters
 
-| Parameter               | Required | Type | Choices         | Default | Comments                                                          |
-|-------------------------|----------|------|-----------------|---------|-------------------------------------------------------------------|
-| name                    | yes      | str  |                 |         | The name of the application.                                      |
-| category                | yes*     | str  |                 |         | High-level category to which the application belongs.             |
-| subcategory             | yes*     | str  |                 |         | Specific sub-category within the high-level category.             |
-| technology              | yes*     | str  |                 |         | The underlying technology utilized by the application.            |
-| risk                    | yes*     | int  |                 |         | The risk level associated with the application (1-5).             |
-| description             | no       | str  |                 |         | Description for the application.                                  |
-| ports                   | no       | list |                 |         | List of TCP/UDP ports associated with the application.            |
-| folder                  | no       | str  |                 |         | The folder where the application configuration is stored.         |
-| snippet                 | no       | str  |                 |         | The configuration snippet for the application.                    |
-| evasive                 | no       | bool |                 | false   | Indicates if the application uses evasive techniques.             |
-| pervasive               | no       | bool |                 | false   | Indicates if the application is widely used.                      |
-| excessive_bandwidth_use | no       | bool |                 | false   | Indicates if the application uses excessive bandwidth.            |
-| used_by_malware         | no       | bool |                 | false   | Indicates if the application is commonly used by malware.         |
-| transfers_files         | no       | bool |                 | false   | Indicates if the application transfers files.                     |
-| has_known_vulnerabilities | no     | bool |                 | false   | Indicates if the application has known vulnerabilities.           |
-| tunnels_other_apps      | no       | bool |                 | false   | Indicates if the application tunnels other applications.          |
-| prone_to_misuse         | no       | bool |                 | false   | Indicates if the application is prone to misuse.                  |
-| no_certifications       | no       | bool |                 | false   | Indicates if the application lacks certifications.                |
-| provider                | yes      | dict |                 |         | Authentication credentials.                                       |
-| provider.client_id      | yes      | str  |                 |         | Client ID for authentication.                                     |
-| provider.client_secret  | yes      | str  |                 |         | Client secret for authentication.                                 |
-| provider.tsg_id         | yes      | str  |                 |         | Tenant Service Group ID.                                          |
-| provider.log_level      | no       | str  |                 | INFO    | Log level for the SDK.                                            |
-| state                   | yes      | str  | present, absent |         | Desired state of the application object.                          |
+| Parameter                 | Required | Type | Choices         | Default | Comments                                                  |
+|---------------------------|----------|------|-----------------|---------|-----------------------------------------------------------|
+| name                      | yes      | str  |                 |         | The name of the application.                              |
+| category                  | yes*     | str  |                 |         | High-level category to which the application belongs.     |
+| subcategory               | yes*     | str  |                 |         | Specific sub-category within the high-level category.     |
+| technology                | yes*     | str  |                 |         | The underlying technology utilized by the application.    |
+| risk                      | yes*     | int  |                 |         | The risk level associated with the application (1-5).     |
+| description               | no       | str  |                 |         | Description for the application.                          |
+| ports                     | no       | list |                 |         | List of TCP/UDP ports associated with the application.    |
+| folder                    | no       | str  |                 |         | The folder where the application configuration is stored. |
+| snippet                   | no       | str  |                 |         | The configuration snippet for the application.            |
+| evasive                   | no       | bool |                 | false   | Indicates if the application uses evasive techniques.     |
+| pervasive                 | no       | bool |                 | false   | Indicates if the application is widely used.              |
+| excessive_bandwidth_use   | no       | bool |                 | false   | Indicates if the application uses excessive bandwidth.    |
+| used_by_malware           | no       | bool |                 | false   | Indicates if the application is commonly used by malware. |
+| transfers_files           | no       | bool |                 | false   | Indicates if the application transfers files.             |
+| has_known_vulnerabilities | no       | bool |                 | false   | Indicates if the application has known vulnerabilities.   |
+| tunnels_other_apps        | no       | bool |                 | false   | Indicates if the application tunnels other applications.  |
+| prone_to_misuse           | no       | bool |                 | false   | Indicates if the application is prone to misuse.          |
+| no_certifications         | no       | bool |                 | false   | Indicates if the application lacks certifications.        |
+| provider                  | yes      | dict |                 |         | Authentication credentials.                               |
+| provider.client_id        | yes      | str  |                 |         | Client ID for authentication.                             |
+| provider.client_secret    | yes      | str  |                 |         | Client secret for authentication.                         |
+| provider.tsg_id           | yes      | str  |                 |         | Tenant Service Group ID.                                  |
+| provider.log_level        | no       | str  |                 | INFO    | Log level for the SDK.                                    |
+| state                     | yes      | str  | present, absent |         | Desired state of the application object.                  |
 
 !!! note
-    \* Category, subcategory, technology, and risk are required when state is "present".
-    
+\* Category, subcategory, technology, and risk are required when state is "present".
+
     \* Exactly one of folder or snippet must be provided.
 
 ## Requirements
@@ -112,7 +115,8 @@ You can create applications with various characteristics and port definitions:
 
 ### Updating Applications
 
-When updating an application, you must provide all required fields (category, subcategory, technology, risk) along with any fields you want to change. All other fields will retain their current values.
+When updating an application, you must provide all required fields (category, subcategory, technology, risk) along with
+any fields you want to change. All other fields will retain their current values.
 
 <div class="termy">
 
@@ -156,21 +160,21 @@ When updating an application, you must provide all required fields (category, su
 
 ## Return Values
 
-| Name        | Description                      | Type | Returned              | Sample                                                                                                                                          |
-|-------------|----------------------------------|------|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
-| changed     | Whether any changes were made    | bool | always                | true                                                                                                                                            |
-| application | Details about the application    | dict | when state is present | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "custom-app", "category": "business-systems", "subcategory": "database", "risk": 3, ...} |
+| Name        | Description                   | Type | Returned              | Sample                                                                                                                                          |
+|-------------|-------------------------------|------|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| changed     | Whether any changes were made | bool | always                | true                                                                                                                                            |
+| application | Details about the application | dict | when state is present | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "custom-app", "category": "business-systems", "subcategory": "database", "risk": 3, ...} |
 
 ## Error Handling
 
 Common errors you might encounter when using this module:
 
-| Error | Description | Resolution |
-|-------|-------------|------------|
-| Invalid application data | Required parameters missing or invalid format | Ensure all required parameters are provided with valid values |
-| Application name already exists | Attempting to create an application with a name that already exists | Use a unique name or update the existing application |
-| Missing container | Neither folder nor snippet is specified | Provide exactly one of folder or snippet |
-| Invalid risk level | Risk level must be between 1 and 5 | Provide a valid integer value between 1 and 5 |
+| Error                           | Description                                                         | Resolution                                                    |
+|---------------------------------|---------------------------------------------------------------------|---------------------------------------------------------------|
+| Invalid application data        | Required parameters missing or invalid format                       | Ensure all required parameters are provided with valid values |
+| Application name already exists | Attempting to create an application with a name that already exists | Use a unique name or update the existing application          |
+| Missing container               | Neither folder nor snippet is specified                             | Provide exactly one of folder or snippet                      |
+| Invalid risk level              | Risk level must be between 1 and 5                                  | Provide a valid integer value between 1 and 5                 |
 
 <div class="termy">
 
@@ -200,36 +204,36 @@ Common errors you might encounter when using this module:
 ## Best Practices
 
 1. **Application Definition**
-   - Use clear, descriptive names that identify the application's purpose
-   - Provide accurate category, subcategory, and technology values
-   - Assign appropriate risk levels based on security assessment
-   - Include detailed descriptions to document the application's purpose
+    - Use clear, descriptive names that identify the application's purpose
+    - Provide accurate category, subcategory, and technology values
+    - Assign appropriate risk levels based on security assessment
+    - Include detailed descriptions to document the application's purpose
 
 2. **Risk Management**
-   - Set risk levels (1-5) based on:
-     - Sensitivity of data handled
-     - Potential impact of compromise
-     - Compliance requirements
-     - Known vulnerabilities
-   - Review and update risk levels regularly as application security posture changes
+    - Set risk levels (1-5) based on:
+        - Sensitivity of data handled
+        - Potential impact of compromise
+        - Compliance requirements
+        - Known vulnerabilities
+    - Review and update risk levels regularly as application security posture changes
 
 3. **Application Characteristic Flags**
-   - Set behavioral flags accurately to enable proper security controls
-   - Document the basis for each characteristic setting
-   - Review characteristics when application versions change
-   - Only enable flags that are applicable to the application
+    - Set behavioral flags accurately to enable proper security controls
+    - Document the basis for each characteristic setting
+    - Review characteristics when application versions change
+    - Only enable flags that are applicable to the application
 
 4. **Port Configuration**
-   - Specify all ports required by the application
-   - Use the format `protocol/port_number` (e.g., "tcp/443", "udp/53")
-   - Only define ports that are actually needed by the application
-   - Group related ports for the same application
+    - Specify all ports required by the application
+    - Use the format `protocol/port_number` (e.g., "tcp/443", "udp/53")
+    - Only define ports that are actually needed by the application
+    - Group related ports for the same application
 
 5. **Module Usage**
-   - Be aware of known idempotency issues with this module
-   - Always provide all required parameters when updating
-   - Use check mode to preview changes before applying
-   - Implement error handling with block/rescue for production playbooks
+    - Be aware of known idempotency issues with this module
+    - Always provide all required parameters when updating
+    - Use check mode to preview changes before applying
+    - Implement error handling with block/rescue for production playbooks
 
 ## Related Modules
 

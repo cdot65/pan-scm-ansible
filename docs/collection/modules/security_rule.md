@@ -6,7 +6,8 @@ Manage security rules in Palo Alto Networks Strata Cloud Manager.
 
 The `security_rule` module allows you to create, update, and delete security rules in SCM.
 
-Security rules define the traffic control policies for your network, determining what traffic is allowed or denied between different zones, addresses, users, and applications.
+Security rules define the traffic control policies for your network, determining what traffic is allowed or denied
+between different zones, addresses, users, and applications.
 
 ## Requirements
 
@@ -15,39 +16,39 @@ Security rules define the traffic control policies for your network, determining
 
 ## Parameters
 
-| Parameter | Type | Required | Default | Choices | Description |
-|-----------|------|----------|---------|---------|-------------|
-| `name` | string | yes | | | Name of the security rule |
-| `folder` | string | yes | | | SCM folder path where the security rule is located |
-| `description` | string | no | | | Description for the security rule |
-| `source_zones` | list | no | | | List of source zones |
-| `destination_zones` | list | no | | | List of destination zones |
-| `source_addresses` | list | no | `["any"]` | | List of source addresses |
-| `destination_addresses` | list | no | `["any"]` | | List of destination addresses |
-| `source_users` | list | no | `["any"]` | | List of source users |
-| `applications` | list | no | | | List of applications |
-| `services` | list | no | `["application-default"]` | | List of services |
-| `categories` | list | no | `["any"]` | | List of URL categories |
-| `action` | string | no | `allow` | allow, deny, drop | Action to take when traffic matches the rule |
-| `log_setting` | string | no | | | Log forwarding profile to use |
-| `log_start` | boolean | no | `false` | | Whether to log at session start |
-| `log_end` | boolean | no | `true` | | Whether to log at session end |
-| `disabled` | boolean | no | `false` | | Whether the rule is disabled |
-| `tags` | list | no | | | List of tags to apply to the rule |
-| `position` | string | no | `bottom` | top, bottom, before, after | Position where to place the rule |
-| `reference_rule` | string | no | | | Name of the reference rule when using 'before' or 'after' position |
-| `profile_type` | string | no | `profiles` | profiles, group, none | Type of security profile setting |
-| `profile_group` | string | no | | | Name of the profile group when profile_type is 'group' |
-| `antivirus_profile` | string | no | | | Name of the antivirus profile |
-| `anti_spyware_profile` | string | no | | | Name of the anti-spyware profile |
-| `vulnerability_profile` | string | no | | | Name of the vulnerability profile |
-| `url_filtering_profile` | string | no | | | Name of the URL filtering profile |
-| `file_blocking_profile` | string | no | | | Name of the file blocking profile |
-| `wildfire_analysis_profile` | string | no | | | Name of the WildFire analysis profile |
-| `state` | string | no | present | present, absent | Desired state of the rule |
-| `username` | string | no | | | SCM username (can use environment variable) |
-| `password` | string | no | | | SCM password (can use environment variable) |
-| `tenant` | string | no | | | SCM tenant ID (can use environment variable) |
+| Parameter                   | Type    | Required | Default                   | Choices                    | Description                                                        |
+|-----------------------------|---------|----------|---------------------------|----------------------------|--------------------------------------------------------------------|
+| `name`                      | string  | yes      |                           |                            | Name of the security rule                                          |
+| `folder`                    | string  | yes      |                           |                            | SCM folder path where the security rule is located                 |
+| `description`               | string  | no       |                           |                            | Description for the security rule                                  |
+| `source_zones`              | list    | no       |                           |                            | List of source zones                                               |
+| `destination_zones`         | list    | no       |                           |                            | List of destination zones                                          |
+| `source_addresses`          | list    | no       | `["any"]`                 |                            | List of source addresses                                           |
+| `destination_addresses`     | list    | no       | `["any"]`                 |                            | List of destination addresses                                      |
+| `source_users`              | list    | no       | `["any"]`                 |                            | List of source users                                               |
+| `applications`              | list    | no       |                           |                            | List of applications                                               |
+| `services`                  | list    | no       | `["application-default"]` |                            | List of services                                                   |
+| `categories`                | list    | no       | `["any"]`                 |                            | List of URL categories                                             |
+| `action`                    | string  | no       | `allow`                   | allow, deny, drop          | Action to take when traffic matches the rule                       |
+| `log_setting`               | string  | no       |                           |                            | Log forwarding profile to use                                      |
+| `log_start`                 | boolean | no       | `false`                   |                            | Whether to log at session start                                    |
+| `log_end`                   | boolean | no       | `true`                    |                            | Whether to log at session end                                      |
+| `disabled`                  | boolean | no       | `false`                   |                            | Whether the rule is disabled                                       |
+| `tags`                      | list    | no       |                           |                            | List of tags to apply to the rule                                  |
+| `position`                  | string  | no       | `bottom`                  | top, bottom, before, after | Position where to place the rule                                   |
+| `reference_rule`            | string  | no       |                           |                            | Name of the reference rule when using 'before' or 'after' position |
+| `profile_type`              | string  | no       | `profiles`                | profiles, group, none      | Type of security profile setting                                   |
+| `profile_group`             | string  | no       |                           |                            | Name of the profile group when profile_type is 'group'             |
+| `antivirus_profile`         | string  | no       |                           |                            | Name of the antivirus profile                                      |
+| `anti_spyware_profile`      | string  | no       |                           |                            | Name of the anti-spyware profile                                   |
+| `vulnerability_profile`     | string  | no       |                           |                            | Name of the vulnerability profile                                  |
+| `url_filtering_profile`     | string  | no       |                           |                            | Name of the URL filtering profile                                  |
+| `file_blocking_profile`     | string  | no       |                           |                            | Name of the file blocking profile                                  |
+| `wildfire_analysis_profile` | string  | no       |                           |                            | Name of the WildFire analysis profile                              |
+| `state`                     | string  | no       | present                   | present, absent            | Desired state of the rule                                          |
+| `username`                  | string  | no       |                           |                            | SCM username (can use environment variable)                        |
+| `password`                  | string  | no       |                           |                            | SCM password (can use environment variable)                        |
+| `tenant`                    | string  | no       |                           |                            | SCM tenant ID (can use environment variable)                       |
 
 ## Examples
 
@@ -150,11 +151,11 @@ Security rules define the traffic control policies for your network, determining
 
 ## Return Values
 
-| Name | Description | Type | Sample |
-|------|-------------|------|--------|
-| `changed` | Whether changes were made | boolean | `true` |
+| Name         | Description                   | Type       | Sample                                                               |
+|--------------|-------------------------------|------------|----------------------------------------------------------------------|
+| `changed`    | Whether changes were made     | boolean    | `true`                                                               |
 | `scm_object` | The SCM security rule details | dictionary | `{"id": "123", "name": "Allow-Web-Traffic", "action": "allow", ...}` |
-| `response` | The raw API response | dictionary | `{"status": "success", "data": {...}}` |
+| `response`   | The raw API response          | dictionary | `{"status": "success", "data": {...}}`                               |
 
 ## Notes
 
