@@ -28,6 +28,7 @@ These modules manage the fundamental building blocks of your network security po
 | [http_server_profiles](http_server_profiles.md) | Manage HTTP server profiles | [http_server_profiles_info](http_server_profiles_info.md) |
 | [log_forwarding_profile](log_forwarding_profile.md) | Manage log forwarding profiles | [log_forwarding_profile_info](log_forwarding_profile_info.md) |
 | [quarantined_devices](quarantined_devices.md) | Manage quarantined devices | [quarantined_devices_info](quarantined_devices_info.md) |
+| [region](region.md) | Manage geographic region objects | [region_info](region_info.md) |
 
 ### Network Configuration
 

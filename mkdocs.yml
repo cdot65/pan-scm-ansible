@@ -123,6 +123,8 @@ nav:
               - Log Forwarding Profile Info: collection/modules/log_forwarding_profile_info.md
               - Quarantined Devices: collection/modules/quarantined_devices.md
               - Quarantined Devices Info: collection/modules/quarantined_devices_info.md
+              - Region: collection/modules/region.md
+              - Region Info: collection/modules/region_info.md
           - Network Configuration:
               - Security Zone: collection/modules/security_zone.md
               - IKE Crypto Profile: collection/modules/ike_crypto_profile.md
