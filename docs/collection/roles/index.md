@@ -1,13 +1,13 @@
 # Roles Overview
 
-The Palo Alto Networks Strata Cloud Manager Ansible Collection includes pre-built roles that simplify common configuration tasks. These roles provide a more structured way to manage SCM configurations compared to using individual modules directly.
+The Palo Alto Networks Strata Cloud Manager Ansible Collection includes pre-built roles that simplify common
+configuration tasks. These roles provide a more structured way to manage SCM configurations compared to using individual
+modules directly.
 
 ## Available Roles
 
 | Role Name | Description |
 |-----------|-------------|
-| [bootstrap](bootstrap.md) | Initialize SCM configurations with basic settings |
-| [deploy_config](deploy_config.md) | Deploy configurations to SCM using a structured approach |
 
 ## Using Roles
 
@@ -40,23 +40,21 @@ To use a role in your playbook:
 
 ## Role Variables
 
-Each role has its own set of variables that control its behavior. These variables can be set in your playbook, in group/host variables, or in defaults.
+Each role has its own set of variables that control its behavior. These variables can be set in your playbook, in
+group/host variables, or in defaults.
 
 To view the variables for a specific role, refer to its documentation:
-
-- [Bootstrap Role Variables](bootstrap.md#role-variables)
-- [Deploy Configuration Role Variables](deploy_config.md#role-variables)
 
 ## Common Variables
 
 All roles share these common variables:
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `scm_client_id` | OAuth2 client ID | Yes | |
-| `scm_client_secret` | OAuth2 client secret | Yes | |
-| `scm_tsg_id` | Tenant Service Group ID | Yes | |
-| `scm_log_level` | Log level for SDK | No | INFO |
+| Variable            | Description             | Required | Default |
+|---------------------|-------------------------|----------|---------|
+| `scm_client_id`     | OAuth2 client ID        | Yes      |         |
+| `scm_client_secret` | OAuth2 client secret    | Yes      |         |
+| `scm_tsg_id`        | Tenant Service Group ID | Yes      |         |
+| `scm_log_level`     | Log level for SDK       | No       | INFO    |
 
 ## Role Customization
 

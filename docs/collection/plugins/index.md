@@ -1,12 +1,7 @@
 # Plugins Overview
 
-This collection includes several Ansible plugins that extend functionality beyond what the modules provide. These plugins enable you to integrate SCM data into your automation workflows in various ways.
-
-## Inventory Plugin
-
-The inventory plugin allows you to dynamically generate Ansible inventory from SCM objects. This is particularly useful for automatically discovering and managing devices in your SCM environment.
-
-[Learn more about the Inventory Plugin →](inventory.md)
+This collection includes several Ansible plugins that extend functionality beyond what the modules provide. These
+plugins enable you to integrate SCM data into your automation workflows in various ways.
 
 ### Key Features
 
@@ -46,12 +41,6 @@ groups:
 }</span>
 </div>
 
-## Lookup Plugin
-
-The lookup plugin allows you to query SCM for specific information during playbook execution. This enables you to make dynamic decisions based on current SCM state.
-
-[Learn more about the Lookup Plugin →](lookup.md)
-
 ### Key Features
 
 - Query address, service, and tag objects
@@ -75,6 +64,7 @@ The lookup plugin allows you to query SCM for specific information during playbo
     - name: Get all service objects in a folder
       debug:
         msg: "{{ lookup('cdot65.scm.service', folder='Texas') }}"</span>
+
 </div>
 
 ## Using Plugins Together
@@ -107,4 +97,5 @@ The real power of these plugins comes from using them together:
 
 ## Plugin Development
 
-If you're interested in contributing plugins to this collection, see the [contributing guidelines](../../development/contributing.md) for development instructions and best practices.
+If you're interested in contributing plugins to this collection, see
+the [contributing guidelines](../../development/contributing.md) for development instructions and best practices.

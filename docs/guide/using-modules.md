@@ -15,15 +15,15 @@ All modules in the collection follow a consistent structure:
 
 These parameters are available in most modules:
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `username` | SCM username | No | Environment variable |
-| `password` | SCM password | No | Environment variable |
-| `tenant` | SCM tenant ID | No | Environment variable |
-| `folder` | SCM folder path | Yes | |
-| `name` | Object name | Yes | |
-| `state` | State of the object | No | `present` |
-| `debug` | Enable debug logging | No | `false` |
+| Parameter  | Description          | Required | Default              |
+|------------|----------------------|----------|----------------------|
+| `username` | SCM username         | No       | Environment variable |
+| `password` | SCM password         | No       | Environment variable |
+| `tenant`   | SCM tenant ID        | No       | Environment variable |
+| `folder`   | SCM folder path      | Yes      |                      |
+| `name`     | Object name          | Yes      |                      |
+| `state`    | State of the object  | No       | `present`            |
+| `debug`    | Enable debug logging | No       | `false`              |
 
 ## Module Categories
 
@@ -50,9 +50,9 @@ Manage security-related configurations:
   cdot65.scm.security_rule:
     name: "Allow-Web"
     folder: "SharedFolder"
-    source_zones: ["untrust"]
-    destination_zones: ["trust"]
-    applications: ["web-browsing", "ssl"]
+    source_zones: [ "untrust" ]
+    destination_zones: [ "trust" ]
+    applications: [ "web-browsing", "ssl" ]
     action: "allow"
 ```
 
@@ -187,10 +187,10 @@ Handle potential errors in your playbooks:
       cdot65.scm.security_rule:
         name: "Allow-App-Traffic"
         folder: "SharedFolder"
-        source_zones: ["untrust"]
-        destination_zones: ["trust"]
-        destination_addresses: ["app-server"]
-        applications: ["web-browsing"]
+        source_zones: [ "untrust" ]
+        destination_zones: [ "trust" ]
+        destination_addresses: [ "app-server" ]
+        applications: [ "web-browsing" ]
         action: "allow"
   rescue:
     - name: Handle the error

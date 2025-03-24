@@ -104,6 +104,7 @@ nav:
               - Application Group: collection/modules/application_group.md
               - Application Group Info: collection/modules/application_group_info.md
               - Dynamic User Group: collection/modules/dynamic_user_group.md
+              - Dynamic User Group Info: collection/modules/dynamic_user_group_info.md
               - External Dynamic Lists: collection/modules/external_dynamic_lists.md
               - External Dynamic Lists Info: collection/modules/external_dynamic_lists_info.md
               - Service: collection/modules/service.md
@@ -131,12 +132,8 @@ nav:
               - Security Rule Info: collection/modules/security_rule_info.md
       - Roles:
           - Overview: collection/roles/index.md
-          - Bootstrap: collection/roles/bootstrap.md
-          - Deploy Configuration: collection/roles/deploy_config.md
       - Plugins:
           - Overview: collection/plugins/index.md
-          - Inventory: collection/plugins/inventory.md
-          - Lookup: collection/plugins/lookup.md
   - User Guide:
       - Getting Started: guide/getting-started.md
       - Authentication: guide/authentication.md

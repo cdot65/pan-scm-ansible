@@ -6,9 +6,9 @@ This guide covers how to effectively use the pre-built roles included in the Pal
 
 The collection includes these roles:
 
-| Role | Description |
-|------|-------------|
-| `bootstrap` | Initialize SCM with base configuration |
+| Role            | Description                              |
+|-----------------|------------------------------------------|
+| `bootstrap`     | Initialize SCM with base configuration   |
 | `deploy_config` | Deploy configurations to managed devices |
 
 ## Role Benefits
@@ -25,12 +25,12 @@ Using these roles provides several advantages:
 
 All roles accept these common variables:
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `scm_username` | SCM username | No | Environment variable |
-| `scm_password` | SCM password | No | Environment variable |
-| `scm_tenant` | SCM tenant ID | No | Environment variable |
-| `scm_debug` | Enable debug logging | No | `false` |
+| Variable       | Description          | Required | Default              |
+|----------------|----------------------|----------|----------------------|
+| `scm_username` | SCM username         | No       | Environment variable |
+| `scm_password` | SCM password         | No       | Environment variable |
+| `scm_tenant`   | SCM tenant ID        | No       | Environment variable |
+| `scm_debug`    | Enable debug logging | No       | `false`              |
 
 ## Using the Bootstrap Role
 
@@ -41,7 +41,7 @@ The `bootstrap` role initializes a new SCM environment with baseline configurati
 - name: Bootstrap SCM Environment
   hosts: localhost
   connection: local
-  
+
   roles:
     - role: cdot65.scm.bootstrap
       vars:
@@ -64,13 +64,13 @@ The `bootstrap` role initializes a new SCM environment with baseline configurati
 
 ### Bootstrap Role Variables
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `bootstrap_folder` | Main folder to create | Yes | - |
-| `bootstrap_tags` | List of tags to create | No | `[]` |
-| `bootstrap_address_objects` | List of address objects | No | `[]` |
-| `bootstrap_service_objects` | List of service objects | No | `[]` |
-| `bootstrap_security_zones` | List of security zones | No | `[]` |
+| Variable                    | Description             | Required | Default |
+|-----------------------------|-------------------------|----------|---------|
+| `bootstrap_folder`          | Main folder to create   | Yes      | -       |
+| `bootstrap_tags`            | List of tags to create  | No       | `[]`    |
+| `bootstrap_address_objects` | List of address objects | No       | `[]`    |
+| `bootstrap_service_objects` | List of service objects | No       | `[]`    |
+| `bootstrap_security_zones`  | List of security zones  | No       | `[]`    |
 
 ## Using the Deploy Config Role
 
@@ -81,7 +81,7 @@ The `deploy_config` role handles committing and pushing configurations to manage
 - name: Deploy SCM Configurations
   hosts: localhost
   connection: local
-  
+
   roles:
     - role: cdot65.scm.deploy_config
       vars:
@@ -96,19 +96,20 @@ The `deploy_config` role handles committing and pushing configurations to manage
 
 ### Deploy Config Role Variables
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `deploy_commit_message` | Message for commit | No | "Deployed by Ansible" |
-| `deploy_folders` | List of folders to deploy | No | `["Shared"]` |
-| `deploy_device_groups` | List of device groups | No | `[]` |
-| `deploy_devices` | List of specific devices | No | `[]` |
-| `deploy_wait_for_job` | Wait for job completion | No | `true` |
-| `deploy_timeout` | Timeout in seconds | No | `600` |
-| `deploy_force` | Force deployment | No | `false` |
+| Variable                | Description               | Required | Default               |
+|-------------------------|---------------------------|----------|-----------------------|
+| `deploy_commit_message` | Message for commit        | No       | "Deployed by Ansible" |
+| `deploy_folders`        | List of folders to deploy | No       | `["Shared"]`          |
+| `deploy_device_groups`  | List of device groups     | No       | `[]`                  |
+| `deploy_devices`        | List of specific devices  | No       | `[]`                  |
+| `deploy_wait_for_job`   | Wait for job completion   | No       | `true`                |
+| `deploy_timeout`        | Timeout in seconds        | No       | `600`                 |
+| `deploy_force`          | Force deployment          | No       | `false`               |
 
 ## Role Dependencies
 
-These roles don't have external dependencies, but they rely on modules from this collection. Ensure the collection is properly installed before using the roles.
+These roles don't have external dependencies, but they rely on modules from this collection. Ensure the collection is
+properly installed before using the roles.
 
 ## Customizing Roles
 
@@ -147,14 +148,14 @@ Roles can be combined in sequence for a complete workflow:
 - name: Complete SCM Management
   hosts: localhost
   connection: local
-  
+
   roles:
     # First bootstrap the environment
     - role: cdot65.scm.bootstrap
       vars:
         bootstrap_folder: "Production"
         # ... bootstrap variables
-    
+
     # Then deploy the configuration
     - role: cdot65.scm.deploy_config
       vars:
@@ -173,7 +174,7 @@ Use Ansible tags to selectively run parts of roles:
   hosts: localhost
   roles:
     - role: cdot65.scm.bootstrap
-      tags: 
+      tags:
         - setup
         - bootstrap
 ```
@@ -206,7 +207,7 @@ This example shows how to use roles for a complete environment setup:
   connection: local
   vars_files:
     - scm_credentials.yml
-  
+
   roles:
     # Setup base environment
     - role: cdot65.scm.bootstrap
@@ -226,15 +227,15 @@ This example shows how to use roles for a complete environment setup:
           - name: "web-vip"
             description: "Web VIP"
             ip_netmask: "203.0.113.10/32"
-            tags: ["web"]
+            tags: [ "web" ]
           - name: "app-server-1"
             description: "Application Server 1"
             ip_netmask: "10.0.1.10/32"
-            tags: ["app"]
+            tags: [ "app" ]
           - name: "db-server-1"
             description: "Database Server 1"
             ip_netmask: "10.0.2.10/32"
-            tags: ["db"]
+            tags: [ "db" ]
         bootstrap_security_zones:
           - name: "Internet"
             description: "Internet Zone"
@@ -242,7 +243,7 @@ This example shows how to use roles for a complete environment setup:
             description: "DMZ Zone"
           - name: "Internal"
             description: "Internal Zone"
-    
+
     # Deploy configuration
     - role: cdot65.scm.deploy_config
       vars:
