@@ -107,6 +107,8 @@ nav:
               - Dynamic User Group Info: collection/modules/dynamic_user_group_info.md
               - External Dynamic Lists: collection/modules/external_dynamic_lists.md
               - External Dynamic Lists Info: collection/modules/external_dynamic_lists_info.md
+              - HIP Object: collection/modules/hip_object.md
+              - HIP Object Info: collection/modules/hip_object_info.md
               - Service: collection/modules/service.md
               - Service Info: collection/modules/service_info.md
               - Service Group: collection/modules/service_group.md

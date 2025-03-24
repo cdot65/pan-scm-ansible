@@ -1,0 +1,231 @@
+---
+# Playbook for testing Strata Cloud Manager HIP object operations
+# Usage: ansible-playbook tests/test_hip_object.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM HIP Object Module CRUD Operations
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+    test_folder: "Texas"
+  tasks:
+    # First clean up any existing test HIP objects if they exist
+    - name: Remove test HIP objects if they exist
+      cdot65.scm.hip_object:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Test_HIP_Disk_{{ test_timestamp }}"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
+    - name: Create a HIP object with disk encryption
+      cdot65.scm.hip_object:
+        provider: "{{ provider }}"
+        name: "Test_HIP_Disk_{{ test_timestamp }}"
+        description: "A HIP object with disk encryption"
+        disk_encryption:
+          criteria:
+            is_installed: true
+            encrypted_locations:
+              - name: "C:"
+                encryption_state: 
+                  is: "encrypted"
+          vendor: []
+          exclude_vendor: true
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_disk_result
+      tags:
+        - dev-test
+        - dev-cicd
+
+    - name: Debug disk encryption creation result
+      debug:
+        var: create_disk_result
+        verbosity: 1
+
+    - name: Verify disk encryption HIP object creation
+      ansible.builtin.assert:
+        that:
+          - create_disk_result is changed
+          - create_disk_result.hip_object is defined
+          - create_disk_result.hip_object.description == "A HIP object with disk encryption"
+        fail_msg: "Failed to create disk encryption HIP object"
+        success_msg: "Successfully created disk encryption HIP object"
+      tags:
+        - dev-test
+        - dev-automation
+
+    # Set HIP object names to fixed variables after creation
+    - name: Set HIP object names to existing names
+      ansible.builtin.set_fact:
+        disk_hip_name: "{{ create_disk_result.hip_object.name }}"
+
+    # ==========================================
+    # READ operation tests
+    # ==========================================
+    - name: Retrieve the created disk encryption HIP object
+      cdot65.scm.hip_object_info:
+        provider: "{{ provider }}"
+        name: "{{ disk_hip_name }}"
+        folder: "{{ test_folder }}"
+      register: read_disk_result
+      tags:
+        - dev-test
+        - dev-ansible
+
+    - name: Debug disk encryption read result
+      debug:
+        var: read_disk_result
+        verbosity: 1
+
+    - name: Verify disk encryption HIP object retrieval
+      ansible.builtin.assert:
+        that:
+          - read_disk_result.hip_object is defined
+          - read_disk_result.hip_object.name == disk_hip_name
+          - read_disk_result.hip_object.description == "A HIP object with disk encryption"
+        fail_msg: "Failed to retrieve disk encryption HIP object"
+        success_msg: "Successfully retrieved disk encryption HIP object"
+      tags:
+        - dev-cicd
+        - dev-test
+
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    - name: Update the disk encryption HIP object
+      cdot65.scm.hip_object:
+        provider: "{{ provider }}"
+        name: "{{ disk_hip_name }}"
+        description: "Updated description for disk encryption HIP object"
+        disk_encryption:
+          criteria:
+            is_installed: true
+            encrypted_locations:
+              - name: "C:"
+                encryption_state: 
+                  is: "encrypted"
+              - name: "D:"
+                encryption_state: 
+                  is: "encrypted"
+          vendor: []
+          exclude_vendor: true
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: update_result
+      tags:
+        - dev-cicd
+        - dev-test
+
+    - name: Debug update result
+      debug:
+        var: update_result
+        verbosity: 1
+
+    - name: Verify HIP object update
+      ansible.builtin.assert:
+        that:
+          - update_result is changed
+          - update_result.hip_object is defined
+          - update_result.hip_object.description == "Updated description for disk encryption HIP object"
+        fail_msg: "Failed to update HIP object"
+        success_msg: "Successfully updated HIP object"
+      tags:
+        - dev-cicd
+        - dev-test
+
+    # Test idempotency
+    - name: Test idempotency on the updated HIP object (re-run same update)
+      cdot65.scm.hip_object:
+        provider: "{{ provider }}"
+        name: "{{ disk_hip_name }}"
+        description: "Updated description for disk encryption HIP object"
+        disk_encryption:
+          criteria:
+            is_installed: true
+            encrypted_locations:
+              - name: "C:"
+                encryption_state: 
+                  is: "encrypted"
+              - name: "D:"
+                encryption_state: 
+                  is: "encrypted"
+          vendor: []
+          exclude_vendor: true
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: idempotency_result
+      tags:
+        - dev-cicd
+        - dev-test
+
+    - name: Verify idempotency behavior
+      ansible.builtin.assert:
+        that:
+          - idempotency_result is not changed
+        fail_msg: "HIP object module failed idempotency test"
+        success_msg: "HIP object module passed idempotency test"
+      tags:
+        - dev-cicd
+        - dev-test
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Delete the HIP objects
+      cdot65.scm.hip_object:
+        provider: "{{ provider }}"
+        name: "{{ disk_hip_name }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      register: delete_result
+      tags:
+        - dev-test
+        - dev-cleanup
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+        verbosity: 1
+
+    - name: Verify HIP objects were deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is succeeded
+        fail_msg: "Failed to delete HIP object"
+        success_msg: "Successfully deleted HIP object"
+      tags:
+        - dev-test
+        - dev-cicd
+
+    # Skipping cleanup of test tags
+    # - name: Remove tags created for testing
+    #   cdot65.scm.tag:
+    #     provider: "{{ provider }}"
+    #     name: "{{ item }}"
+    #     folder: "{{ test_folder }}"
+    #     state: "absent"
+    #   ignore_errors: true
+    #   loop:
+    #     - "dev-ansible"
+    #     - "dev-automation"
+    #     - "dev-test"
+    #     - "dev-cicd"
+    #   tags:
+    #     - dev-cleanup
