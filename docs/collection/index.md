@@ -108,6 +108,7 @@ The collection includes modules for managing various SCM configuration objects:
 | [HIP Profile](modules/hip_profile.md) | Manage Host Information Profile profiles | [HIP Profile Info](modules/hip_profile_info.md) |
 | [HTTP Server Profiles](modules/http_server_profiles.md) | Manage HTTP server profiles | [HTTP Server Profiles Info](modules/http_server_profiles_info.md) |
 | [Log Forwarding Profile](modules/log_forwarding_profile.md) | Manage log forwarding profiles | [Log Forwarding Profile Info](modules/log_forwarding_profile_info.md) |
+| [Quarantined Devices](modules/quarantined_devices.md) | Manage quarantined devices | [Quarantined Devices Info](modules/quarantined_devices_info.md) |
 | [Service](modules/service.md) | Manage service objects | [Service Info](modules/service_info.md) |
 | [Service Group](modules/service_group.md) | Manage service groups | [Service Group Info](modules/service_group_info.md) |
 | [Tag](modules/tag.md) | Manage tag objects | [Tag Info](modules/tag_info.md) |
