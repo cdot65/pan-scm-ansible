@@ -193,8 +193,7 @@ Common errors you might encounter when using this module:
 
 - [anti_spyware_profile](anti_spyware_profile.md) - Manage anti-spyware profile objects
 - [security_rule](security_rule.md) - Manage security rules that use anti-spyware profiles
-- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that include anti-spyware
-  profiles
+- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that include anti-spyware profiles
 
 ## Author
 
