@@ -125,6 +125,8 @@ nav:
               - Quarantined Devices Info: collection/modules/quarantined_devices_info.md
               - Region: collection/modules/region.md
               - Region Info: collection/modules/region_info.md
+              - Syslog Server Profiles: collection/modules/syslog_server_profiles.md
+              - Syslog Server Profiles Info: collection/modules/syslog_server_profiles_info.md
           - Network Configuration:
               - Security Zone: collection/modules/security_zone.md
               - IKE Crypto Profile: collection/modules/ike_crypto_profile.md
@@ -139,6 +141,10 @@ nav:
           - Security Services:
               - Anti-Spyware Profile: collection/modules/anti_spyware_profile.md
               - Anti-Spyware Profile Info: collection/modules/anti_spyware_profile_info.md
+              - Decryption Profile: collection/modules/decryption_profile.md
+              - Decryption Profile Info: collection/modules/decryption_profile_info.md
+              - DNS Security Profile: collection/modules/dns_security_profile.md
+              - DNS Security Profile Info: collection/modules/dns_security_profile_info.md
               - Security Profiles Group: collection/modules/security_profiles_group.md
               - Security Rule: collection/modules/security_rule.md
               - Security Rule Info: collection/modules/security_rule_info.md

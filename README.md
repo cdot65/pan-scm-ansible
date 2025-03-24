@@ -103,6 +103,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [security_rule](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_rule/)                     | Manage security rules          | [security_rule_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_rule_info/)               |
 | [anti_spyware_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/anti_spyware_profile/)       | Manage anti-spyware profiles   | [anti_spyware_profile_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/anti_spyware_profile_info/) |
 | [decryption_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/decryption_profile/)           | Manage decryption profiles     | [decryption_profile_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/decryption_profile_info/)     |
+| [dns_server_profiles](https://cdot65.github.io/pan-scm-ansible/collection/modules/dns_server_profiles/)         | Manage DNS server profiles     | [dns_server_profiles_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/dns_server_profiles_info/)   |
 | [security_profiles_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_profiles_group/) | Manage security profile groups | -                                                                                                                   |
 
 ## Example Usage
@@ -158,6 +159,33 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
     provider: "{{ provider }}"
     folder: "Texas"
   register: security_rules
+```
+
+### Create a DNS Server Profile
+
+```yaml
+- name: Create a DNS server profile with multiple servers
+  cdot65.scm.dns_server_profiles:
+    provider: "{{ provider }}"
+    name: "multi-dns-profile"
+    description: "DNS profile with multiple servers"
+    server:
+      - name: "google-dns-1"
+        address: "8.8.8.8"
+        protocol: "UDP"
+        port: 53
+      - name: "google-dns-2"
+        address: "8.8.4.4"
+        protocol: "UDP"
+        port: 53
+      - name: "tcp-dns"
+        address: "9.9.9.9"
+        protocol: "TCP"
+        port: 53
+        enable_edns0: true
+    default_server: "google-dns-1"
+    folder: "Texas"
+    state: "present"
 ```
 
 ## Authentication

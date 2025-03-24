@@ -29,6 +29,7 @@ These modules manage the fundamental building blocks of your network security po
 | [log_forwarding_profile](log_forwarding_profile.md) | Manage log forwarding profiles | [log_forwarding_profile_info](log_forwarding_profile_info.md) |
 | [quarantined_devices](quarantined_devices.md) | Manage quarantined devices | [quarantined_devices_info](quarantined_devices_info.md) |
 | [region](region.md) | Manage geographic region objects | [region_info](region_info.md) |
+| [syslog_server_profiles](syslog_server_profiles.md) | Manage syslog server profiles | [syslog_server_profiles_info](syslog_server_profiles_info.md) |
 
 ### Network Configuration
 
@@ -62,6 +63,7 @@ These modules configure security policies and profiles:
 | [security_rule](security_rule.md) | Manage security rules | [security_rule_info](security_rule_info.md) |
 | [anti_spyware_profile](anti_spyware_profile.md) | Manage anti-spyware profiles | [anti_spyware_profile_info](anti_spyware_profile_info.md) |
 | [decryption_profile](decryption_profile.md) | Manage decryption profiles | [decryption_profile_info](decryption_profile_info.md) |
+| [dns_security_profile](dns_security_profile.md) | Manage DNS security profiles | [dns_security_profile_info](dns_security_profile_info.md) |
 | [security_profiles_group](security_profiles_group.md) | Manage security profile groups | - |
 
 ## Common Module Parameters

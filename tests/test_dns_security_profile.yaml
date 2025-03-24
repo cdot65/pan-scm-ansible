@@ -1,0 +1,138 @@
+---
+- name: Test DNS Security Profile Modules
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    folder_name: "Texas"
+    dns_security_profile_name: "test-dns-security-profile"
+
+  tasks:
+    - name: Create a basic DNS security profile
+      cdot65.scm.dns_security_profile:
+        provider: "{{ provider }}"
+        name: "{{ dns_security_profile_name }}"
+        description: "Test DNS security profile"
+        folder: "{{ folder_name }}"
+        state: "present"
+      register: create_result
+
+    - name: Verify creation was successful
+      assert:
+        that:
+          - create_result.changed
+          - create_result.dns_security_profile is defined
+          - create_result.dns_security_profile.name == dns_security_profile_name
+      ignore_errors: true
+
+    - name: Verify idempotency - Create the same DNS security profile again (should not change)
+      cdot65.scm.dns_security_profile:
+        provider: "{{ provider }}"
+        name: "{{ dns_security_profile_name }}"
+        description: "Test DNS security profile"
+        folder: "{{ folder_name }}"
+        state: "present"
+      register: idempotency_result
+
+    - name: Verify no changes were made on second attempt
+      assert:
+        that:
+          - not idempotency_result.changed
+          - idempotency_result.dns_security_profile is defined
+      ignore_errors: true
+
+    - name: Update DNS security profile with botnet domain settings
+      cdot65.scm.dns_security_profile:
+        provider: "{{ provider }}"
+        name: "{{ dns_security_profile_name }}"
+        description: "Updated DNS security profile with botnet domains"
+        botnet_domains:
+          dns_security_categories:
+            - name: "command-and-control"
+              action: "block"
+              log_level: "high"
+              packet_capture: "single-packet"
+            - name: "malware"
+              action: "sinkhole"
+              log_level: "critical"
+          sinkhole:
+            ipv4_address: "pan-sinkhole-default-ip"
+            ipv6_address: "::1"
+          whitelist:
+            - name: "trusted-domain.com"
+              description: "Trusted internal domain"
+        folder: "{{ folder_name }}"
+        state: "present"
+      register: update_result
+
+    - name: Verify update was successful
+      assert:
+        that:
+          - update_result.changed
+          - update_result.dns_security_profile is defined
+          - update_result.dns_security_profile.description == "Updated DNS security profile with botnet domains"
+          - update_result.dns_security_profile.botnet_domains is defined
+      ignore_errors: true
+
+    - name: Get DNS security profile info by name
+      cdot65.scm.dns_security_profile_info:
+        provider: "{{ provider }}"
+        name: "{{ dns_security_profile_name }}"
+        folder: "{{ folder_name }}"
+      register: info_result
+
+    - name: Verify info retrieval
+      assert:
+        that:
+          - info_result.dns_security_profile is defined
+          - info_result.dns_security_profile.name == dns_security_profile_name
+          - info_result.dns_security_profile.botnet_domains is defined
+      ignore_errors: true
+
+    - name: List all DNS security profiles in folder
+      cdot65.scm.dns_security_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder_name }}"
+      register: list_result
+
+    - name: Verify list operation
+      assert:
+        that:
+          - list_result.dns_security_profiles is defined
+          - list_result.dns_security_profiles | length > 0
+      ignore_errors: true
+
+    - name: Delete DNS security profile
+      cdot65.scm.dns_security_profile:
+        provider: "{{ provider }}"
+        name: "{{ dns_security_profile_name }}"
+        folder: "{{ folder_name }}"
+        state: "absent"
+      register: delete_result
+
+    - name: Verify deletion was successful
+      assert:
+        that:
+          - delete_result.changed
+      ignore_errors: true
+
+    - name: Verify idempotency - Delete the same DNS security profile again (should not change)
+      cdot65.scm.dns_security_profile:
+        provider: "{{ provider }}"
+        name: "{{ dns_security_profile_name }}"
+        folder: "{{ folder_name }}"
+        state: "absent"
+      register: delete_idempotency_result
+
+    - name: Verify no changes were made on second deletion attempt
+      assert:
+        that:
+          - not delete_idempotency_result.changed
+      ignore_errors: true

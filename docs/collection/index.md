@@ -112,6 +112,7 @@ The collection includes modules for managing various SCM configuration objects:
 | [Region](modules/region.md) | Manage geographic region objects | [Region Info](modules/region_info.md) |
 | [Service](modules/service.md) | Manage service objects | [Service Info](modules/service_info.md) |
 | [Service Group](modules/service_group.md) | Manage service groups | [Service Group Info](modules/service_group_info.md) |
+| [Syslog Server Profiles](modules/syslog_server_profiles.md) | Manage syslog server profiles | [Syslog Server Profiles Info](modules/syslog_server_profiles_info.md) |
 | [Tag](modules/tag.md) | Manage tag objects | [Tag Info](modules/tag_info.md) |
 
 #### Network Configuration
@@ -140,6 +141,7 @@ The collection includes modules for managing various SCM configuration objects:
 | [Security Rule](modules/security_rule.md) | Manage security rules | [Security Rule Info](modules/security_rule_info.md) |
 | [Anti-Spyware Profile](modules/anti_spyware_profile.md) | Manage anti-spyware profiles | [Anti-Spyware Profile Info](modules/anti_spyware_profile_info.md) |
 | [Decryption Profile](modules/decryption_profile.md) | Manage decryption profiles | [Decryption Profile Info](modules/decryption_profile_info.md) |
+| [DNS Security Profile](modules/dns_security_profile.md) | Manage DNS security profiles | [DNS Security Profile Info](modules/dns_security_profile_info.md) |
 | [Security Profiles Group](modules/security_profiles_group.md) | Manage security profile groups | - |
 
 [View All Modules →](modules/index.md)
