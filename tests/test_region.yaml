@@ -1,0 +1,245 @@
+---
+# Test playbook for region module
+# Usage: poetry run ansible-playbook tests/test_region.yaml --vault-password-file=tests/.vault_password
+
+- name: Test region module CRUD operations
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  
+  vars_files:
+    - vault.yaml
+  
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    # Use a fixed test region name for consistent testing
+    region_name: "ansible_test_region"
+    # Set the folder name to use for testing
+    folder_name: "Texas"
+  
+  tasks:
+    # ===============================
+    # INITIAL SETUP AND CLEANUP
+    # ===============================
+    - name: Clean up any test objects from previous runs
+      tags: 
+        - dev-cleanup
+        - dev-ansible
+      cdot65.scm.region:
+        provider: "{{ provider }}"
+        name: "{{ region_name }}"
+        folder: "{{ folder_name }}"
+        state: "absent"
+      ignore_errors: true
+    
+    # ===============================
+    # CREATE
+    # ===============================
+    - name: CREATE - Create a region with geographic location and addresses
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.region:
+        provider: "{{ provider }}"
+        name: "{{ region_name }}"
+        geo_location:
+          latitude: 37.7749
+          longitude: -122.4194
+        address:
+          - "10.0.0.0/8"
+          - "192.168.1.0/24"
+        folder: "{{ folder_name }}"
+        state: "present"
+      register: create_result
+    
+    - name: Print create result 
+      tags: 
+        - dev-test
+      debug:
+        var: create_result
+        verbosity: 1
+    
+    - name: Verify creation succeeded
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - create_result.changed
+          - create_result.region is defined
+          - create_result.region.name == region_name
+          - create_result.region.geo_location.latitude | float == 37.7749
+          - create_result.region.geo_location.longitude | float == -122.4194
+          - create_result.region.address | length == 2
+          - "'10.0.0.0/8' in create_result.region.address"
+          - "'192.168.1.0/24' in create_result.region.address"
+          - create_result.region.folder == folder_name
+    
+    # ===============================
+    # CREATE IDEMPOTENCE
+    # ===============================
+    - name: CREATE IDEMPOTENCE - Try creating the same region again
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.region:
+        provider: "{{ provider }}"
+        name: "{{ region_name }}"
+        geo_location:
+          latitude: 37.7749
+          longitude: -122.4194
+        address:
+          - "10.0.0.0/8"
+          - "192.168.1.0/24"
+        folder: "{{ folder_name }}"
+        state: "present"
+      register: idempotence_result
+    
+    - name: Print idempotence result
+      tags: 
+        - dev-test
+      debug:
+        var: idempotence_result
+        verbosity: 1
+    
+    - name: Verify idempotence
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - not idempotence_result.changed
+          - idempotence_result.region is defined
+          - idempotence_result.region.name == region_name
+    
+    # ===============================
+    # UPDATE
+    # ===============================
+    - name: UPDATE - Update the region with new geo_location and additional address
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.region:
+        provider: "{{ provider }}"
+        name: "{{ region_name }}"
+        geo_location:
+          latitude: 40.7128
+          longitude: -74.0060
+        address:
+          - "10.0.0.0/8"
+          - "192.168.1.0/24"
+          - "172.16.0.0/16"
+        folder: "{{ folder_name }}"
+        state: "present"
+      register: update_result
+    
+    - name: Print update result
+      tags: 
+        - dev-test
+      debug:
+        var: update_result
+        verbosity: 1
+    
+    - name: Verify update succeeded
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - update_result.changed
+          - update_result.region is defined
+          - update_result.region.name == region_name
+          - update_result.region.geo_location.latitude | float == 40.7128
+          - update_result.region.geo_location.longitude | float == -74.0060
+          - update_result.region.address | length == 3
+          - "'172.16.0.0/16' in update_result.region.address"
+    
+    # ===============================
+    # READ
+    # ===============================
+    - name: READ - Get region info
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.region_info:
+        provider: "{{ provider }}"
+        name: "{{ region_name }}"
+        folder: "{{ folder_name }}"
+      register: info_result
+    
+    - name: Print info result
+      tags: 
+        - dev-test
+      debug:
+        var: info_result
+        verbosity: 1
+    
+    - name: Verify info result
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - info_result.region is defined
+          - info_result.region.name == region_name
+          - info_result.region.geo_location.latitude | float == 40.7128
+          - info_result.region.geo_location.longitude | float == -74.0060
+          - info_result.region.address | length == 3
+    
+    # ===============================
+    # DELETE
+    # ===============================
+    - name: DELETE - Remove region
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.region:
+        provider: "{{ provider }}"
+        name: "{{ region_name }}"
+        folder: "{{ folder_name }}"
+        state: "absent"
+      register: delete_result
+    
+    - name: Print delete result
+      tags: 
+        - dev-test
+      debug:
+        var: delete_result
+        verbosity: 1
+    
+    - name: Verify deletion succeeded
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - delete_result.changed
+    
+    # ===============================
+    # VERIFY DELETION
+    # ===============================
+    - name: VERIFY DELETION - Check if region exists after deletion
+      tags: 
+        - dev-ansible
+        - dev-test
+      cdot65.scm.region_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder_name }}"
+      register: verify_deletion_result
+    
+    - name: Verify region no longer exists
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - verify_deletion_result.regions | default([]) | selectattr('name', 'equalto', region_name) | list | length == 0
