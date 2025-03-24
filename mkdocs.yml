@@ -119,6 +119,8 @@ nav:
               - Tag Info: collection/modules/tag_info.md
               - HTTP Server Profiles: collection/modules/http_server_profiles.md
               - HTTP Server Profiles Info: collection/modules/http_server_profiles_info.md
+              - Log Forwarding Profile: collection/modules/log_forwarding_profile.md
+              - Log Forwarding Profile Info: collection/modules/log_forwarding_profile_info.md
           - Network Configuration:
               - Security Zone: collection/modules/security_zone.md
               - IKE Crypto Profile: collection/modules/ike_crypto_profile.md

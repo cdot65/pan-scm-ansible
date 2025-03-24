@@ -1,0 +1,298 @@
+---
+# Test playbook for log_forwarding_profile module
+# Usage: poetry run ansible-playbook tests/test_log_forwarding_profile.yaml --vault-password-file=tests/.vault_password
+
+- name: Test log_forwarding_profile module CRUD operations
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  
+  vars_files:
+    - vault.yaml
+  
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    folder_name: "Texas"  # Use the folder referenced in examples
+    # Use a randomized prefix for test objects to avoid conflicts
+    profile_prefix: "ansible_test_{{ lookup('password', '/dev/null chars=ascii_lowercase length=8') }}"
+    profile_name: "{{ profile_prefix }}_log_fwd"
+  
+  tasks:
+    # ===============================
+    # INITIAL SETUP AND CLEANUP
+    # ===============================
+    - name: Clean up any test objects from previous runs
+      tags: 
+        - dev-cleanup
+        - dev-ansible
+      cdot65.scm.log_forwarding_profile:
+        provider: "{{ provider }}"
+        name: "{{ profile_name }}"
+        folder: "{{ folder_name }}"
+        state: "absent"
+      ignore_errors: true
+    
+    # ===============================
+    # CREATE
+    # ===============================
+    - name: CREATE - Log forwarding profile with basic configuration
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.log_forwarding_profile:
+        provider: "{{ provider }}"
+        name: "{{ profile_name }}"
+        description: "Test log forwarding profile created by Ansible"
+        folder: "{{ folder_name }}"
+        filter:
+          - name: "critical-events"
+            filter: "severity eq critical"
+        match_list:
+          - name: "forward-critical-threats"
+            action: "forwarding"
+            send_http: ["test-http-profile"]
+            log_type: "threat"
+            filter: "critical-events"
+            send_to_panorama: true
+        state: "present"
+      register: create_result
+    
+    - name: Print create result 
+      tags: 
+        - dev-test
+      debug:
+        var: create_result
+    
+    - name: Print profile name variable for comparison
+      debug:
+        msg: "Comparing {{ create_result.log_forwarding_profile.name }} with {{ profile_name }}"
+
+    - name: Verify creation succeeded
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - create_result.changed
+          - create_result.log_forwarding_profile.description == "Test log forwarding profile created by Ansible"
+          - create_result.log_forwarding_profile.folder == folder_name
+    
+    # ===============================
+    # CREATE IDEMPOTENCE
+    # ===============================
+    - name: CREATE IDEMPOTENCE - Try creating the same profile again
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.log_forwarding_profile:
+        provider: "{{ provider }}"
+        name: "{{ create_result.log_forwarding_profile.name }}"
+        description: "Test log forwarding profile created by Ansible"
+        folder: "{{ folder_name }}"
+        filter:
+          - name: "critical-events"
+            filter: "severity eq critical"
+        match_list:
+          - name: "forward-critical-threats"
+            action: "forwarding"
+            send_http: ["test-http-profile"]
+            log_type: "threat"
+            filter: "critical-events"
+            send_to_panorama: true
+        state: "present"
+      register: idempotence_result
+    
+    - name: Print idempotence result
+      tags: 
+        - dev-test
+      debug:
+        var: idempotence_result
+        verbosity: 1
+    
+    - name: Verify idempotence
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - not idempotence_result.changed
+    
+    # ===============================
+    # READ
+    # ===============================
+    - name: READ - Get log forwarding profile info
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.log_forwarding_profile_info:
+        provider: "{{ provider }}"
+        name: "{{ create_result.log_forwarding_profile.name }}"
+        folder: "{{ folder_name }}"
+      register: info_result
+    
+    - name: Print info result
+      tags: 
+        - dev-test
+      debug:
+        var: info_result
+        verbosity: 1
+    
+    - name: Verify info result
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - info_result.log_forwarding_profile is defined
+          - info_result.log_forwarding_profile.name == create_result.log_forwarding_profile.name
+          - info_result.log_forwarding_profile.description == "Test log forwarding profile created by Ansible"
+    
+    # ===============================
+    # UPDATE
+    # ===============================
+    - name: UPDATE - Log forwarding profile with additional filter and match list
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.log_forwarding_profile:
+        provider: "{{ provider }}"
+        name: "{{ create_result.log_forwarding_profile.name }}"
+        description: "Updated log forwarding profile"
+        folder: "{{ folder_name }}"
+        filter:
+          - name: "critical-events"
+            filter: "severity eq critical"
+          - name: "warning-events"
+            filter: "severity eq warning"
+        match_list:
+          - name: "forward-critical-threats"
+            action: "forwarding"
+            send_http: ["test-http-profile"]
+            log_type: "threat"
+            filter: "critical-events"
+            send_to_panorama: true
+          - name: "tag-warning-events"
+            action: "tagging"
+            log_type: "url"
+            filter: "warning-events"
+            tag: ["warning", "review"]
+        state: "present"
+      register: update_result
+    
+    - name: Print update result
+      tags: 
+        - dev-test
+      debug:
+        var: update_result
+        verbosity: 1
+    
+    - name: Verify update succeeded
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - update_result.changed
+          - update_result.log_forwarding_profile.description == "Updated log forwarding profile"
+          - update_result.log_forwarding_profile.filter | length == 2
+    
+    # ===============================
+    # UPDATE IDEMPOTENCE
+    # ===============================
+    - name: UPDATE IDEMPOTENCE - Apply same update again
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.log_forwarding_profile:
+        provider: "{{ provider }}"
+        name: "{{ create_result.log_forwarding_profile.name }}"
+        description: "Updated log forwarding profile"
+        folder: "{{ folder_name }}"
+        filter:
+          - name: "critical-events"
+            filter: "severity eq critical"
+          - name: "warning-events"
+            filter: "severity eq warning"
+        match_list:
+          - name: "forward-critical-threats"
+            action: "forwarding"
+            send_http: ["test-http-profile"]
+            log_type: "threat"
+            filter: "critical-events"
+            send_to_panorama: true
+          - name: "tag-warning-events"
+            action: "tagging"
+            log_type: "url"
+            filter: "warning-events"
+            tag: ["warning", "review"]
+        state: "present"
+      register: update_idempotence_result
+    
+    - name: Verify update idempotence
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - not update_idempotence_result.changed
+    
+    # ===============================
+    # DELETE
+    # ===============================
+    - name: DELETE - Log forwarding profile
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.log_forwarding_profile:
+        provider: "{{ provider }}"
+        name: "{{ create_result.log_forwarding_profile.name }}"
+        folder: "{{ folder_name }}"
+        state: "absent"
+      register: delete_result
+    
+    - name: Print delete result
+      tags: 
+        - dev-test
+      debug:
+        var: delete_result
+        verbosity: 1
+    
+    - name: Verify deletion succeeded
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - delete_result.changed
+    
+    # ===============================
+    # VERIFY DELETION
+    # ===============================
+    - name: VERIFY DELETION - Check if profile exists after deletion
+      tags: 
+        - dev-ansible
+        - dev-test
+      cdot65.scm.log_forwarding_profile_info:
+        provider: "{{ provider }}"
+        name: "{{ profile_name }}"
+        folder: "{{ folder_name }}"
+      register: verify_deletion_result
+      failed_when: false
+    
+    - name: Verify profile no longer exists
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - verify_deletion_result is failed

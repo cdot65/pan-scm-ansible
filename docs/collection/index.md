@@ -106,10 +106,11 @@ The collection includes modules for managing various SCM configuration objects:
 | [External Dynamic Lists](modules/external_dynamic_lists.md) | Manage external dynamic lists | [External Dynamic Lists Info](modules/external_dynamic_lists_info.md) |
 | [HIP Object](modules/hip_object.md) | Manage Host Information Profile objects | [HIP Object Info](modules/hip_object_info.md) |
 | [HIP Profile](modules/hip_profile.md) | Manage Host Information Profile profiles | [HIP Profile Info](modules/hip_profile_info.md) |
+| [HTTP Server Profiles](modules/http_server_profiles.md) | Manage HTTP server profiles | [HTTP Server Profiles Info](modules/http_server_profiles_info.md) |
+| [Log Forwarding Profile](modules/log_forwarding_profile.md) | Manage log forwarding profiles | [Log Forwarding Profile Info](modules/log_forwarding_profile_info.md) |
 | [Service](modules/service.md) | Manage service objects | [Service Info](modules/service_info.md) |
 | [Service Group](modules/service_group.md) | Manage service groups | [Service Group Info](modules/service_group_info.md) |
 | [Tag](modules/tag.md) | Manage tag objects | [Tag Info](modules/tag_info.md) |
-| [HTTP Server Profiles](modules/http_server_profiles.md) | Manage HTTP server profiles | [HTTP Server Profiles Info](modules/http_server_profiles_info.md) |
 
 #### Network Configuration
 
