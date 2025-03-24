@@ -7,7 +7,8 @@
 
 Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) configurations.
 
-> **NOTE**: Please refer to the [official documentation site](https://cdot65.github.io/pan-scm-ansible/) for comprehensive examples and module documentation.
+> **NOTE**: Please refer to the [official documentation site](https://cdot65.github.io/pan-scm-ansible/) for
+> comprehensive examples and module documentation.
 
 ## Table of Contents
 
@@ -25,8 +26,10 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ## Features
 
-- **Configuration Management**: Create, read, update, and delete SCM configuration objects such as addresses, address groups, applications, security rules, and more.
-- **Comprehensive Module Set**: Collection includes modules for network objects, security policies, VPN configurations, and more.
+- **Configuration Management**: Create, read, update, and delete SCM configuration objects such as addresses, address
+  groups, applications, security rules, and more.
+- **Comprehensive Module Set**: Collection includes modules for network objects, security policies, VPN configurations,
+  and more.
 - **Idempotent Operations**: All modules are designed to be idempotent, ensuring consistent and predictable results.
 - **Detailed Information Modules**: Companion "info" modules for retrieving detailed information about resources.
 - **OAuth2 Authentication**: Securely authenticate with the Strata Cloud Manager API using OAuth2 client credentials.
@@ -60,44 +63,46 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ### Network Objects
 
-| Module | Description | Info Module |
-|--------|-------------|------------|
-| [address](https://cdot65.github.io/pan-scm-ansible/collection/modules/address/) | Manage address objects | [address_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/address_info/) |
-| [address_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/address_group/) | Manage address groups | [address_group_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/address_group_info/) |
-| [application](https://cdot65.github.io/pan-scm-ansible/collection/modules/application/) | Manage applications | [application_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/application_info/) |
-| [application_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/application_group/) | Manage application groups | [application_group_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/application_group_info/) |
-| [dynamic_user_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/dynamic_user_group/) | Manage dynamic user groups | [dynamic_user_group_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/dynamic_user_group_info/) |
-| [external_dynamic_lists](https://cdot65.github.io/pan-scm-ansible/collection/modules/external_dynamic_lists/) | Manage external dynamic lists | [external_dynamic_lists_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/external_dynamic_lists_info/) |
-| [service](https://cdot65.github.io/pan-scm-ansible/collection/modules/service/) | Manage service objects | [service_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/service_info/) |
-| [service_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/service_group/) | Manage service groups | [service_group_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/service_group_info/) |
-| [tag](https://cdot65.github.io/pan-scm-ansible/collection/modules/tag/) | Manage tag objects | [tag_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/tag_info/) |
+| Module                                                                                                        | Description                              | Info Module                                                                                                             |
+|---------------------------------------------------------------------------------------------------------------|------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| [address](https://cdot65.github.io/pan-scm-ansible/collection/modules/address/)                               | Manage address objects                   | [address_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/address_info/)                               |
+| [address_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/address_group/)                   | Manage address groups                    | [address_group_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/address_group_info/)                   |
+| [application](https://cdot65.github.io/pan-scm-ansible/collection/modules/application/)                       | Manage applications                      | [application_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/application_info/)                       |
+| [application_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/application_group/)           | Manage application groups                | [application_group_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/application_group_info/)           |
+| [dynamic_user_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/dynamic_user_group/)         | Manage dynamic user groups               | [dynamic_user_group_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/dynamic_user_group_info/)         |
+| [external_dynamic_lists](https://cdot65.github.io/pan-scm-ansible/collection/modules/external_dynamic_lists/) | Manage external dynamic lists            | [external_dynamic_lists_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/external_dynamic_lists_info/) |
+| [hip_object](https://cdot65.github.io/pan-scm-ansible/collection/modules/hip_object/)                         | Manage Host Information Profile objects  | [hip_object_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/hip_object_info/)                         |
+| [hip_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/hip_profile/)                       | Manage Host Information Profile profiles | [hip_profile_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/hip_profile_info/)                       |
+| [service](https://cdot65.github.io/pan-scm-ansible/collection/modules/service/)                               | Manage service objects                   | [service_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/service_info/)                               |
+| [service_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/service_group/)                   | Manage service groups                    | [service_group_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/service_group_info/)                   |
+| [tag](https://cdot65.github.io/pan-scm-ansible/collection/modules/tag/)                                       | Manage tag objects                       | [tag_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/tag_info/)                                       |
 
 ### Network Configuration
 
-| Module | Description |
-|--------|-------------|
-| [security_zone](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_zone/) | Manage security zones |
-| [ike_crypto_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/ike_crypto_profile/) | Manage IKE crypto profiles |
-| [ike_gateway](https://cdot65.github.io/pan-scm-ansible/collection/modules/ike_gateway/) | Manage IKE gateways |
-| [ipsec_crypto_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/ipsec_crypto_profile/) | Manage IPsec crypto profiles |
-| [ipsec_tunnel](https://cdot65.github.io/pan-scm-ansible/collection/modules/ipsec_tunnel/) | Manage IPsec tunnels |
-| [bgp_routing](https://cdot65.github.io/pan-scm-ansible/collection/modules/bgp_routing/) | Manage BGP routing configuration |
+| Module                                                                                                    | Description                      |
+|-----------------------------------------------------------------------------------------------------------|----------------------------------|
+| [security_zone](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_zone/)               | Manage security zones            |
+| [ike_crypto_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/ike_crypto_profile/)     | Manage IKE crypto profiles       |
+| [ike_gateway](https://cdot65.github.io/pan-scm-ansible/collection/modules/ike_gateway/)                   | Manage IKE gateways              |
+| [ipsec_crypto_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/ipsec_crypto_profile/) | Manage IPsec crypto profiles     |
+| [ipsec_tunnel](https://cdot65.github.io/pan-scm-ansible/collection/modules/ipsec_tunnel/)                 | Manage IPsec tunnels             |
+| [bgp_routing](https://cdot65.github.io/pan-scm-ansible/collection/modules/bgp_routing/)                   | Manage BGP routing configuration |
 
 ### Deployment
 
-| Module | Description |
-|--------|-------------|
-| [remote_networks](https://cdot65.github.io/pan-scm-ansible/collection/modules/remote_networks/) | Manage remote networks |
-| [network_locations](https://cdot65.github.io/pan-scm-ansible/collection/modules/network_locations/) | Manage network locations |
+| Module                                                                                                  | Description                |
+|---------------------------------------------------------------------------------------------------------|----------------------------|
+| [remote_networks](https://cdot65.github.io/pan-scm-ansible/collection/modules/remote_networks/)         | Manage remote networks     |
+| [network_locations](https://cdot65.github.io/pan-scm-ansible/collection/modules/network_locations/)     | Manage network locations   |
 | [service_connections](https://cdot65.github.io/pan-scm-ansible/collection/modules/service_connections/) | Manage service connections |
 
 ### Security Services
 
-| Module | Description | Info Module |
-|--------|-------------|------------|
-| [security_rule](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_rule/) | Manage security rules | [security_rule_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_rule_info/) |
-| [anti_spyware_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/anti_spyware_profile/) | Manage anti-spyware profiles | [anti_spyware_profile_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/anti_spyware_profile_info/) |
-| [security_profiles_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_profiles_group/) | Manage security profile groups | - |
+| Module                                                                                                          | Description                    | Info Module                                                                                                         |
+|-----------------------------------------------------------------------------------------------------------------|--------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| [security_rule](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_rule/)                     | Manage security rules          | [security_rule_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_rule_info/)               |
+| [anti_spyware_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/anti_spyware_profile/)       | Manage anti-spyware profiles   | [anti_spyware_profile_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/anti_spyware_profile_info/) |
+| [security_profiles_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_profiles_group/) | Manage security profile groups | -                                                                                                                   |
 
 ## Example Usage
 
@@ -187,6 +192,7 @@ vars:
 For comprehensive documentation, visit our [Official Documentation Site](https://cdot65.github.io/pan-scm-ansible/).
 
 The documentation includes:
+
 - Detailed module reference
 - Usage examples
 - Best practices
@@ -214,7 +220,8 @@ For more information on compatibility and testing, see [ANSIBLE_TESTING.md](ANSI
 
 ## Reporting Issues
 
-If you encounter bugs or have ideas for improvements, please check our [Issues guide](ISSUES.md) before opening a new issue.
+If you encounter bugs or have ideas for improvements, please check our [Issues guide](ISSUES.md) before opening a new
+issue.
 
 ## License
 
@@ -222,4 +229,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) fi
 
 ---
 
-*For comprehensive documentation and examples, visit our [Official Documentation Site](https://cdot65.github.io/pan-scm-ansible/).*
+*For comprehensive documentation and examples, visit
+our [Official Documentation Site](https://cdot65.github.io/pan-scm-ansible/).*
