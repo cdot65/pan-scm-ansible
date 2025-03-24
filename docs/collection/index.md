@@ -94,34 +94,46 @@ The `provider` parameter is required for all modules and contains the following 
 
 The collection includes modules for managing various SCM configuration objects:
 
-- **Network Objects**:
-    - [Address](modules/address.md), [Address Group](modules/address_group.md)
-    - [Application](modules/application.md), [Application Group](modules/application_group.md)
-    - [Dynamic User Group](modules/dynamic_user_group.md)
-    - [Service](modules/service.md), [Service Group](modules/service_group.md)
-    - [Tag](modules/tag.md)
+#### Network Objects
 
-- **Info Modules**:
-    - [Address Info](modules/address_info.md), [Address Group Info](modules/address_group_info.md)
-    - [Application Info](modules/application_info.md), [Application Group Info](modules/application_group_info.md)
-    - [Service Info](modules/service_info.md), [Service Group Info](modules/service_group_info.md)
-    - [Tag Info](modules/tag_info.md)
+| Module | Description | Info Module |
+|--------|-------------|------------|
+| [Address](modules/address.md) | Manage address objects | [Address Info](modules/address_info.md) |
+| [Address Group](modules/address_group.md) | Manage address groups | [Address Group Info](modules/address_group_info.md) |
+| [Application](modules/application.md) | Manage applications | [Application Info](modules/application_info.md) |
+| [Application Group](modules/application_group.md) | Manage application groups | [Application Group Info](modules/application_group_info.md) |
+| [Dynamic User Group](modules/dynamic_user_group.md) | Manage dynamic user groups | [Dynamic User Group Info](modules/dynamic_user_group_info.md) |
+| [External Dynamic Lists](modules/external_dynamic_lists.md) | Manage external dynamic lists | [External Dynamic Lists Info](modules/external_dynamic_lists_info.md) |
+| [Service](modules/service.md) | Manage service objects | [Service Info](modules/service_info.md) |
+| [Service Group](modules/service_group.md) | Manage service groups | [Service Group Info](modules/service_group_info.md) |
+| [Tag](modules/tag.md) | Manage tag objects | [Tag Info](modules/tag_info.md) |
 
-- **Network Configuration**:
-    - [Security Zone](modules/security_zone.md)
-    - [IKE Crypto Profile](modules/ike_crypto_profile.md), [IKE Gateway](modules/ike_gateway.md)
-    - [IPsec Crypto Profile](modules/ipsec_crypto_profile.md), [IPsec Tunnel](modules/ipsec_tunnel.md)
-    - [BGP Routing](modules/bgp_routing.md)
+#### Network Configuration
 
-- **Deployment**:
-    - [Remote Networks](modules/remote_networks.md)
-    - [Network Locations](modules/network_locations.md)
-    - [Service Connections](modules/service_connections.md)
+| Module | Description |
+|--------|-------------|
+| [Security Zone](modules/security_zone.md) | Manage security zones |
+| [IKE Crypto Profile](modules/ike_crypto_profile.md) | Manage IKE crypto profiles |
+| [IKE Gateway](modules/ike_gateway.md) | Manage IKE gateways |
+| [IPsec Crypto Profile](modules/ipsec_crypto_profile.md) | Manage IPsec crypto profiles |
+| [IPsec Tunnel](modules/ipsec_tunnel.md) | Manage IPsec tunnels |
+| [BGP Routing](modules/bgp_routing.md) | Manage BGP routing configuration |
 
-- **Security Services**:
-    - [Anti-Spyware Profile](modules/anti_spyware_profile.md), [Anti-Spyware Profile Info](modules/anti_spyware_profile_info.md)
-    - [Security Profiles Group](modules/security_profiles_group.md)
-    - [Security Rule](modules/security_rule.md), [Security Rule Info](modules/security_rule_info.md)
+#### Deployment
+
+| Module | Description |
+|--------|-------------|
+| [Remote Networks](modules/remote_networks.md) | Manage remote networks |
+| [Network Locations](modules/network_locations.md) | Manage network locations |
+| [Service Connections](modules/service_connections.md) | Manage service connections |
+
+#### Security Services
+
+| Module | Description | Info Module |
+|--------|-------------|------------|
+| [Security Rule](modules/security_rule.md) | Manage security rules | [Security Rule Info](modules/security_rule_info.md) |
+| [Anti-Spyware Profile](modules/anti_spyware_profile.md) | Manage anti-spyware profiles | [Anti-Spyware Profile Info](modules/anti_spyware_profile_info.md) |
+| [Security Profiles Group](modules/security_profiles_group.md) | Manage security profile groups | - |
 
 [View All Modules →](modules/index.md)
 
