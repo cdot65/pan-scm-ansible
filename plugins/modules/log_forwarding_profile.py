@@ -203,7 +203,7 @@ EXAMPLES = r"""
           - name: "forward-critical-threats"
             action: "forwarding"
             send_http: ["secure-profile"]  # You can also use http_profile as an alias
-            log_type: "threat" 
+            log_type: "threat"
             filter: "critical-events"
             send_to_panorama: true
         state: "present"
