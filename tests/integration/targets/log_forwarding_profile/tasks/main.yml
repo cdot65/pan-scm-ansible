@@ -1,0 +1,125 @@
+---
+
+# Test log_forwarding_profile module
+# Note: These tests are designed to be minimal and cover core functionality
+# while working with the SCM API's constraints
+# ===========================================================================
+
+# Set test variables
+- set_fact:
+    profile_name: "test_log_fwd_{{ lookup('password', '/dev/null chars=ascii_lowercase length=8') }}"
+
+# Test 1: Create log forwarding profile
+- name: Create log forwarding profile
+  cdot65.scm.log_forwarding_profile:
+    provider: "{{ provider }}"
+    name: "{{ profile_name }}"
+    description: "Test log forwarding profile"
+    folder: "{{ folder_name }}"
+    filter:
+      - name: "critical-events"
+        filter: "severity eq critical"
+    match_list:
+      - name: "forward-critical-threats"
+        action: "forwarding"
+        send_http: ["test-http-profile"]
+        log_type: "threat"
+        filter: "critical-events"
+        send_to_panorama: true
+    state: "present"
+  register: create_result
+
+- name: Verify creation succeeded
+  assert:
+    that:
+      - create_result.changed
+      - create_result.log_forwarding_profile.name == profile_name
+      - create_result.log_forwarding_profile.description == "Test log forwarding profile"
+      - create_result.log_forwarding_profile.folder == folder_name
+
+# Test 2: Verify idempotence
+- name: Verify idempotence for profile creation
+  cdot65.scm.log_forwarding_profile:
+    provider: "{{ provider }}"
+    name: "{{ profile_name }}"
+    description: "Test log forwarding profile"
+    folder: "{{ folder_name }}"
+    filter:
+      - name: "critical-events"
+        filter: "severity eq critical"
+    match_list:
+      - name: "forward-critical-threats"
+        action: "forwarding"
+        send_http: ["test-http-profile"]
+        log_type: "threat"
+        filter: "critical-events"
+        send_to_panorama: true
+    state: "present"
+  register: idempotence_result
+
+- name: Verify idempotence result
+  assert:
+    that:
+      - not idempotence_result.changed
+
+# Test 3: Get profile info
+- name: Get profile info
+  cdot65.scm.log_forwarding_profile_info:
+    provider: "{{ provider }}"
+    name: "{{ profile_name }}"
+    folder: "{{ folder_name }}"
+  register: info_result
+
+- name: Verify info result
+  assert:
+    that:
+      - info_result.log_forwarding_profile is defined
+      - info_result.log_forwarding_profile.name == profile_name
+      - info_result.log_forwarding_profile.description == "Test log forwarding profile"
+
+# Test 4: Update profile
+- name: Update log forwarding profile
+  cdot65.scm.log_forwarding_profile:
+    provider: "{{ provider }}"
+    name: "{{ profile_name }}"
+    description: "Updated log forwarding profile"
+    folder: "{{ folder_name }}"
+    filter:
+      - name: "critical-events"
+        filter: "severity eq critical"
+      - name: "warning-events"
+        filter: "severity eq warning"
+    match_list:
+      - name: "forward-critical-threats"
+        action: "forwarding"
+        send_http: ["test-http-profile"]
+        log_type: "threat"
+        filter: "critical-events"
+        send_to_panorama: true
+      - name: "tag-warning-events"
+        action: "tagging"
+        filter: "warning-events"
+        tag: ["warning", "review"]
+    state: "present"
+  register: update_result
+
+- name: Verify update result
+  assert:
+    that:
+      - update_result.changed
+      - update_result.log_forwarding_profile.description == "Updated log forwarding profile"
+      - update_result.log_forwarding_profile.filter | length == 2
+
+# Test 5: Delete profile
+- name: Delete log forwarding profile
+  cdot65.scm.log_forwarding_profile:
+    provider: "{{ provider }}"
+    name: "{{ profile_name }}"
+    folder: "{{ folder_name }}"
+    state: "absent"
+  register: delete_result
+
+- name: Verify deletion result
+  assert:
+    that:
+      - delete_result.changed

@@ -1,0 +1,93 @@
+---
+
+# Test log_forwarding_profile_info module
+# Note: These tests are designed to be minimal and cover core functionality
+# while working with the SCM API's constraints
+# ===========================================================================
+
+# Set test variables
+- set_fact:
+    profile_name: "test_info_{{ lookup('password', '/dev/null chars=ascii_lowercase length=8') }}"
+
+# Test 1: Create a test profile for info module testing
+- name: Create test log forwarding profile
+  cdot65.scm.log_forwarding_profile:
+    provider: "{{ provider }}"
+    name: "{{ profile_name }}"
+    description: "Test log forwarding profile for info module testing"
+    folder: "{{ folder_name }}"
+    filter:
+      - name: "critical-events"
+        filter: "severity eq critical"
+    match_list:
+      - name: "forward-critical-threats"
+        action: "forwarding"
+        send_http: ["test-http-profile"]
+        log_type: "threat"
+        filter: "critical-events"
+        send_to_panorama: true
+    state: "present"
+  register: create_result
+
+- name: Verify creation succeeded
+  assert:
+    that:
+      - create_result.changed
+      - create_result.log_forwarding_profile.name == profile_name
+
+# Test 2: Get specific profile info
+- name: Get specific profile info
+  cdot65.scm.log_forwarding_profile_info:
+    provider: "{{ provider }}"
+    name: "{{ profile_name }}"
+    folder: "{{ folder_name }}"
+  register: specific_info_result
+
+- name: Verify specific info result
+  assert:
+    that:
+      - specific_info_result.log_forwarding_profile is defined
+      - specific_info_result.log_forwarding_profile.name == profile_name
+      - specific_info_result.log_forwarding_profile.description == "Test log forwarding profile for info module testing"
+
+# Test 3: List all profiles in folder
+- name: List all profiles in folder
+  cdot65.scm.log_forwarding_profile_info:
+    provider: "{{ provider }}"
+    folder: "{{ folder_name }}"
+  register: list_result
+
+- name: Verify list result
+  assert:
+    that:
+      - list_result.log_forwarding_profiles is defined
+      - list_result.log_forwarding_profiles | length >= 1
+
+# Test 4: Try to get non-existent profile
+- name: Try to get non-existent profile
+  cdot65.scm.log_forwarding_profile_info:
+    provider: "{{ provider }}"
+    name: "non_existent_profile_name"
+    folder: "{{ folder_name }}"
+  register: error_result
+  failed_when: false
+
+- name: Verify error result
+  assert:
+    that:
+      - error_result.failed
+      - "'not found' in error_result.msg"
+
+# Test 5: Clean up test profile
+- name: Delete test profile
+  cdot65.scm.log_forwarding_profile:
+    provider: "{{ provider }}"
+    name: "{{ profile_name }}"
+    folder: "{{ folder_name }}"
+    state: "absent"
+  register: delete_result
+
+- name: Verify deletion succeeded
+  assert:
+    that:
+      - delete_result.changed
