@@ -12,9 +12,9 @@ you to retrieve detailed information about specific EDLs by name or list all EDL
 |--------------------|---------|---------------|------------|------------------------------------------------------------|-------------------------------------------------------------|
 | `name`             | string  | No            |            |                                                            | Name of a specific EDL to retrieve                          |
 | `gather_subset`    | list    | No            | ['config'] | all, config                                                | Determines which information to gather                      |
-| `folder`           | string  | One Required* |            |                                                            | Filter EDLs by folder container                             |
-| `snippet`          | string  | One Required* |            |                                                            | Filter EDLs by snippet container                            |
-| `device`           | string  | One Required* |            |                                                            | Filter EDLs by device container                             |
+| `folder`           | string  | No*           |            |                                                            | Filter EDLs by folder container                             |
+| `snippet`          | string  | No*           |            |                                                            | Filter EDLs by snippet container                            |
+| `device`           | string  | No*           |            |                                                            | Filter EDLs by device container                             |
 | `exact_match`      | boolean | No            | False      |                                                            | When True, only return objects defined exactly in container |
 | `exclude_folders`  | list    | No            |            |                                                            | List of folder names to exclude from results                |
 | `exclude_snippets` | list    | No            |            |                                                            | List of snippet values to exclude from results              |
@@ -22,16 +22,16 @@ you to retrieve detailed information about specific EDLs by name or list all EDL
 | `types`            | list    | No            |            | ip, domain, url, imsi, imei, predefined_ip, predefined_url | Filter by EDL types                                         |
 | `provider`         | dict    | Yes           |            |                                                            | Authentication credentials                                  |
 
-*Note: A container parameter (`folder`, `snippet`, or `device`) is required when `name` is not specified.
+*Note: When `name` is not specified, exactly one of `folder`, `snippet`, or `device` is required.
 
 ### Provider Dictionary
 
-| Parameter       | Type   | Required | Default | Description                      |
-|-----------------|--------|----------|---------|----------------------------------|
-| `client_id`     | string | Yes      |         | Client ID for authentication     |
-| `client_secret` | string | Yes      |         | Client secret for authentication |
-| `tsg_id`        | string | Yes      |         | Tenant Service Group ID          |
-| `log_level`     | string | No       | "INFO"  | Log level for the SDK            |
+| Parameter       | Type   | Required | Default | Choices | Description                      |
+|-----------------|--------|----------|---------|---------|----------------------------------|
+| `client_id`     | string | Yes      |         |         | Client ID for authentication     |
+| `client_secret` | string | Yes      |         |         | Client secret for authentication |
+| `tsg_id`        | string | Yes      |         |         | Tenant Service Group ID          |
+| `log_level`     | string | No       | "INFO"  | DEBUG, INFO, WARNING, ERROR, CRITICAL | Log level for the SDK            |
 
 ## Examples
 

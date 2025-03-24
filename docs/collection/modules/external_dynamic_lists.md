@@ -18,16 +18,19 @@ types of external dynamic lists with configurable update intervals.
 | `url_list`    | dict    | One Required |         |                 | Configuration for a URL-based external dynamic list         |
 | `imsi_list`   | dict    | One Required |         |                 | Configuration for an IMSI-based external dynamic list       |
 | `imei_list`   | dict    | One Required |         |                 | Configuration for an IMEI-based external dynamic list       |
-| `five_minute` | boolean | One Required |         |                 | Configure list to update every five minutes                 |
-| `hourly`      | boolean | One Required |         |                 | Configure list to update hourly                             |
-| `daily`       | dict    | One Required |         |                 | Configure list to update daily at specified hour            |
-| `weekly`      | dict    | One Required |         |                 | Configure list to update weekly on specified day and time   |
-| `monthly`     | dict    | One Required |         |                 | Configure list to update monthly on specified day and time  |
-| `folder`      | string  | One Required |         |                 | The folder in which the resource is defined (max 64 chars)  |
-| `snippet`     | string  | One Required |         |                 | The snippet in which the resource is defined (max 64 chars) |
-| `device`      | string  | One Required |         |                 | The device in which the resource is defined (max 64 chars)  |
+| `five_minute` | boolean | One Required* |         |                 | Configure list to update every five minutes                 |
+| `hourly`      | boolean | One Required* |         |                 | Configure list to update hourly                             |
+| `daily`       | dict    | One Required* |         |                 | Configure list to update daily at specified hour            |
+| `weekly`      | dict    | One Required* |         |                 | Configure list to update weekly on specified day and time   |
+| `monthly`     | dict    | One Required* |         |                 | Configure list to update monthly on specified day and time  |
+| `folder`      | string  | One Required** |         |                 | The folder in which the resource is defined (max 64 chars)  |
+| `snippet`     | string  | One Required** |         |                 | The snippet in which the resource is defined (max 64 chars) |
+| `device`      | string  | One Required** |         |                 | The device in which the resource is defined (max 64 chars)  |
 | `provider`    | dict    | Yes          |         |                 | Authentication credentials                                  |
 | `state`       | string  | Yes          |         | present, absent | Desired state of the external dynamic list                  |
+
+*Note: Exactly one update interval (five_minute, hourly, daily, weekly, or monthly) must be specified.  
+**Note: Exactly one container parameter (folder, snippet, or device) must be specified.
 
 ### List Type Details
 
@@ -53,12 +56,12 @@ Each list type (`ip_list`, `domain_list`, `url_list`, `imsi_list`, `imei_list`) 
 
 ### Provider Dictionary
 
-| Parameter       | Type   | Required | Default | Description                      |
-|-----------------|--------|----------|---------|----------------------------------|
-| `client_id`     | string | Yes      |         | Client ID for authentication     |
-| `client_secret` | string | Yes      |         | Client secret for authentication |
-| `tsg_id`        | string | Yes      |         | Tenant Service Group ID          |
-| `log_level`     | string | No       | "INFO"  | Log level for the SDK            |
+| Parameter       | Type   | Required | Default | Choices | Description                      |
+|-----------------|--------|----------|---------|---------|----------------------------------|
+| `client_id`     | string | Yes      |         |         | Client ID for authentication     |
+| `client_secret` | string | Yes      |         |         | Client secret for authentication |
+| `tsg_id`        | string | Yes      |         |         | Tenant Service Group ID          |
+| `log_level`     | string | No       | "INFO"  | DEBUG, INFO, WARNING, ERROR, CRITICAL | Log level for the SDK            |
 
 ## Examples
 
