@@ -36,6 +36,8 @@
         - test_anti_spyware_profile_info.yaml
         - test_dynamic_user_group.yaml
         - test_dynamic_user_group_info.yaml
+        - test_decryption_profile.yaml
+        - test_decryption_profile_info.yaml
       changed_when: false
       tags:
         - syntax

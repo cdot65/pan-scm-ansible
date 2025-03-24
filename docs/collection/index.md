@@ -139,6 +139,7 @@ The collection includes modules for managing various SCM configuration objects:
 |--------|-------------|------------|
 | [Security Rule](modules/security_rule.md) | Manage security rules | [Security Rule Info](modules/security_rule_info.md) |
 | [Anti-Spyware Profile](modules/anti_spyware_profile.md) | Manage anti-spyware profiles | [Anti-Spyware Profile Info](modules/anti_spyware_profile_info.md) |
+| [Decryption Profile](modules/decryption_profile.md) | Manage decryption profiles | [Decryption Profile Info](modules/decryption_profile_info.md) |
 | [Security Profiles Group](modules/security_profiles_group.md) | Manage security profile groups | - |
 
 [View All Modules →](modules/index.md)

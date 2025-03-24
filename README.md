@@ -102,6 +102,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 |-----------------------------------------------------------------------------------------------------------------|--------------------------------|---------------------------------------------------------------------------------------------------------------------|
 | [security_rule](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_rule/)                     | Manage security rules          | [security_rule_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_rule_info/)               |
 | [anti_spyware_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/anti_spyware_profile/)       | Manage anti-spyware profiles   | [anti_spyware_profile_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/anti_spyware_profile_info/) |
+| [decryption_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/decryption_profile/)           | Manage decryption profiles     | [decryption_profile_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/decryption_profile_info/)     |
 | [security_profiles_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_profiles_group/) | Manage security profile groups | -                                                                                                                   |
 
 ## Example Usage

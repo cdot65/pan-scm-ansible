@@ -1,0 +1,202 @@
+---
+# Playbook for testing Strata Cloud Manager decryption profile info operations
+# Usage: ansible-playbook tests/test_decryption_profile_info.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM Decryption Profile Info Module
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+    test_folder: "Texas"
+  tasks:
+    # ==========================================
+    # SETUP - Create test decryption profiles
+    # ==========================================
+    # First clean up any existing test decryption profile objects if they exist
+    - name: Remove test decryption profile objects if they exist
+      cdot65.scm.decryption_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Test_Info_FwdProxy"
+        - "Test_Info_Inbound"
+        - "Test_Info_NoProxy"
+      tags:
+        - dev-cleanup
+        - dev-test
+    
+    # Create test decryption profiles
+    - name: Create a forward proxy decryption profile for testing
+      cdot65.scm.decryption_profile:
+        provider: "{{ provider }}"
+        name: "Test_Info_FwdProxy"
+        description: "Forward proxy profile for info testing"
+        ssl_forward_proxy:
+          enabled: true
+          block_expired_cert: true
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_fwdproxy_result
+      tags:
+        - dev-test
+        
+    - name: Create an inbound inspection decryption profile for testing
+      cdot65.scm.decryption_profile:
+        provider: "{{ provider }}"
+        name: "Test_Info_Inbound"
+        description: "Inbound inspection profile for info testing"
+        ssl_inbound_inspection:
+          enabled: true
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_inbound_result
+      tags:
+        - dev-test
+        
+    - name: Create a no proxy decryption profile for testing
+      cdot65.scm.decryption_profile:
+        provider: "{{ provider }}"
+        name: "Test_Info_NoProxy"
+        description: "No proxy profile for info testing"
+        ssl_no_proxy:
+          enabled: true
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_noproxy_result
+      tags:
+        - dev-test
+    
+    # Set profile names to fixed variables after creation
+    - name: Set profile names to existing names
+      ansible.builtin.set_fact:
+        fwdproxy_name: "{{ create_fwdproxy_result.decryption_profile.name }}"
+        inbound_name: "{{ create_inbound_result.decryption_profile.name }}"
+        noproxy_name: "{{ create_noproxy_result.decryption_profile.name }}"
+    
+    # Brief pause to ensure all profiles are available
+    - name: Pause for profile creation to complete
+      ansible.builtin.pause:
+        seconds: 2
+    
+    # ==========================================
+    # TEST SPECIFIC PROFILE RETRIEVAL
+    # ==========================================
+    - name: Get information about a specific decryption profile
+      cdot65.scm.decryption_profile_info:
+        provider: "{{ provider }}"
+        name: "{{ fwdproxy_name }}"
+        folder: "{{ test_folder }}"
+      register: info_specific_result
+      tags:
+        - dev-test
+
+    - name: Debug specific profile info result
+      debug:
+        var: info_specific_result
+        verbosity: 1
+
+    - name: Verify specific decryption profile info retrieval
+      ansible.builtin.assert:
+        that:
+          - info_specific_result is succeeded
+          - info_specific_result.profile is defined
+          - info_specific_result.profile.name == fwdproxy_name
+          - info_specific_result.profile.ssl_forward_proxy is defined
+        fail_msg: "Failed to retrieve specific decryption profile information"
+        success_msg: "Successfully retrieved specific decryption profile information"
+      tags:
+        - dev-cicd
+    
+    # ==========================================
+    # TEST LIST ALL PROFILES
+    # ==========================================
+    - name: List all decryption profiles in the test folder
+      cdot65.scm.decryption_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+      register: info_list_result
+      tags:
+        - dev-test
+
+    - name: Debug list info result
+      debug:
+        var: info_list_result
+        verbosity: 1
+
+    - name: Verify decryption profiles list retrieval
+      ansible.builtin.assert:
+        that:
+          - info_list_result is succeeded
+          - info_list_result.profiles is defined
+          - info_list_result.profiles | length >= 3
+          - (info_list_result.profiles | selectattr('name', 'equalto', fwdproxy_name) | list | length) == 1
+          - (info_list_result.profiles | selectattr('name', 'equalto', inbound_name) | list | length) == 1
+          - (info_list_result.profiles | selectattr('name', 'equalto', noproxy_name) | list | length) == 1
+        fail_msg: "Failed to list all decryption profiles"
+        success_msg: "Successfully listed all decryption profiles"
+      tags:
+        - dev-cicd
+    
+    # ==========================================
+    # TEST FILTERING (EXACT MATCH)
+    # ==========================================
+    - name: Get profiles with exact match
+      cdot65.scm.decryption_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        exact_match: true
+      register: exact_match_result
+      tags:
+        - dev-test
+
+    - name: Debug exact match result
+      debug:
+        var: exact_match_result
+        verbosity: 1
+
+    - name: Verify exact match filter
+      ansible.builtin.assert:
+        that:
+          - exact_match_result is succeeded
+          - exact_match_result.profiles is defined
+        fail_msg: "Failed to filter profiles with exact match"
+        success_msg: "Successfully filtered profiles with exact match"
+      tags:
+        - dev-cicd
+    
+    # ==========================================
+    # CLEANUP - Remove test profiles
+    # ==========================================
+    - name: Delete the test decryption profiles
+      cdot65.scm.decryption_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      loop:
+        - "{{ fwdproxy_name }}"
+        - "{{ inbound_name }}"
+        - "{{ noproxy_name }}"
+      register: delete_result
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    - name: Verify decryption profiles were deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is succeeded
+        fail_msg: "Failed to delete test decryption profiles"
+        success_msg: "Successfully deleted test decryption profiles"
+      tags:
+        - dev-cicd

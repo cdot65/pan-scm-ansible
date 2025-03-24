@@ -61,6 +61,7 @@ These modules configure security policies and profiles:
 |--------|-------------|------------|
 | [security_rule](security_rule.md) | Manage security rules | [security_rule_info](security_rule_info.md) |
 | [anti_spyware_profile](anti_spyware_profile.md) | Manage anti-spyware profiles | [anti_spyware_profile_info](anti_spyware_profile_info.md) |
+| [decryption_profile](decryption_profile.md) | Manage decryption profiles | [decryption_profile_info](decryption_profile_info.md) |
 | [security_profiles_group](security_profiles_group.md) | Manage security profile groups | - |
 
 ## Common Module Parameters
