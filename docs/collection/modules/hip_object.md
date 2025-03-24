@@ -320,4 +320,4 @@ It's important to handle potential errors when working with HIP objects.
 
 - [hip_object_info](hip_object_info.md) - Retrieve information about HIP objects
 - [hip_profile](hip_profile.md) - Manage HIP profiles that use HIP objects
-- [commit](commit.md) - Commit configuration changes
+- [hip_profile_info](hip_profile_info.md) - Retrieve information about HIP profiles

@@ -254,4 +254,4 @@ It's important to handle potential errors when retrieving information about HIP 
 
 - [hip_object](hip_object.md) - Create, update, and delete HIP objects
 - [hip_profile](hip_profile.md) - Manage HIP profiles that use HIP objects
-- [commit](commit.md) - Commit configuration changes
+- [hip_profile_info](hip_profile_info.md) - Retrieve information about HIP profiles
