@@ -1,0 +1,201 @@
+---
+# Playbook for testing Strata Cloud Manager HIP Profile operations
+# Usage: ansible-playbook tests/test_hip_profile.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM HIP Profile Module CRUD Operations
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  collections:
+    - cdot65.scm
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_ts: "{{ lookup('pipe', 'date +%m%d%H%M') }}"
+    test_folder: "Shared"
+  tasks:
+    # First clean up any existing test HIP profile objects if they exist
+    - name: Remove test HIP profile objects if they exist
+      hip_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "hip-win-{{ test_ts }}"
+        - "hip-sec-{{ test_ts }}"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
+    - name: Create a basic HIP profile with single match expression
+      hip_profile:
+        provider: "{{ provider }}"
+        name: "hip-win-{{ test_ts }}"
+        description: "Windows devices basic profile"
+        match: '"is-win"'
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_basic_result
+      tags:
+        - dev-test
+
+    - name: Debug basic profile creation result
+      debug:
+        var: create_basic_result
+        verbosity: 1
+
+    - name: Verify basic HIP profile creation
+      ansible.builtin.assert:
+        that:
+          - create_basic_result is changed
+          - create_basic_result.hip_profile is defined
+          - create_basic_result.hip_profile.description == "Windows devices basic profile"
+          - create_basic_result.hip_profile.match == '"is-win"'
+        fail_msg: "Failed to create basic HIP profile"
+        success_msg: "Successfully created basic HIP profile"
+
+    - name: Create a HIP profile with complex match expression
+      hip_profile:
+        provider: "{{ provider }}"
+        name: "hip-sec-{{ test_ts }}"
+        description: "Secure devices profile"
+        match: '"is-win" and "is-firewall-enabled"'
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_complex_result
+      tags:
+        - dev-test
+
+    - name: Debug complex profile creation result
+      debug:
+        var: create_complex_result
+        verbosity: 1
+
+    - name: Verify complex HIP profile creation
+      ansible.builtin.assert:
+        that:
+          - create_complex_result is changed
+          - create_complex_result.hip_profile is defined
+          - create_complex_result.hip_profile.description == "Secure devices profile"
+          - create_complex_result.hip_profile.match == '"is-win" and "is-firewall-enabled"'
+        fail_msg: "Failed to create complex HIP profile"
+        success_msg: "Successfully created complex HIP profile"
+
+    # Set profile names to fixed variables after creation
+    - name: Set profile names to existing names
+      ansible.builtin.set_fact:
+        basic_profile_name: "{{ create_basic_result.hip_profile.name }}"
+        secure_profile_name: "{{ create_complex_result.hip_profile.name }}"
+
+    # ==========================================
+    # READ operation tests
+    # ==========================================
+    - name: Get specific HIP profile
+      hip_profile_info:
+        provider: "{{ provider }}"
+        name: "{{ secure_profile_name }}"
+        folder: "{{ test_folder }}"
+      register: read_result
+      tags:
+        - dev-test
+
+    - name: Debug read result
+      debug:
+        var: read_result
+        verbosity: 1
+
+    - name: Verify HIP profile read operation
+      ansible.builtin.assert:
+        that:
+          - read_result is succeeded
+          - read_result.hip_profile is defined
+          - read_result.hip_profile.name == secure_profile_name
+          - read_result.hip_profile.match == '"is-win" and "is-firewall-enabled"'
+        fail_msg: "Failed to read HIP profile"
+        success_msg: "Successfully read HIP profile"
+
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    - name: Update the complex HIP profile
+      hip_profile:
+        provider: "{{ provider }}"
+        name: "{{ secure_profile_name }}"
+        description: "Enhanced secure devices profile"
+        match: '"is-win" and "is-firewall-enabled" and "is-disk-encrypted"'
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: update_result
+      tags:
+        - dev-test
+
+    - name: Debug update result
+      debug:
+        var: update_result
+        verbosity: 1
+
+    - name: Verify HIP profile update
+      ansible.builtin.assert:
+        that:
+          - update_result is changed
+          - update_result.hip_profile is defined
+          - update_result.hip_profile.description == "Enhanced secure devices profile"
+          - update_result.hip_profile.match == '"is-win" and "is-firewall-enabled" and "is-disk-encrypted"'
+        fail_msg: "Failed to update HIP profile"
+        success_msg: "Successfully updated HIP profile"
+
+    # Test idempotency
+    - name: Test idempotency on the updated HIP profile (re-run same update)
+      hip_profile:
+        provider: "{{ provider }}"
+        name: "{{ secure_profile_name }}"
+        description: "Enhanced secure devices profile"
+        match: '"is-win" and "is-firewall-enabled" and "is-disk-encrypted"'
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: idempotency_result
+
+    - name: Verify idempotency behavior
+      ansible.builtin.assert:
+        that:
+          - idempotency_result is not changed
+        fail_msg: "HIP Profile module failed idempotency test"
+        success_msg: "HIP Profile module passed idempotency test"
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Delete the HIP profiles
+      hip_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      loop:
+        - "{{ basic_profile_name }}"
+        - "{{ secure_profile_name }}"
+      register: delete_result
+      tags:
+        - dev-test
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+        verbosity: 1
+
+    - name: Verify HIP profiles were deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is succeeded
+        fail_msg: "Failed to delete some HIP profiles"
+        success_msg: "Successfully deleted all HIP profiles"

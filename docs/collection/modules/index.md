@@ -21,6 +21,7 @@ These modules manage the fundamental building blocks of your network security po
 | [dynamic_user_group](dynamic_user_group.md) | Manage dynamic user groups | [dynamic_user_group_info](dynamic_user_group_info.md) |
 | [external_dynamic_lists](external_dynamic_lists.md) | Manage external dynamic lists | [external_dynamic_lists_info](external_dynamic_lists_info.md) |
 | [hip_object](hip_object.md) | Manage HIP objects | [hip_object_info](hip_object_info.md) |
+| [hip_profile](hip_profile.md) | Manage HIP profiles | [hip_profile_info](hip_profile_info.md) |
 | [service](service.md) | Manage service objects | [service_info](service_info.md) |
 | [service_group](service_group.md) | Manage service groups | [service_group_info](service_group_info.md) |
 | [tag](tag.md) | Manage tag objects | [tag_info](tag_info.md) |

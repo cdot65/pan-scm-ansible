@@ -109,6 +109,8 @@ nav:
               - External Dynamic Lists Info: collection/modules/external_dynamic_lists_info.md
               - HIP Object: collection/modules/hip_object.md
               - HIP Object Info: collection/modules/hip_object_info.md
+              - HIP Profile: collection/modules/hip_profile.md
+              - HIP Profile Info: collection/modules/hip_profile_info.md
               - Service: collection/modules/service.md
               - Service Info: collection/modules/service_info.md
               - Service Group: collection/modules/service_group.md
