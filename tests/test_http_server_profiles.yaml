@@ -1,0 +1,111 @@
+---
+# Test playbook for HTTP server profiles module
+- name: Test HTTP server profiles module
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    - name: Create basic HTTP server profile
+      cdot65.scm.http_server_profiles:
+        provider: "{{ provider }}"
+        name: "test-http-profile"
+        description: "Test HTTP server profile created by Ansible"
+        server:
+          - name: "primary-server"
+            address: "10.0.0.1"
+            protocol: "HTTP"
+            port: 8080
+        folder: "{{ folder }}"
+        state: "present"
+      register: create_result
+
+    - name: Display basic HTTP server profile
+      debug:
+        var: create_result
+
+    - name: Verify basic HTTP server profile was created
+      assert:
+        that:
+          - create_result.changed
+          - create_result.http_server_profile is defined
+          - create_result.http_server_profile.name == "test-http-profile"
+          - create_result.http_server_profile.description == "Test HTTP server profile created by Ansible"
+
+    - name: Create HTTPS server profile with TLS config
+      cdot65.scm.http_server_profiles:
+        provider: "{{ provider }}"
+        name: "secure-profile"
+        description: "Secure HTTPS server profile"
+        server:
+          - name: "secure-server"
+            address: "logs.example.com"
+            protocol: "HTTPS"
+            port: 443
+            tls_version: "1.2"
+            certificate_profile: "default-cert-profile"
+            http_method: "POST"
+        tag_registration: true
+        folder: "{{ folder }}"
+        state: "present"
+      register: create_https_result
+
+    - name: Display HTTPS server profile
+      debug:
+        var: create_https_result
+
+    - name: Verify HTTPS server profile was created
+      assert:
+        that:
+          - create_https_result.changed
+          - create_https_result.http_server_profile is defined
+          - create_https_result.http_server_profile.name == "secure-profile"
+          - create_https_result.http_server_profile.tag_registration == true
+
+    - name: Update HTTP server profile
+      cdot65.scm.http_server_profiles:
+        provider: "{{ provider }}"
+        name: "test-http-profile"
+        description: "Updated HTTP server profile"
+        server:
+          - name: "primary-server"
+            address: "10.0.0.1"
+            protocol: "HTTP"
+            port: 8080
+          - name: "backup-server"
+            address: "10.0.0.2"
+            protocol: "HTTP"
+            port: 8080
+        folder: "{{ folder }}"
+        state: "present"
+      register: update_result
+
+    - name: Display updated HTTP server profile
+      debug:
+        var: update_result
+
+    - name: Verify HTTP server profile was updated
+      assert:
+        that:
+          - update_result.changed
+          - update_result.http_server_profile is defined
+          - update_result.http_server_profile.name == "test-http-profile"
+          - update_result.http_server_profile.description == "Updated HTTP server profile"
+          - update_result.http_server_profile.server | length == 2
+
+    - name: Cleanup - Delete HTTP server profiles
+      cdot65.scm.http_server_profiles:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ folder }}"
+        state: "absent"
+      loop:
+        - "test-http-profile"
+        - "secure-profile"

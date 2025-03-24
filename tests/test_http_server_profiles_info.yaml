@@ -1,0 +1,131 @@
+---
+# Test playbook for HTTP server profiles info module
+- name: Test HTTP server profiles info module
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # Create HTTP server profiles for testing
+    - name: Create HTTP server profile for testing
+      cdot65.scm.http_server_profiles:
+        provider: "{{ provider }}"
+        name: "test-http-profile"
+        description: "Test HTTP server profile for info module testing"
+        server:
+          - name: "primary-server"
+            address: "10.0.0.1"
+            protocol: "HTTP"
+            port: 8080
+        folder: "{{ folder }}"
+        state: "present"
+      register: create_result
+
+    - name: Create HTTPS server profile for testing
+      cdot65.scm.http_server_profiles:
+        provider: "{{ provider }}"
+        name: "secure-profile"
+        description: "Secure HTTPS server profile for info module testing"
+        server:
+          - name: "secure-server"
+            address: "logs.example.com"
+            protocol: "HTTPS"
+            port: 443
+            tls_version: "1.2"
+            certificate_profile: "default-cert-profile"
+        tag_registration: true
+        folder: "{{ folder }}"
+        state: "present"
+      register: create_https_result
+
+    # Test info module - Get specific profile
+    - name: Get information about a specific HTTP server profile
+      cdot65.scm.http_server_profiles_info:
+        provider: "{{ provider }}"
+        name: "test-http-profile"
+        folder: "{{ folder }}"
+      register: profile_info
+
+    - name: Display specific HTTP server profile info
+      debug:
+        var: profile_info
+
+    - name: Verify specific HTTP server profile info
+      assert:
+        that:
+          - profile_info.http_server_profile is defined
+          - profile_info.http_server_profile.name == "test-http-profile"
+          - profile_info.http_server_profile.description == "Test HTTP server profile for info module testing"
+
+    # Test info module - List all profiles
+    - name: List all HTTP server profiles
+      cdot65.scm.http_server_profiles_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder }}"
+      register: all_profiles
+
+    - name: Display all HTTP server profiles
+      debug:
+        var: all_profiles
+
+    - name: Verify all HTTP server profiles are listed
+      assert:
+        that:
+          - all_profiles.http_server_profiles is defined
+          - all_profiles.http_server_profiles | length >= 2
+
+    # Test info module - Filter by protocol
+    - name: List only HTTPS profiles
+      cdot65.scm.http_server_profiles_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder }}"
+        protocol: ["HTTPS"]
+      register: https_profiles
+
+    - name: Display HTTPS profiles
+      debug:
+        var: https_profiles
+
+    - name: Verify HTTPS profiles are filtered correctly
+      assert:
+        that:
+          - https_profiles.http_server_profiles is defined
+          - https_profiles.http_server_profiles | length >= 1
+          - https_profiles.http_server_profiles[0].server[0].protocol == "HTTPS"
+
+    # Test info module - Filter by tag registration
+    - name: List profiles with tag registration enabled
+      cdot65.scm.http_server_profiles_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder }}"
+        tag_registration: true
+      register: tagged_profiles
+
+    - name: Display tag registration profiles
+      debug:
+        var: tagged_profiles
+
+    - name: Verify tag registration profiles are filtered correctly
+      assert:
+        that:
+          - tagged_profiles.http_server_profiles is defined
+          - tagged_profiles.http_server_profiles | length >= 1
+          - tagged_profiles.http_server_profiles[0].tag_registration == true
+
+    # Cleanup - Delete HTTP server profiles
+    - name: Cleanup - Delete HTTP server profiles
+      cdot65.scm.http_server_profiles:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ folder }}"
+        state: "absent"
+      loop:
+        - "test-http-profile"
+        - "secure-profile"
