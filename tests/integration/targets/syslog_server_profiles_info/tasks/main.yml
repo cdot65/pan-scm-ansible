@@ -1,0 +1,121 @@
+---
+# Integration tests for syslog_server_profiles_info module
+
+- name: Set test vars
+  ansible.builtin.set_fact:
+    udp_profile_name: "ansible_int_test_syslog_udp"
+    tcp_profile_name: "ansible_int_test_syslog_tcp"
+    folder_name: "Texas"
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+
+- name: Clean up any test objects
+  cdot65.scm.syslog_server_profiles:
+    provider: "{{ provider }}"
+    name: "{{ item }}"
+    folder: "{{ folder_name }}"
+    state: "absent"
+  ignore_errors: true
+  with_items:
+    - "{{ udp_profile_name }}"
+    - "{{ tcp_profile_name }}"
+
+- name: Create UDP test profile
+  cdot65.scm.syslog_server_profiles:
+    provider: "{{ provider }}"
+    name: "{{ udp_profile_name }}"
+    servers:
+      server1:
+        name: "server1"
+        server: "192.168.1.100"
+        transport: "UDP"
+        port: 514
+        format: "BSD"
+        facility: "LOG_USER"
+    folder: "{{ folder_name }}"
+    state: "present"
+
+- name: Create TCP test profile
+  cdot65.scm.syslog_server_profiles:
+    provider: "{{ provider }}"
+    name: "{{ tcp_profile_name }}"
+    servers:
+      server1:
+        name: "server1"
+        server: "192.168.1.200"
+        transport: "TCP"
+        port: 1514
+        format: "IETF"
+        facility: "LOG_LOCAL0"
+    format:
+      traffic: "hostname,$time,$src,$dst,$proto,$sport,$dport"
+    folder: "{{ folder_name }}"
+    state: "present"
+
+- name: Test listing all profiles
+  cdot65.scm.syslog_server_profiles_info:
+    provider: "{{ provider }}"
+    folder: "{{ folder_name }}"
+  register: list_all_result
+
+- name: Verify list all result
+  ansible.builtin.assert:
+    that:
+      - list_all_result.syslog_server_profiles is defined
+      - list_all_result.syslog_server_profiles | selectattr('name', 'equalto', udp_profile_name) | list | length == 1
+      - list_all_result.syslog_server_profiles | selectattr('name', 'equalto', tcp_profile_name) | list | length == 1
+
+- name: Test getting specific profile
+  cdot65.scm.syslog_server_profiles_info:
+    provider: "{{ provider }}"
+    name: "{{ udp_profile_name }}"
+    folder: "{{ folder_name }}"
+  register: specific_profile_result
+
+- name: Verify specific profile result
+  ansible.builtin.assert:
+    that:
+      - specific_profile_result.syslog_server_profile is defined
+      - specific_profile_result.syslog_server_profile.name == udp_profile_name
+      - specific_profile_result.syslog_server_profile.servers.server1.transport == "UDP"
+
+- name: Test filtering by transport (UDP)
+  cdot65.scm.syslog_server_profiles_info:
+    provider: "{{ provider }}"
+    folder: "{{ folder_name }}"
+    transport: ["UDP"]
+  register: udp_filter_result
+
+- name: Verify UDP filter result
+  ansible.builtin.assert:
+    that:
+      - udp_filter_result.syslog_server_profiles is defined
+      - udp_filter_result.syslog_server_profiles | selectattr('name', 'equalto', udp_profile_name) | list | length == 1
+      - udp_filter_result.syslog_server_profiles | selectattr('name', 'equalto', tcp_profile_name) | list | length == 0
+
+- name: Test filtering by format (IETF)
+  cdot65.scm.syslog_server_profiles_info:
+    provider: "{{ provider }}"
+    folder: "{{ folder_name }}"
+    format: ["IETF"]
+  register: format_filter_result
+
+- name: Verify format filter result
+  ansible.builtin.assert:
+    that:
+      - format_filter_result.syslog_server_profiles is defined
+      - format_filter_result.syslog_server_profiles | selectattr('name', 'equalto', tcp_profile_name) | list | length == 1
+      - format_filter_result.syslog_server_profiles | selectattr('name', 'equalto', udp_profile_name) | list | length == 0
+
+- name: Clean up test objects
+  cdot65.scm.syslog_server_profiles:
+    provider: "{{ provider }}"
+    name: "{{ item }}"
+    folder: "{{ folder_name }}"
+    state: "absent"
+  with_items:
+    - "{{ udp_profile_name }}"
+    - "{{ tcp_profile_name }}"
