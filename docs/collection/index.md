@@ -109,6 +109,7 @@ The collection includes modules for managing various SCM configuration objects:
 | [Service](modules/service.md) | Manage service objects | [Service Info](modules/service_info.md) |
 | [Service Group](modules/service_group.md) | Manage service groups | [Service Group Info](modules/service_group_info.md) |
 | [Tag](modules/tag.md) | Manage tag objects | [Tag Info](modules/tag_info.md) |
+| [HTTP Server Profiles](modules/http_server_profiles.md) | Manage HTTP server profiles | [HTTP Server Profiles Info](modules/http_server_profiles_info.md) |
 
 #### Network Configuration
 

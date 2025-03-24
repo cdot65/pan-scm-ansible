@@ -43,7 +43,7 @@ class HTTPServerProfilesSpec:
             "certificate_profile": {"type": "str", "required": False},
             "http_method": {
                 "type": "str",
-                "required": False,
+                "required": True,
                 "choices": ["GET", "POST", "PUT", "DELETE"],
             },
         }
@@ -73,7 +73,7 @@ class HTTPServerProfilesSpec:
             "server": {
                 "type": "list",
                 "elements": "dict",
-                "required": True,
+                "required": False,
                 "options": HTTPServerProfilesSpec.server_fields(),
             },
             "tag_registration": {"type": "bool", "required": False},

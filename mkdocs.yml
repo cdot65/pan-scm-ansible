@@ -117,6 +117,8 @@ nav:
               - Service Group Info: collection/modules/service_group_info.md
               - Tag: collection/modules/tag.md
               - Tag Info: collection/modules/tag_info.md
+              - HTTP Server Profiles: collection/modules/http_server_profiles.md
+              - HTTP Server Profiles Info: collection/modules/http_server_profiles_info.md
           - Network Configuration:
               - Security Zone: collection/modules/security_zone.md
               - IKE Crypto Profile: collection/modules/ike_crypto_profile.md

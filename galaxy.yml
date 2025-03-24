@@ -30,3 +30,16 @@ build_ignore:
   - galaxy.yml.j2
   - template_galaxy.yml
   - "*.tar.gz"
+  - ".CLAUDE"
+  - ".CLAUDE/**"
+  - ".ansible"
+  - ".ansible/**"
+  - "collections"
+  - "collections/**"
+  - "site"
+  - "site/**"
+  - "dist"
+  - "dist/**"
+  - "__pycache__"
+  - "__pycache__/**"
+  - "*.pyc"

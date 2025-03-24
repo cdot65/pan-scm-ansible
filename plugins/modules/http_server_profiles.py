@@ -25,7 +25,9 @@ __metaclass__ = type
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
 
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.http_server_profiles import HTTPServerProfilesSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.http_server_profiles import (
+    HTTPServerProfilesSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
@@ -53,8 +55,8 @@ options:
         required: true
         type: str
     server:
-        description: List of server configurations within the HTTP server profile.
-        required: true
+        description: List of server configurations within the HTTP server profile. Required when state=present.
+        required: false
         type: list
         elements: dict
         suboptions:
@@ -86,7 +88,7 @@ options:
                 type: str
             http_method:
                 description: HTTP operation to perform.
-                required: false
+                required: true
                 type: str
                 choices: ["GET", "POST", "PUT", "DELETE"]
     tag_registration:
@@ -266,7 +268,9 @@ def is_container_specified(http_server_profile_data):
     Returns:
         bool: True if exactly one container is specified, False otherwise
     """
-    containers = [http_server_profile_data.get(container) for container in ["folder", "snippet", "device"]]
+    containers = [
+        http_server_profile_data.get(container) for container in ["folder", "snippet", "device"]
+    ]
     return sum(container is not None for container in containers) == 1
 
 
@@ -322,15 +326,18 @@ def needs_update(existing, params):
                     "protocol": server.protocol,
                     "port": server.port,
                 }
-                
+
                 # Add optional fields if present
                 if hasattr(server, "tls_version") and server.tls_version is not None:
                     server_dict["tls_version"] = server.tls_version
-                if hasattr(server, "certificate_profile") and server.certificate_profile is not None:
+                if (
+                    hasattr(server, "certificate_profile")
+                    and server.certificate_profile is not None
+                ):
                     server_dict["certificate_profile"] = server.certificate_profile
                 if hasattr(server, "http_method") and server.http_method is not None:
                     server_dict["http_method"] = server.http_method
-                
+
                 existing_servers.append(server_dict)
 
         # Convert params servers to comparable format
@@ -342,7 +349,7 @@ def needs_update(existing, params):
                 "protocol": server["protocol"],
                 "port": server["port"],
             }
-            
+
             # Add optional fields if present
             if "tls_version" in server and server["tls_version"] is not None:
                 server_dict["tls_version"] = server["tls_version"]
@@ -350,11 +357,22 @@ def needs_update(existing, params):
                 server_dict["certificate_profile"] = server["certificate_profile"]
             if "http_method" in server and server["http_method"] is not None:
                 server_dict["http_method"] = server["http_method"]
-            
+
             params_servers.append(server_dict)
 
         # Compare server configurations
-        if sorted(existing_servers, key=lambda x: x["name"]) != sorted(params_servers, key=lambda x: x["name"]):
+        # Normalize servers for comparison by sorting them and their keys
+        def normalize_servers(servers):
+            sorted_servers = sorted(servers, key=lambda x: x["name"])
+            for server in sorted_servers:
+                # Sort the keys in each server dict for consistent comparison
+                server = {k: server[k] for k in sorted(server)}
+            return sorted_servers
+
+        normalized_existing = normalize_servers(existing_servers)
+        normalized_params = normalize_servers(params_servers)
+
+        if normalized_existing != normalized_params:
             update_data["server"] = params["server"]
             changed = True
         else:
@@ -387,7 +405,10 @@ def get_existing_http_server_profile(client, http_server_profile_data):
         # Determine which container type is specified
         container_type = None
         for container in ["folder", "snippet", "device"]:
-            if container in http_server_profile_data and http_server_profile_data[container] is not None:
+            if (
+                container in http_server_profile_data
+                and http_server_profile_data[container] is not None
+            ):
                 container_type = container
                 break
 
@@ -396,7 +417,8 @@ def get_existing_http_server_profile(client, http_server_profile_data):
 
         # Fetch the HTTP server profile using the appropriate container
         existing = client.http_server_profile.fetch(
-            name=http_server_profile_data["name"], **{container_type: http_server_profile_data[container_type]}
+            name=http_server_profile_data["name"],
+            **{container_type: http_server_profile_data[container_type]},
         )
         return True, existing
     except (ObjectNotPresentError, InvalidObjectError):
@@ -421,6 +443,9 @@ def main():
             ["folder", "snippet", "device"],
         ],
         required_one_of=[["folder", "snippet", "device"]],
+        required_if=[
+            ["state", "present", ["server"]],
+        ],
     )
 
     result = {"changed": False, "http_server_profile": None}
@@ -436,14 +461,18 @@ def main():
             )
 
         # Get existing HTTP server profile
-        exists, existing_http_server_profile = get_existing_http_server_profile(client, http_server_profile_data)
+        exists, existing_http_server_profile = get_existing_http_server_profile(
+            client, http_server_profile_data
+        )
 
         if module.params["state"] == "present":
             if not exists:
                 # Create new HTTP server profile
                 if not module.check_mode:
                     try:
-                        new_http_server_profile = client.http_server_profile.create(data=http_server_profile_data)
+                        new_http_server_profile = client.http_server_profile.create(
+                            data=http_server_profile_data
+                        )
                         result["http_server_profile"] = serialize_response(new_http_server_profile)
                         result["changed"] = True
                     except NameNotUniqueError:
@@ -456,7 +485,9 @@ def main():
                     result["changed"] = True
             else:
                 # Compare and update if needed
-                need_update, update_data = needs_update(existing_http_server_profile, http_server_profile_data)
+                need_update, update_data = needs_update(
+                    existing_http_server_profile, http_server_profile_data
+                )
 
                 if need_update:
                     if not module.check_mode:
@@ -464,8 +495,12 @@ def main():
                         update_model = HTTPServerProfileUpdateModel(**update_data)
 
                         # Perform update with complete object
-                        updated_http_server_profile = client.http_server_profile.update(update_model)
-                        result["http_server_profile"] = serialize_response(updated_http_server_profile)
+                        updated_http_server_profile = client.http_server_profile.update(
+                            update_model
+                        )
+                        result["http_server_profile"] = serialize_response(
+                            updated_http_server_profile
+                        )
                         result["changed"] = True
                     else:
                         result["changed"] = True
@@ -476,8 +511,15 @@ def main():
         elif module.params["state"] == "absent":
             if exists:
                 if not module.check_mode:
-                    client.http_server_profile.delete(str(existing_http_server_profile.id))
-                result["changed"] = True
+                    try:
+                        profile_id = str(existing_http_server_profile.id)
+                        client.http_server_profile.delete(profile_id)
+                        result["changed"] = True
+                        result["msg"] = f"Deleted HTTP server profile with ID: {profile_id}"
+                    except Exception as e:
+                        module.fail_json(msg=f"Failed to delete HTTP server profile: {str(e)}")
+                else:
+                    result["changed"] = True
 
         module.exit_json(**result)
 

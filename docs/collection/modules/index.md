@@ -25,6 +25,7 @@ These modules manage the fundamental building blocks of your network security po
 | [service](service.md) | Manage service objects | [service_info](service_info.md) |
 | [service_group](service_group.md) | Manage service groups | [service_group_info](service_group_info.md) |
 | [tag](tag.md) | Manage tag objects | [tag_info](tag_info.md) |
+| [http_server_profiles](http_server_profiles.md) | Manage HTTP server profiles | [http_server_profiles_info](http_server_profiles_info.md) |
 
 ### Network Configuration
 

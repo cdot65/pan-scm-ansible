@@ -24,6 +24,9 @@ __metaclass__ = type
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
 
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.http_server_profiles_info import (
+    HTTPServerProfilesInfoSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
@@ -268,36 +271,7 @@ def main():
     :rtype: dict
     """
     module = AnsibleModule(
-        argument_spec=dict(
-            name=dict(type="str", required=False),
-            gather_subset=dict(
-                type="list", elements="str", default=["config"], choices=["all", "config"]
-            ),
-            folder=dict(type="str", required=False),
-            snippet=dict(type="str", required=False),
-            device=dict(type="str", required=False),
-            exact_match=dict(type="bool", required=False, default=False),
-            exclude_folders=dict(type="list", elements="str", required=False),
-            exclude_snippets=dict(type="list", elements="str", required=False),
-            exclude_devices=dict(type="list", elements="str", required=False),
-            protocol=dict(
-                type="list",
-                elements="str",
-                required=False,
-                choices=["HTTP", "HTTPS"],
-            ),
-            tag_registration=dict(type="bool", required=False),
-            provider=dict(
-                type="dict",
-                required=True,
-                options=dict(
-                    client_id=dict(type="str", required=True),
-                    client_secret=dict(type="str", required=True, no_log=True),
-                    tsg_id=dict(type="str", required=True),
-                    log_level=dict(type="str", required=False, default="INFO"),
-                ),
-            ),
-        ),
+        argument_spec=HTTPServerProfilesInfoSpec.spec(),
         supports_check_mode=True,
         mutually_exclusive=[["folder", "snippet", "device"]],
         # Only require a container if we're not provided with a specific name
@@ -321,7 +295,9 @@ def main():
 
             try:
                 # Fetch a specific HTTP server profile
-                http_server_profile = client.http_server_profile.fetch(name=name, **container_params)
+                http_server_profile = client.http_server_profile.fetch(
+                    name=name, **container_params
+                )
 
                 # Serialize response for Ansible output
                 result["http_server_profile"] = serialize_response(http_server_profile)
@@ -338,10 +314,14 @@ def main():
             container_params, filter_params = build_filter_params(module.params)
 
             try:
-                http_server_profiles = client.http_server_profile.list(**container_params, **filter_params)
+                http_server_profiles = client.http_server_profile.list(
+                    **container_params, **filter_params
+                )
 
                 # Serialize response for Ansible output
-                result["http_server_profiles"] = [serialize_response(profile) for profile in http_server_profiles]
+                result["http_server_profiles"] = [
+                    serialize_response(profile) for profile in http_server_profiles
+                ]
 
             except MissingQueryParameterError as e:
                 module.fail_json(msg=f"Missing required parameter: {str(e)}")
