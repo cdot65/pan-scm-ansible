@@ -1,0 +1,319 @@
+---
+# Playbook for testing Strata Cloud Manager security rule operations
+# Usage: ansible-playbook tests/test_security_rule.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM Security Rule Module CRUD Operations
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+    test_folder: "Texas"
+  tasks:
+    # First clean up any existing test security rule objects if they exist
+    - name: Remove test security rule objects if they exist
+      cdot65.scm.security_rule:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        folder: "{{ test_folder }}"
+        rulebase: "{{ item.rulebase }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - { name: "Allow_Web_Traffic_{{ test_timestamp }}", rulebase: "pre" }
+        - { name: "Block_Malicious_Traffic_{{ test_timestamp }}", rulebase: "post" }
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # Skip creating tags as they're not essential for the test and may be causing issues
+    # We'll proceed with the main tests directly
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
+    - name: Create a security rule for web traffic (pre-rulebase)
+      cdot65.scm.security_rule:
+        provider: "{{ provider }}"
+        name: "Allow_Web_Traffic_{{ test_timestamp }}"
+        description: "Allow web traffic to the web server"
+        from_: ["Internet"]
+        source: ["any"]
+        to_: ["DMZ"]
+        destination: ["any"]  # Use 'any' instead of a specific address that may not exist
+        application: ["web-browsing", "ssl"]
+        service: ["application-default"]
+        action: "allow"
+        folder: "{{ test_folder }}"
+        rulebase: "pre"
+        profile_setting:
+          group: ["best-practice"]
+        state: "present"
+      register: create_pre_result
+      tags:
+        - dev-test
+
+    - name: Debug pre-rulebase creation result
+      debug:
+        var: create_pre_result
+        verbosity: 1
+
+    - name: Set rule name for pre-rulebase
+      ansible.builtin.set_fact:
+        pre_rule_name: "Allow_Web_Traffic_{{ test_timestamp }}"
+      when: ansible_check_mode
+
+    - name: Verify pre-rulebase security rule creation
+      ansible.builtin.assert:
+        that:
+          - create_pre_result is changed
+        fail_msg: "Failed to create pre-rulebase security rule"
+        success_msg: "Successfully created pre-rulebase security rule"
+      tags:
+        - dev-cicd
+
+    - name: Create a security rule for post-rulebase
+      cdot65.scm.security_rule:
+        provider: "{{ provider }}"
+        name: "Block_Malicious_Traffic_{{ test_timestamp }}"
+        description: "Block traffic to known malicious sites"
+        from_: ["any"]
+        source: ["any"]
+        to_: ["any"]
+        destination: ["any"]
+        application: ["any"]
+        service: ["any"]
+        category: ["malware", "command-and-control"]
+        action: "deny"
+        folder: "{{ test_folder }}"
+        rulebase: "post"
+        log_end: true
+        state: "present"
+      register: create_post_result
+      tags:
+        - dev-test
+
+    - name: Debug post-rulebase creation result
+      debug:
+        var: create_post_result
+        verbosity: 1
+
+    - name: Set rule name for post-rulebase
+      ansible.builtin.set_fact:
+        post_rule_name: "Block_Malicious_Traffic_{{ test_timestamp }}"
+      when: ansible_check_mode
+
+    - name: Verify post-rulebase security rule creation
+      ansible.builtin.assert:
+        that:
+          - create_post_result is changed
+        fail_msg: "Failed to create post-rulebase security rule"
+        success_msg: "Successfully created post-rulebase security rule"
+      tags:
+        - dev-cicd
+
+    # Set rule names to fixed variables after creation if we're not in check mode
+    - name: Set rule names to existing names
+      ansible.builtin.set_fact:
+        pre_rule_name: "{{ create_pre_result.security_rule.name }}"
+        post_rule_name: "{{ create_post_result.security_rule.name }}"
+      when: not ansible_check_mode
+
+    # Skip remaining tests in check mode
+    - name: Skip message for check mode
+      debug:
+        msg: "Skipping tests that require actual API interaction in check mode"
+      when: ansible_check_mode
+
+    # Only run these tasks if not in check mode
+    - name: Perform verification tasks
+      when: not ansible_check_mode
+      block:
+        # ==========================================
+        # READ operation tests
+        # ==========================================
+        - name: Get specific security rule by name (pre-rulebase)
+          cdot65.scm.security_rule_info:
+            provider: "{{ provider }}"
+            name: "{{ pre_rule_name }}"
+            folder: "{{ test_folder }}"
+            rulebase: "pre"
+          register: pre_info_result
+          tags:
+            - dev-test
+
+        - name: Verify pre-rulebase info retrieval
+          ansible.builtin.assert:
+            that:
+              - pre_info_result is succeeded
+              - pre_info_result.security_rule is defined
+              - pre_info_result.security_rule.name == pre_rule_name
+            fail_msg: "Failed to retrieve pre-rulebase security rule info"
+            success_msg: "Successfully retrieved pre-rulebase security rule info"
+          tags:
+            - dev-cicd
+
+        - name: Get specific security rule by name (post-rulebase)
+          cdot65.scm.security_rule_info:
+            provider: "{{ provider }}"
+            name: "{{ post_rule_name }}"
+            folder: "{{ test_folder }}"
+            rulebase: "post"
+          register: post_info_result
+          tags:
+            - dev-test
+
+        - name: Verify post-rulebase info retrieval
+          ansible.builtin.assert:
+            that:
+              - post_info_result is succeeded
+              - post_info_result.security_rule is defined
+              - post_info_result.security_rule.name == post_rule_name
+            fail_msg: "Failed to retrieve post-rulebase security rule info"
+            success_msg: "Successfully retrieved post-rulebase security rule info"
+          tags:
+            - dev-cicd
+
+        # ==========================================
+        # UPDATE operation tests
+        # ==========================================
+        - name: Update the pre-rulebase security rule
+          cdot65.scm.security_rule:
+            provider: "{{ provider }}"
+            name: "{{ pre_rule_name }}"
+            description: "Allow web traffic to the web server (updated)"
+            from_: ["Internet"]
+            source: ["any"]
+            to_: ["DMZ"]
+            destination: ["any"]
+            application: ["web-browsing", "ssl", "http2"]
+            service: ["application-default"]
+            action: "allow"
+            folder: "{{ test_folder }}"
+            rulebase: "pre"
+            profile_setting:
+              group: ["strict-security"]
+            # Don't explicitly provide log_setting, schedule, log_start, log_end here
+            # as they might be causing issues if they're null in the existing rule
+            state: "present"
+          register: update_pre_result
+          tags:
+            - dev-test
+
+        - name: Debug pre-rulebase update result
+          debug:
+            var: update_pre_result
+            verbosity: 1
+
+        - name: Verify pre-rulebase security rule update
+          ansible.builtin.assert:
+            that:
+              - update_pre_result is changed
+              - update_pre_result.security_rule is defined
+              - update_pre_result.security_rule.description == "Allow web traffic to the web server (updated)"
+              - "'http2' in update_pre_result.security_rule.application"
+            fail_msg: "Failed to update pre-rulebase security rule"
+            success_msg: "Successfully updated pre-rulebase security rule"
+          tags:
+            - dev-cicd
+
+        # Test idempotency
+        - name: Test idempotency on the updated security rule (re-run same update)
+          cdot65.scm.security_rule:
+            provider: "{{ provider }}"
+            name: "{{ pre_rule_name }}"
+            description: "Allow web traffic to the web server (updated)"
+            from_: ["Internet"]
+            source: ["any"]
+            to_: ["DMZ"]
+            destination: ["any"]
+            application: ["web-browsing", "ssl", "http2"]
+            service: ["application-default"]
+            action: "allow"
+            folder: "{{ test_folder }}"
+            rulebase: "pre"
+            profile_setting:
+              group: ["strict-security"]
+            state: "present"
+          register: idempotency_result
+          tags:
+            - dev-cicd
+
+        - name: Verify idempotency behavior
+          ansible.builtin.assert:
+            that:
+              - idempotency_result is not changed
+            fail_msg: "Security rule module failed idempotency test"
+            success_msg: "Security rule module passed idempotency test"
+          tags:
+            - dev-cicd
+
+        # ==========================================
+        # DELETE operation tests
+        # ==========================================
+        - name: Delete the security rules
+          cdot65.scm.security_rule:
+            provider: "{{ provider }}"
+            name: "{{ item.name }}"
+            folder: "{{ test_folder }}"
+            rulebase: "{{ item.rulebase }}"
+            state: "absent"
+          loop:
+            - { name: "{{ pre_rule_name }}", rulebase: "pre" }
+            - { name: "{{ post_rule_name }}", rulebase: "post" }
+          register: delete_result
+          tags:
+            - dev-test
+
+        - name: Debug delete result
+          debug:
+            var: delete_result
+            verbosity: 1
+
+        - name: Verify security rules were deleted
+          ansible.builtin.assert:
+            that:
+              - delete_result is succeeded
+            fail_msg: "Failed to delete security rules"
+            success_msg: "Successfully deleted all security rules"
+          tags:
+            - dev-cicd
+
+        # Verify deletion by attempting to get the rules
+        - name: Verify pre-rulebase security rule is gone
+          cdot65.scm.security_rule_info:
+            provider: "{{ provider }}"
+            name: "{{ pre_rule_name }}"
+            folder: "{{ test_folder }}"
+            rulebase: "pre"
+          register: verify_pre_delete
+          ignore_errors: true
+          tags:
+            - dev-test
+
+        - name: Verify post-rulebase security rule is gone
+          cdot65.scm.security_rule_info:
+            provider: "{{ provider }}"
+            name: "{{ post_rule_name }}"
+            folder: "{{ test_folder }}"
+            rulebase: "post"
+          register: verify_post_delete
+          ignore_errors: true
+          tags:
+            - dev-test
+
+        - name: Assert security rules were properly deleted
+          ansible.builtin.assert:
+            that:
+              - verify_pre_delete is failed or verify_pre_delete.security_rule is not defined
+              - verify_post_delete is failed or verify_post_delete.security_rule is not defined
+            fail_msg: "Security rules still exist after deletion"
+            success_msg: "Confirmed security rules were properly deleted"
+          tags:
+            - dev-cicd

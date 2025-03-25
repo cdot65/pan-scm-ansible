@@ -1,170 +1,147 @@
-# Security Rule
+# security_rule
 
-Manage security rules in Palo Alto Networks Strata Cloud Manager.
+Manage security rule objects in Strata Cloud Manager (SCM).
 
-## Synopsis
+## Description
 
-The `security_rule` module allows you to create, update, and delete security rules in SCM.
-
-Security rules define the traffic control policies for your network, determining what traffic is allowed or denied
-between different zones, addresses, users, and applications.
+Manage security rule objects within Strata Cloud Manager (SCM).
+Create, update, and delete security rule objects with various parameters.
+Ensures that exactly one container type (folder, snippet, device) is provided.
+Supports both pre-rulebase and post-rulebase configurations.
 
 ## Requirements
 
-- `pan-scm-sdk` Python package
-- Authentication credentials for Strata Cloud Manager
+- Python >= 3.11
+- pan-scm-sdk
 
 ## Parameters
 
-| Parameter                   | Type    | Required | Default                   | Choices                    | Description                                                        |
-|-----------------------------|---------|----------|---------------------------|----------------------------|--------------------------------------------------------------------|
-| `name`                      | string  | yes      |                           |                            | Name of the security rule                                          |
-| `folder`                    | string  | yes      |                           |                            | SCM folder path where the security rule is located                 |
-| `description`               | string  | no       |                           |                            | Description for the security rule                                  |
-| `source_zones`              | list    | no       |                           |                            | List of source zones                                               |
-| `destination_zones`         | list    | no       |                           |                            | List of destination zones                                          |
-| `source_addresses`          | list    | no       | `["any"]`                 |                            | List of source addresses                                           |
-| `destination_addresses`     | list    | no       | `["any"]`                 |                            | List of destination addresses                                      |
-| `source_users`              | list    | no       | `["any"]`                 |                            | List of source users                                               |
-| `applications`              | list    | no       |                           |                            | List of applications                                               |
-| `services`                  | list    | no       | `["application-default"]` |                            | List of services                                                   |
-| `categories`                | list    | no       | `["any"]`                 |                            | List of URL categories                                             |
-| `action`                    | string  | no       | `allow`                   | allow, deny, drop          | Action to take when traffic matches the rule                       |
-| `log_setting`               | string  | no       |                           |                            | Log forwarding profile to use                                      |
-| `log_start`                 | boolean | no       | `false`                   |                            | Whether to log at session start                                    |
-| `log_end`                   | boolean | no       | `true`                    |                            | Whether to log at session end                                      |
-| `disabled`                  | boolean | no       | `false`                   |                            | Whether the rule is disabled                                       |
-| `tags`                      | list    | no       |                           |                            | List of tags to apply to the rule                                  |
-| `position`                  | string  | no       | `bottom`                  | top, bottom, before, after | Position where to place the rule                                   |
-| `reference_rule`            | string  | no       |                           |                            | Name of the reference rule when using 'before' or 'after' position |
-| `profile_type`              | string  | no       | `profiles`                | profiles, group, none      | Type of security profile setting                                   |
-| `profile_group`             | string  | no       |                           |                            | Name of the profile group when profile_type is 'group'             |
-| `antivirus_profile`         | string  | no       |                           |                            | Name of the antivirus profile                                      |
-| `anti_spyware_profile`      | string  | no       |                           |                            | Name of the anti-spyware profile                                   |
-| `vulnerability_profile`     | string  | no       |                           |                            | Name of the vulnerability profile                                  |
-| `url_filtering_profile`     | string  | no       |                           |                            | Name of the URL filtering profile                                  |
-| `file_blocking_profile`     | string  | no       |                           |                            | Name of the file blocking profile                                  |
-| `wildfire_analysis_profile` | string  | no       |                           |                            | Name of the WildFire analysis profile                              |
-| `state`                     | string  | no       | present                   | present, absent            | Desired state of the rule                                          |
-| `username`                  | string  | no       |                           |                            | SCM username (can use environment variable)                        |
-| `password`                  | string  | no       |                           |                            | SCM password (can use environment variable)                        |
-| `tenant`                    | string  | no       |                           |                            | SCM tenant ID (can use environment variable)                       |
+| Parameter | Choices/Defaults | Comments |
+| --- | --- | --- |
+| name | | The name of the security rule object. |
+| disabled | Default: false | Whether the security rule is disabled. |
+| description | | Description of the security rule object. |
+| tag | | List of tags associated with the security rule object. |
+| from_ | Default: ["any"] | List of source security zones. |
+| source | Default: ["any"] | List of source addresses. |
+| negate_source | Default: false | Whether to negate the source addresses. |
+| source_user | Default: ["any"] | List of source users and/or groups. |
+| source_hip | Default: ["any"] | List of source Host Integrity Profiles. |
+| to_ | Default: ["any"] | List of destination security zones. |
+| destination | Default: ["any"] | List of destination addresses. |
+| negate_destination | Default: false | Whether to negate the destination addresses. |
+| destination_hip | Default: ["any"] | List of destination Host Integrity Profiles. |
+| application | Default: ["any"] | List of applications being accessed. |
+| service | Default: ["any"] | List of services being accessed. |
+| category | Default: ["any"] | List of URL categories being accessed. |
+| action | Choices: ["allow", "deny", "drop", "reset-client", "reset-server", "reset-both"] <br> Default: "allow" | Action to be taken when the rule is matched. |
+| profile_setting | | Security profile settings for the rule. Contains 'group' list parameter with default ["best-practice"]. |
+| log_setting | | Log forwarding profile for the rule. |
+| schedule | | Schedule for the rule. |
+| log_start | | Whether to log at the start of the session. |
+| log_end | | Whether to log at the end of the session. |
+| folder | | The folder in which the resource is defined. |
+| snippet | | The snippet in which the resource is defined. |
+| device | | The device in which the resource is defined. |
+| rulebase | Choices: ["pre", "post"] <br> Default: "pre" | Which rulebase to use. |
+| provider | | Authentication credentials. |
+| state | Choices: ["present", "absent"] | Desired state of the security rule object. |
 
 ## Examples
 
-### Create a basic security rule
-
 ```yaml
-- name: Create a basic web traffic security rule
-  cdot65.scm.security_rule:
-    name: "Allow-Web-Traffic"
-    folder: "SharedFolder"
-    description: "Allow web traffic to web servers"
-    source_zones: 
-      - "untrust"
-    destination_zones:
-      - "trust"
-    source_addresses: 
-      - "any"
-    destination_addresses:
-      - "web-server-group"
-    applications:
-      - "web-browsing"
-      - "ssl"
-    services:
-      - "application-default"
-    action: "allow"
-    log_setting: "default"
-    log_end: true
-```
+- name: Manage Security Rules in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
 
-### Create a rule with security profiles
+    - name: Create a security rule
+      cdot65.scm.security_rule:
+        provider: "{{ provider }}"
+        name: "Allow_Web_Traffic"
+        description: "Allow web traffic to the web server"
+        from_: ["Internet"]
+        source: ["any"]
+        to_: ["DMZ"]
+        destination: ["Web-Servers"]
+        application: ["web-browsing", "ssl"]
+        service: ["application-default"]
+        action: "allow"
+        folder: "Texas"
+        rulebase: "pre"
+        profile_setting:
+          group: ["best-practice"]
+        tag: ["web", "internet"]
+        state: "present"
 
-```yaml
-- name: Create a rule with security profiles
-  cdot65.scm.security_rule:
-    name: "Allow-Inspected-Web"
-    folder: "SharedFolder"
-    description: "Allow and inspect web traffic"
-    source_zones: 
-      - "untrust"
-    destination_zones:
-      - "trust"
-    applications:
-      - "web-browsing"
-      - "ssl"
-    action: "allow"
-    profile_type: "profiles"
-    antivirus_profile: "default-antivirus"
-    anti_spyware_profile: "default-anti-spyware"
-    vulnerability_profile: "default-vulnerability"
-    url_filtering_profile: "default-url-filtering"
-```
+    - name: Update a security rule
+      cdot65.scm.security_rule:
+        provider: "{{ provider }}"
+        name: "Allow_Web_Traffic"
+        description: "Allow web traffic to the web server (updated)"
+        from_: ["Internet"]
+        source: ["any"]
+        to_: ["DMZ"]
+        destination: ["Web-Servers"]
+        application: ["web-browsing", "ssl", "http2"]
+        service: ["application-default"]
+        action: "allow"
+        folder: "Texas"
+        rulebase: "pre"
+        profile_setting:
+          group: ["strict-security"]
+        tag: ["web", "internet", "updated"]
+        state: "present"
 
-### Create a rule with a security profile group
+    - name: Create a security rule in post-rulebase
+      cdot65.scm.security_rule:
+        provider: "{{ provider }}"
+        name: "Block_Malicious_Traffic"
+        description: "Block traffic to known malicious sites"
+        from_: ["any"]
+        source: ["any"]
+        to_: ["any"]
+        destination: ["any"]
+        application: ["any"]
+        service: ["any"]
+        category: ["malware", "command-and-control"]
+        action: "deny"
+        folder: "Texas"
+        rulebase: "post"
+        log_setting: "default-log-profile"
+        log_end: true
+        state: "present"
 
-```yaml
-- name: Create a rule with a security profile group
-  cdot65.scm.security_rule:
-    name: "Allow-Inspected-Traffic"
-    folder: "SharedFolder"
-    description: "Allow traffic with profile group inspection"
-    source_zones: 
-      - "untrust"
-    destination_zones:
-      - "trust"
-    applications:
-      - "any"
-    action: "allow"
-    profile_type: "group"
-    profile_group: "default-profile-group"
-```
-
-### Position a rule relative to another rule
-
-```yaml
-- name: Add a rule before an existing rule
-  cdot65.scm.security_rule:
-    name: "Allow-HTTPS-Traffic"
-    folder: "SharedFolder"
-    description: "Allow HTTPS traffic"
-    source_zones: 
-      - "untrust"
-    destination_zones:
-      - "trust"
-    applications:
-      - "ssl"
-    action: "allow"
-    position: "before"
-    reference_rule: "Allow-Web-Traffic"
-```
-
-### Delete a security rule
-
-```yaml
-- name: Delete a security rule
-  cdot65.scm.security_rule:
-    name: "Old-Rule"
-    folder: "SharedFolder"
-    state: absent
+    - name: Delete security rule
+      cdot65.scm.security_rule:
+        provider: "{{ provider }}"
+        name: "Allow_Web_Traffic"
+        folder: "Texas"
+        rulebase: "pre"
+        state: "absent"
 ```
 
 ## Return Values
 
-| Name         | Description                   | Type       | Sample                                                               |
-|--------------|-------------------------------|------------|----------------------------------------------------------------------|
-| `changed`    | Whether changes were made     | boolean    | `true`                                                               |
-| `scm_object` | The SCM security rule details | dictionary | `{"id": "123", "name": "Allow-Web-Traffic", "action": "allow", ...}` |
-| `response`   | The raw API response          | dictionary | `{"status": "success", "data": {...}}`                               |
+| Key | Returned | Description |
+| --- | --- | --- |
+| changed | Always | Whether any changes were made. |
+| security_rule | When state is present | Details about the security rule object. |
 
 ## Notes
 
-- Security rule names must be unique within a folder
-- Rules are processed in order, with the first match determining the action
-- Consider rule order carefully when creating or positioning rules
-- Complex rules with many conditions may impact performance
-- This module is idempotent; running it multiple times with the same parameters will result in the same state
+- Security rules require exactly one container (folder, snippet, or device) to be specified.
+- When using rulebase="post", the rule will be added to the post-rulebase rather than the default pre-rulebase.
+- The module supports check mode for all operations.
 
-## Status
+## Authors
 
-This module is flagged as **stable**
+- Calvin Remsburg (@cdot65)

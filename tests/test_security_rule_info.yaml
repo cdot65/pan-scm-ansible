@@ -1,0 +1,250 @@
+---
+# Playbook for testing Strata Cloud Manager security rule info operations
+# Usage: ansible-playbook tests/test_security_rule_info.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM Security Rule Info Module Operations
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+    test_folder: "Texas"
+  tasks:
+    # Check if we're in check mode
+    - name: Skip most tests in check mode
+      debug:
+        msg: "Running in check mode - most tests will be skipped as they require API interaction"
+      when: ansible_check_mode
+
+    # First clean up any existing test security rule objects if they exist
+    - name: Remove test security rule objects if they exist
+      cdot65.scm.security_rule:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        folder: "{{ test_folder }}"
+        rulebase: "{{ item.rulebase }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - { name: "Allow_Web_Traffic_{{ test_timestamp }}", rulebase: "pre" }
+        - { name: "Block_Malicious_Traffic_{{ test_timestamp }}", rulebase: "post" }
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # Only run the rest of the playbook if not in check mode
+    - name: Run actual tests
+      when: not ansible_check_mode
+      block:
+        # ==========================================
+        # Setup test security rules
+        # ==========================================
+        - name: Create a security rule for web traffic (pre-setup)
+          cdot65.scm.security_rule:
+            provider: "{{ provider }}"
+            name: "Allow_Web_Traffic_{{ test_timestamp }}"
+            description: "Allow web traffic to the web server"
+            from_: ["Internet"]
+            source: ["any"]
+            to_: ["DMZ"]
+            destination: ["any"]  # Use 'any' instead of a specific address that may not exist
+            application: ["web-browsing", "ssl"]
+            service: ["application-default"]
+            action: "allow"
+            folder: "{{ test_folder }}"
+            rulebase: "pre"
+            profile_setting:
+              group: ["best-practice"]
+            state: "present"
+          register: create_web_result
+          tags:
+            - dev-test
+
+        - name: Create a security rule for malicious traffic (pre-setup)
+          cdot65.scm.security_rule:
+            provider: "{{ provider }}"
+            name: "Block_Malicious_Traffic_{{ test_timestamp }}"
+            description: "Block traffic to known malicious sites"
+            from_: ["any"]
+            source: ["any"]
+            to_: ["any"]
+            destination: ["any"]
+            application: ["any"]
+            service: ["any"]
+            category: ["malware", "command-and-control"]
+            action: "deny"
+            folder: "{{ test_folder }}"
+            rulebase: "post"
+            log_end: true
+            state: "present"
+          register: create_malicious_result
+          tags:
+            - dev-test
+
+        # Set rule names to fixed variables after creation
+        - name: Set rule names to existing names
+          ansible.builtin.set_fact:
+            web_rule_name: "{{ create_web_result.security_rule.name }}"
+            malicious_rule_name: "{{ create_malicious_result.security_rule.name }}"
+
+        # ==========================================
+        # Test rule retrieval - basic info
+        # ==========================================
+        - name: Get specific security rule by name (pre-rulebase)
+          cdot65.scm.security_rule_info:
+            provider: "{{ provider }}"
+            name: "{{ web_rule_name }}"
+            folder: "{{ test_folder }}"
+            rulebase: "pre"
+          register: web_info_result
+          tags:
+            - dev-test
+
+        - name: Verify pre-rulebase rule retrieval
+          ansible.builtin.assert:
+            that:
+              - web_info_result is succeeded
+              - web_info_result.security_rule is defined
+              - web_info_result.security_rule.name == web_rule_name
+              - web_info_result.security_rule.action == "allow"
+            fail_msg: "Failed to retrieve web traffic security rule info"
+            success_msg: "Successfully retrieved web traffic security rule info"
+          tags:
+            - dev-cicd
+
+        - name: Get specific security rule by name (post-rulebase)
+          cdot65.scm.security_rule_info:
+            provider: "{{ provider }}"
+            name: "{{ malicious_rule_name }}"
+            folder: "{{ test_folder }}"
+            rulebase: "post"
+          register: malicious_info_result
+          tags:
+            - dev-test
+
+        - name: Verify post-rulebase rule retrieval
+          ansible.builtin.assert:
+            that:
+              - malicious_info_result is succeeded
+              - malicious_info_result.security_rule is defined
+              - malicious_info_result.security_rule.name == malicious_rule_name
+              - malicious_info_result.security_rule.action == "deny"
+            fail_msg: "Failed to retrieve malicious traffic security rule info"
+            success_msg: "Successfully retrieved malicious traffic security rule info"
+          tags:
+            - dev-cicd
+
+        # ==========================================
+        # Test rule listing functionality
+        # ==========================================
+        - name: Get all security rules in the folder (pre-rulebase)
+          cdot65.scm.security_rule_info:
+            provider: "{{ provider }}"
+            folder: "{{ test_folder }}"
+            rulebase: "pre"
+          register: list_pre_result
+          tags:
+            - dev-test
+
+        - name: Verify pre-rulebase listing functionality
+          ansible.builtin.assert:
+            that:
+              - list_pre_result is succeeded
+              - list_pre_result.security_rules is defined
+              - list_pre_result.security_rules | length > 0
+              - "web_rule_name in (list_pre_result.security_rules | map(attribute='name') | list)"
+            fail_msg: "Failed to list pre-rulebase security rules"
+            success_msg: "Successfully listed pre-rulebase security rules"
+          tags:
+            - dev-cicd
+
+        - name: Get all security rules in the folder (post-rulebase)
+          cdot65.scm.security_rule_info:
+            provider: "{{ provider }}"
+            folder: "{{ test_folder }}"
+            rulebase: "post"
+          register: list_post_result
+          tags:
+            - dev-test
+
+        - name: Verify post-rulebase listing functionality
+          ansible.builtin.assert:
+            that:
+              - list_post_result is succeeded
+              - list_post_result.security_rules is defined
+              - list_post_result.security_rules | length > 0
+              - "malicious_rule_name in (list_post_result.security_rules | map(attribute='name') | list)"
+            fail_msg: "Failed to list post-rulebase security rules"
+            success_msg: "Successfully listed post-rulebase security rules"
+          tags:
+            - dev-cicd
+
+        # ==========================================
+        # Test filtering functionality
+        # ==========================================
+        - name: Filter security rules by action (allow)
+          cdot65.scm.security_rule_info:
+            provider: "{{ provider }}"
+            folder: "{{ test_folder }}"
+            rulebase: "pre"
+            action: ["allow"]
+          register: filter_action_result
+          tags:
+            - dev-test
+
+        - name: Verify action filter functionality
+          ansible.builtin.assert:
+            that:
+              - filter_action_result is succeeded
+              - filter_action_result.security_rules is defined
+              - filter_action_result.security_rules | length > 0
+              - "web_rule_name in (filter_action_result.security_rules | map(attribute='name') | list)"
+              - "filter_action_result.security_rules | map(attribute='action') | list | unique == ['allow']"
+            fail_msg: "Failed to filter security rules by action"
+            success_msg: "Successfully filtered security rules by action"
+          tags:
+            - dev-cicd
+
+        - name: Filter security rules by application
+          cdot65.scm.security_rule_info:
+            provider: "{{ provider }}"
+            folder: "{{ test_folder }}"
+            rulebase: "pre"
+            application: ["web-browsing", "ssl"]
+          register: filter_app_result
+          tags:
+            - dev-test
+
+        - name: Verify application filter functionality
+          ansible.builtin.assert:
+            that:
+              - filter_app_result is succeeded
+              - filter_app_result.security_rules is defined
+              - filter_app_result.security_rules | length > 0
+              - "web_rule_name in (filter_app_result.security_rules | map(attribute='name') | list)"
+            fail_msg: "Failed to filter security rules by application"
+            success_msg: "Successfully filtered security rules by application"
+          tags:
+            - dev-cicd
+
+        # Clean up test rules
+        - name: Delete test security rules
+          cdot65.scm.security_rule:
+            provider: "{{ provider }}"
+            name: "{{ item.name }}"
+            folder: "{{ test_folder }}"
+            rulebase: "{{ item.rulebase }}"
+            state: "absent"
+          ignore_errors: true
+          loop:
+            - { name: "{{ web_rule_name }}", rulebase: "pre" }
+            - { name: "{{ malicious_rule_name }}", rulebase: "post" }
+          tags:
+            - dev-cleanup
+            - dev-test
