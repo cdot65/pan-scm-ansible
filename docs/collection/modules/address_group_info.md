@@ -2,70 +2,102 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Module Parameters](#module-parameters)
-3. [Requirements](#requirements)
-4. [Usage Examples](#usage-examples)
-   - [Getting Information About a Specific Address Group](#getting-information-about-a-specific-address-group)
-   - [Listing All Address Groups](#listing-all-address-groups)
-   - [Filtering by Address Group Type](#filtering-by-address-group-type)
-   - [Filtering by Tags](#filtering-by-tags)
-   - [Using Advanced Filtering Options](#using-advanced-filtering-options)
-5. [Return Values](#return-values)
-6. [Error Handling](#error-handling)
-7. [Best Practices](#best-practices)
-8. [Related Modules](#related-modules)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Address Group Info Model Attributes](#address-group-info-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Retrieving Address Group Information](#retrieving-address-group-information)
+    - [Getting a Specific Address Group](#getting-a-specific-address-group)
+    - [Listing All Address Groups](#listing-all-address-groups)
+    - [Filtering by Address Group Type](#filtering-by-address-group-type)
+    - [Filtering by Tags](#filtering-by-tags)
+    - [Using Advanced Filtering Options](#using-advanced-filtering-options)
+07. [Processing Retrieved Information](#processing-retrieved-information)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
 ## Overview
 
-The `address_group_info` module provides functionality to gather information about address group
-objects in Palo Alto Networks' Strata Cloud Manager. This is a read-only module that can retrieve
+The `address_group_info` Ansible module provides functionality to retrieve information about address group
+objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can retrieve
 detailed information about a specific address group object by name, or list multiple address group
 objects with various filtering options. It supports advanced filtering capabilities including group
 type filtering (static or dynamic), tag-based filtering, and exclusion filters.
 
-## Module Parameters
+## Core Methods
 
-| Parameter              | Required | Type | Choices               | Default    | Comments                                                                   |
-| ---------------------- | -------- | ---- | --------------------- | ---------- | -------------------------------------------------------------------------- |
-| name                   | no       | str  |                       |            | The name of a specific address group object to retrieve.                   |
-| gather_subset          | no       | list | ['all', 'config']     | ['config'] | Determines which information to gather about address groups.               |
-| folder                 | no       | str  |                       |            | Filter address groups by folder container.                                 |
-| snippet                | no       | str  |                       |            | Filter address groups by snippet container.                                |
-| device                 | no       | str  |                       |            | Filter address groups by device container.                                 |
-| exact_match            | no       | bool |                       | false      | When True, only return objects defined exactly in the specified container. |
-| exclude_folders        | no       | list |                       |            | List of folder names to exclude from results.                              |
-| exclude_snippets       | no       | list |                       |            | List of snippet values to exclude from results.                            |
-| exclude_devices        | no       | list |                       |            | List of device values to exclude from results.                             |
-| types                  | no       | list | ["static", "dynamic"] |            | Filter by address group types.                                             |
-| values                 | no       | list |                       |            | Filter by address group values (static members or dynamic filter).         |
-| tags                   | no       | list |                       |            | Filter by tags.                                                            |
-| provider               | yes      | dict |                       |            | Authentication credentials.                                                |
-| provider.client_id     | yes      | str  |                       |            | Client ID for authentication.                                              |
-| provider.client_secret | yes      | str  |                       |            | Client secret for authentication.                                          |
-| provider.tsg_id        | yes      | str  |                       |            | Tenant Service Group ID.                                                   |
-| provider.log_level     | no       | str  |                       | INFO       | Log level for the SDK.                                                     |
+| Method     | Description                           | Parameters                                     | Return Type                      |
+| ---------- | ------------------------------------- | ---------------------------------------------- | -------------------------------- |
+| `get()`    | Gets a specific address group by name | `name: str`, `container: str`                  | `AddressGroupResponseModel`      |
+| `list()`   | Lists address groups with filtering   | `folder: str`, `**filters`                     | `List[AddressGroupResponseModel]`|
+| `filter()` | Applies filters to the results        | `address_groups: List`, `filter_params: Dict`  | `List[AddressGroupResponseModel]`|
 
-!!! note
+## Address Group Info Model Attributes
 
-- Exactly one container type (`folder`, `snippet`, or `device`) must be provided when not specifying
-  a name.
-- When `name` is specified, the module will retrieve a single address group object.
-- When `name` is not specified, the module will return a list of address groups based on filter
-  criteria.
-- This is a read-only module that does not make any changes to the system.
+| Attribute          | Type | Required      | Description                                                      |
+| ------------------ | ---- | ------------- | ---------------------------------------------------------------- |
+| `name`             | str  | No            | The name of a specific address group to retrieve                 |
+| `gather_subset`    | list | No            | Determines which information to gather (default: ['config'])     |
+| `folder`           | str  | One container | Filter address groups by folder (max 64 chars)                   |
+| `snippet`          | str  | One container | Filter address groups by snippet (max 64 chars)                  |
+| `device`           | str  | One container | Filter address groups by device (max 64 chars)                   |
+| `exact_match`      | bool | No            | When True, only return objects in the specified container        |
+| `exclude_folders`  | list | No            | List of folder names to exclude from results                     |
+| `exclude_snippets` | list | No            | List of snippet values to exclude from results                   |
+| `exclude_devices`  | list | No            | List of device values to exclude from results                    |
+| `types`            | list | No            | Filter by address group types ("static", "dynamic")              |
+| `values`           | list | No            | Filter by address group values (members or filter)               |
+| `tags`             | list | No            | Filter by tags                                                   |
 
-## Requirements
+## Exceptions
 
-- SCM Python SDK (`pan-scm-sdk`)
-- Python 3.8 or higher
-- Ansible 2.13 or higher
+| Exception                    | Description                            |
+| ---------------------------- | -------------------------------------- |
+| `ObjectNotPresentError`      | Address group not found                |
+| `MissingQueryParameterError` | Missing required parameters            |
+| `InvalidFilterError`         | Invalid filter parameters              |
+| `AuthenticationError`        | Authentication failed                  |
+| `ServerError`                | Internal server error                  |
+| `MultipleMatchesError`       | Multiple address groups match criteria |
+
+## Basic Configuration
+
+The Address Group Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+
+```yaml
+- name: Basic Address Group Info Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    provider:
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
+      log_level: "INFO"
+  tasks:
+    - name: Get information about address groups
+      cdot65.scm.address_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: groups_info
+      
+    - name: Display retrieved information
+      debug:
+        var: groups_info.address_groups
+```
 
 ## Usage Examples
 
-### Getting Information About a Specific Address Group
+### Retrieving Address Group Information
 
+The module provides several ways to retrieve address group information based on your specific needs.
 
+### Getting a Specific Address Group
+
+This example retrieves detailed information about a specific address group by name.
 
 ```yaml
 - name: Get information about a specific address group
@@ -80,10 +112,9 @@ type filtering (static or dynamic), tag-based filtering, and exclusion filters.
     var: specific_info.address_group
 ```
 
-
 ### Listing All Address Groups
 
-
+This example lists all address groups in a specific folder.
 
 ```yaml
 - name: List all address groups in the folder
@@ -97,10 +128,9 @@ type filtering (static or dynamic), tag-based filtering, and exclusion filters.
     msg: "Found {{ all_groups.address_groups | length }} address groups in Texas folder"
 ```
 
-
 ### Filtering by Address Group Type
 
-
+These examples show how to filter address groups by their type (static or dynamic).
 
 ```yaml
 - name: List only static address groups
@@ -118,10 +148,9 @@ type filtering (static or dynamic), tag-based filtering, and exclusion filters.
   register: dynamic_groups
 ```
 
-
 ### Filtering by Tags
 
-
+This example demonstrates how to find address groups with specific tags.
 
 ```yaml
 - name: List address groups with specific tag
@@ -138,10 +167,9 @@ type filtering (static or dynamic), tag-based filtering, and exclusion filters.
   when: "'dev-test' in item.tag"
 ```
 
-
 ### Using Advanced Filtering Options
 
-
+These examples illustrate more advanced filtering options including exact match and exclusions.
 
 ```yaml
 - name: List address groups with exact match and exclusions
@@ -163,28 +191,41 @@ type filtering (static or dynamic), tag-based filtering, and exclusion filters.
   register: complex_filtered_groups
 ```
 
+## Processing Retrieved Information
 
-## Return Values
+After retrieving address group information, you can process the data for various purposes such as
+reporting, inventory, or integration with other systems.
 
-| Name           | Description                                                                    | Type | Returned                            | Sample                                                                                                                                                                                                                                                                                                                                                                                                    |
-| -------------- | ------------------------------------------------------------------------------ | ---- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| address_groups | List of address group objects matching the filter criteria                     | list | success, when name is not specified | \[{"id": "123e4567-e89b-12d3-a456-426655440000", "name": "web-servers", "description": "Web server group", "static": ["web1", "web2"], "folder": "Texas", "tag": ["Web", "Production"]}, {"id": "234e5678-e89b-12d3-a456-426655440001", "name": "app-servers", "description": "Application server group", "dynamic": {"filter": "'app' and 'server'"}, "folder": "Texas", "tag": ["App", "Production"]}\] |
-| address_group  | Information about the requested address group (when querying a specific group) | dict | success, when name is specified     | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "web-servers", "description": "Web server group", "static": ["web1", "web2"], "folder": "Texas", "tag": ["Web", "Production"]}                                                                                                                                                                                                                     |
+```yaml
+- name: Create a summary of address group information
+  block:
+    - name: Get all address groups
+      cdot65.scm.address_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_groups
+      
+    - name: Count static vs dynamic groups
+      set_fact:
+        static_count: "{{ all_groups.address_groups | selectattr('static', 'defined') | list | length }}"
+        dynamic_count: "{{ all_groups.address_groups | selectattr('dynamic', 'defined') | list | length }}"
+        
+    - name: Display summary information
+      debug:
+        msg: |
+          Address Group Summary:
+          - Total Groups: {{ all_groups.address_groups | length }}
+          - Static Groups: {{ static_count }}
+          - Dynamic Groups: {{ dynamic_count }}
+          - Groups with tags: {{ all_groups.address_groups | selectattr('tag', 'defined') | list | length }}
+```
 
 ## Error Handling
 
-Common errors you might encounter when using this module:
-
-| Error                      | Description                                                      | Resolution                                                   |
-| -------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------ |
-| Address group not found    | The specified address group name does not exist in the container | Verify the address group name and container location         |
-| Missing required parameter | Required container parameter not provided                        | Ensure a container (folder, snippet, or device) is specified |
-| Invalid filter parameters  | Incorrect filter values or format                                | Check the format and validity of filter parameters           |
-
-
+It's important to handle potential errors when retrieving address group information.
 
 ```yaml
-- name: Handle potential errors with block/rescue
+- name: Retrieve address group info with error handling
   block:
     - name: Attempt to retrieve address group information
       cdot65.scm.address_group_info:
@@ -192,48 +233,58 @@ Common errors you might encounter when using this module:
         name: "non_existent_group"
         folder: "Texas"
       register: group_info
+      
   rescue:
     - name: Handle group not found error
       debug:
-        msg: "Address group non_existent_group not found in Texas folder"
-    - name: Continue with other tasks
-      # Additional recovery tasks
+        msg: "Address group not found or other error occurred"
+        
+    - name: Continue with fallback actions
+      cdot65.scm.address_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_groups
+      
+    - name: Log the error and continue
+      debug:
+        msg: "Continuing with list of all groups instead of specific group"
 ```
-
 
 ## Best Practices
 
-1. **Efficient Filtering**
+### Efficient Filtering
 
-   - Use specific filters to minimize the result set
-   - Filter by group type when you only need static or dynamic groups
-   - Combine multiple filters for more precise results
-   - Consider performance implications when retrieving large datasets
+- Use specific filters to minimize the result set
+- Filter by group type when you only need static or dynamic groups
+- Combine multiple filters for more precise results
+- Consider performance implications when retrieving large datasets
 
-2. **Container Selection**
+### Container Selection
 
-   - Use folder, snippet, or device consistently across operations
-   - Verify container existence before querying
-   - Use exclusion filters to refine results when working with large containers
+- Use folder, snippet, or device consistently across operations
+- Verify container existence before querying
+- Use exclusion filters to refine results when working with large containers
 
-3. **Using Results**
+### Information Handling
 
-   - Register results to variables for further processing
-   - Use Ansible's filtering capabilities (selectattr, map, etc.) on the returned lists
-   - Check if address_groups/address_group is defined before accessing properties
-   - Process static and dynamic groups differently as they have different structure
+- Register results to variables for further processing
+- Use Ansible's filtering capabilities (selectattr, map, etc.) on the returned lists
+- Check if address_groups/address_group is defined before accessing properties
+- Process static and dynamic groups differently as they have different structure
 
-4. **Error Handling**
+### Performance Optimization
 
-   - Implement proper error handling with block/rescue
-   - Provide meaningful error messages
-   - Have fallback actions when objects are not found
+- Retrieve only the information you need
+- Use name parameter when you need only one specific group
+- Use filters to minimize result set size
+- Consider caching results for repeated access within the same playbook
 
-5. **Security Considerations**
+### Security Considerations
 
-   - Protect sensitive information in filter criteria
-   - Store credentials securely using Ansible Vault
-   - Limit information gathering to necessary objects only
+- Protect sensitive information in filter criteria
+- Store credentials securely using Ansible Vault
+- Limit information gathering to necessary objects only
+- Use least privilege accounts for API access
 
 ## Related Modules
 
@@ -242,7 +293,3 @@ Common errors you might encounter when using this module:
 - [address_info](address_info.md) - Retrieve information about address objects
 - [tag](tag.md) - Manage tags used with address groups
 - [security_rule](security_rule.md) - Manage security rules that use address groups
-
-## Author
-
-- Calvin Remsburg (@cdot65)

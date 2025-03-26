@@ -2,69 +2,102 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Module Parameters](#module-parameters)
-3. [Requirements](#requirements)
-4. [Usage Examples](#usage-examples)
-   - [Getting Information About a Specific Address](#getting-information-about-a-specific-address)
-   - [Listing All Address Objects](#listing-all-address-objects)
-   - [Filtering by Address Type](#filtering-by-address-type)
-   - [Filtering by Tags](#filtering-by-tags)
-   - [Using Advanced Filtering Options](#using-advanced-filtering-options)
-5. [Return Values](#return-values)
-6. [Error Handling](#error-handling)
-7. [Best Practices](#best-practices)
-8. [Related Modules](#related-modules)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Address Info Model Attributes](#address-info-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Retrieving Address Information](#retrieving-address-information)
+    - [Getting a Specific Address](#getting-a-specific-address)
+    - [Listing All Address Objects](#listing-all-address-objects)
+    - [Filtering by Address Type](#filtering-by-address-type)
+    - [Filtering by Tags](#filtering-by-tags)
+    - [Using Advanced Filtering Options](#using-advanced-filtering-options)
+07. [Processing Retrieved Information](#processing-retrieved-information)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
 ## Overview
 
-The `address_info` module provides functionality to gather information about address objects in Palo
-Alto Networks' Strata Cloud Manager. This is a read-only module that can retrieve detailed
-information about a specific address object by name, or list multiple address objects with various
-filtering options. It supports advanced filtering capabilities including container-based filtering,
+The `address_info` Ansible module provides functionality to retrieve information about address objects in 
+Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can retrieve detailed 
+information about a specific address object by name, or list multiple address objects with various 
+filtering options. It supports advanced filtering capabilities including container-based filtering, 
 address type filtering, tag-based filtering, and exclusion filters.
 
-## Module Parameters
+## Core Methods
 
-| Parameter              | Required | Type | Choices                                  | Default    | Comments                                                                   |
-| ---------------------- | -------- | ---- | ---------------------------------------- | ---------- | -------------------------------------------------------------------------- |
-| name                   | no       | str  |                                          |            | The name of a specific address object to retrieve.                         |
-| gather_subset          | no       | list | ['all', 'config']                        | ['config'] | Determines which information to gather about addresses.                    |
-| folder                 | no       | str  |                                          |            | Filter addresses by folder container.                                      |
-| snippet                | no       | str  |                                          |            | Filter addresses by snippet container.                                     |
-| device                 | no       | str  |                                          |            | Filter addresses by device container.                                      |
-| exact_match            | no       | bool |                                          | false      | When True, only return objects defined exactly in the specified container. |
-| exclude_folders        | no       | list |                                          |            | List of folder names to exclude from results.                              |
-| exclude_snippets       | no       | list |                                          |            | List of snippet values to exclude from results.                            |
-| exclude_devices        | no       | list |                                          |            | List of device values to exclude from results.                             |
-| types                  | no       | list | ["netmask", "range", "wildcard", "fqdn"] |            | Filter by address types.                                                   |
-| values                 | no       | list |                                          |            | Filter by address values.                                                  |
-| tags                   | no       | list |                                          |            | Filter by tags.                                                            |
-| provider               | yes      | dict |                                          |            | Authentication credentials.                                                |
-| provider.client_id     | yes      | str  |                                          |            | Client ID for authentication.                                              |
-| provider.client_secret | yes      | str  |                                          |            | Client secret for authentication.                                          |
-| provider.tsg_id        | yes      | str  |                                          |            | Tenant Service Group ID.                                                   |
-| provider.log_level     | no       | str  |                                          | INFO       | Log level for the SDK.                                                     |
+| Method     | Description                      | Parameters                                | Return Type               |
+| ---------- | -------------------------------- | ----------------------------------------- | ------------------------- |
+| `get()`    | Gets a specific address by name  | `name: str`, `container: str`             | `AddressResponseModel`    |
+| `list()`   | Lists addresses with filtering   | `folder: str`, `**filters`                | `List[AddressResponseModel]`|
+| `filter()` | Applies filters to the results   | `addresses: List`, `filter_params: Dict`  | `List[AddressResponseModel]`|
 
-!!! note
+## Address Info Model Attributes
 
-- Exactly one container type (`folder`, `snippet`, or `device`) must be provided when not specifying
-  a name.
-- When `name` is specified, the module will retrieve a single address object.
-- When `name` is not specified, the module will return a list of addresses based on filter criteria.
-- This is a read-only module that does not make any changes to the system.
+| Attribute          | Type | Required      | Description                                                      |
+| ------------------ | ---- | ------------- | ---------------------------------------------------------------- |
+| `name`             | str  | No            | The name of a specific address to retrieve                       |
+| `gather_subset`    | list | No            | Determines which information to gather (default: ['config'])     |
+| `folder`           | str  | One container | Filter addresses by folder (max 64 chars)                        |
+| `snippet`          | str  | One container | Filter addresses by snippet (max 64 chars)                       |
+| `device`           | str  | One container | Filter addresses by device (max 64 chars)                        |
+| `exact_match`      | bool | No            | When True, only return objects in the specified container        |
+| `exclude_folders`  | list | No            | List of folder names to exclude from results                     |
+| `exclude_snippets` | list | No            | List of snippet values to exclude from results                   |
+| `exclude_devices`  | list | No            | List of device values to exclude from results                    |
+| `types`            | list | No            | Filter by address types ("netmask", "range", "wildcard", "fqdn") |
+| `values`           | list | No            | Filter by address values                                         |
+| `tags`             | list | No            | Filter by tags                                                   |
 
-## Requirements
+## Exceptions
 
-- SCM Python SDK (`pan-scm-sdk`)
-- Python 3.8 or higher
-- Ansible 2.13 or higher
+| Exception                    | Description                     |
+| ---------------------------- | ------------------------------- |
+| `ObjectNotPresentError`      | Address not found               |
+| `MissingQueryParameterError` | Missing required parameters     |
+| `InvalidFilterError`         | Invalid filter parameters       |
+| `AuthenticationError`        | Authentication failed           |
+| `ServerError`                | Internal server error           |
+| `MultipleMatchesError`       | Multiple addresses match criteria |
+
+## Basic Configuration
+
+The Address Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+
+```yaml
+- name: Basic Address Info Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    provider:
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
+      log_level: "INFO"
+  tasks:
+    - name: Get information about addresses
+      cdot65.scm.address_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: addresses_info
+      
+    - name: Display retrieved information
+      debug:
+        var: addresses_info.addresses
+```
 
 ## Usage Examples
 
-### Getting Information About a Specific Address
+### Retrieving Address Information
 
+The module provides several ways to retrieve address information based on your specific needs.
 
+### Getting a Specific Address
+
+This example retrieves detailed information about a specific address by name.
 
 ```yaml
 - name: Get information about a specific address
@@ -79,10 +112,9 @@ address type filtering, tag-based filtering, and exclusion filters.
     var: address_info.address
 ```
 
-
 ### Listing All Address Objects
 
-
+This example lists all address objects in a specific folder.
 
 ```yaml
 - name: List all address objects in a folder
@@ -96,10 +128,9 @@ address type filtering, tag-based filtering, and exclusion filters.
     msg: "Found {{ all_addresses.addresses | length }} addresses in Texas folder"
 ```
 
-
 ### Filtering by Address Type
 
-
+These examples show how to filter addresses by their type.
 
 ```yaml
 - name: List only FQDN address objects
@@ -117,10 +148,9 @@ address type filtering, tag-based filtering, and exclusion filters.
   register: netmask_addresses
 ```
 
-
 ### Filtering by Tags
 
-
+This example demonstrates how to find addresses with specific tags.
 
 ```yaml
 - name: List addresses with specific tags
@@ -137,10 +167,9 @@ address type filtering, tag-based filtering, and exclusion filters.
   when: "'Production' in item.tag and 'Web' in item.tag"
 ```
 
-
 ### Using Advanced Filtering Options
 
-
+These examples illustrate more advanced filtering options including exact match and exclusions.
 
 ```yaml
 - name: List addresses with exact match and exclusions
@@ -162,75 +191,111 @@ address type filtering, tag-based filtering, and exclusion filters.
   register: complex_filtered_addresses
 ```
 
+## Processing Retrieved Information
 
-## Return Values
+After retrieving address information, you can process the data for various purposes such as reporting, 
+inventory management, or integration with other systems.
 
-| Name      | Description                                                                | Type | Returned                            | Sample                                                                                                                                                                                                                                                                                                                                                                                                 |
-| --------- | -------------------------------------------------------------------------- | ---- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| addresses | List of address objects matching the filter criteria                       | list | success, when name is not specified | \[{"id": "123e4567-e89b-12d3-a456-426655440000", "name": "web-server", "description": "Web server address", "ip_netmask": "192.168.1.100/32", "folder": "Texas", "tag": ["Web", "Production"]}, {"id": "234e5678-e89b-12d3-a456-426655440001", "name": "app-server", "description": "Application server address", "ip_netmask": "192.168.1.101/32", "folder": "Texas", "tag": ["App", "Production"]}\] |
-| address   | Information about the requested address (when querying a specific address) | dict | success, when name is specified     | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "web-server", "description": "Web server address", "ip_netmask": "192.168.1.100/32", "folder": "Texas", "tag": ["Web", "Production"]}                                                                                                                                                                                                           |
+```yaml
+- name: Create a summary of address information
+  block:
+    - name: Get all addresses
+      cdot65.scm.address_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_addresses
+      
+    - name: Group addresses by type
+      set_fact:
+        netmask_addresses: "{{ all_addresses.addresses | selectattr('ip_netmask', 'defined') | list }}"
+        fqdn_addresses: "{{ all_addresses.addresses | selectattr('fqdn', 'defined') | list }}"
+        range_addresses: "{{ all_addresses.addresses | selectattr('ip_range', 'defined') | list }}"
+        wildcard_addresses: "{{ all_addresses.addresses | selectattr('ip_wildcard', 'defined') | list }}"
+        
+    - name: Display summary information
+      debug:
+        msg: |
+          Address Summary:
+          - Total Addresses: {{ all_addresses.addresses | length }}
+          - IP/Netmask Addresses: {{ netmask_addresses | length }}
+          - FQDN Addresses: {{ fqdn_addresses | length }}
+          - IP Range Addresses: {{ range_addresses | length }}
+          - IP Wildcard Addresses: {{ wildcard_addresses | length }}
+          - Addresses with tags: {{ all_addresses.addresses | selectattr('tag', 'defined') | list | length }}
+```
 
 ## Error Handling
 
-Common errors you might encounter when using this module:
-
-| Error                      | Description                                                | Resolution                                                   |
-| -------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------ |
-| Address not found          | The specified address name does not exist in the container | Verify the address name and container location               |
-| Missing required parameter | Required container parameter not provided                  | Ensure a container (folder, snippet, or device) is specified |
-| Invalid filter parameters  | Incorrect filter values or format                          | Check the format and validity of filter parameters           |
-
-
+It's important to handle potential errors when retrieving address information.
 
 ```yaml
-- name: Handle potential errors with block/rescue
+- name: Retrieve address info with error handling
   block:
     - name: Attempt to retrieve address information
       cdot65.scm.address_info:
         provider: "{{ provider }}"
-        name: "web-server"
+        name: "nonexistent-address"
         folder: "Texas"
       register: address_info
+      
   rescue:
     - name: Handle address not found error
       debug:
-        msg: "Address web-server not found in Texas folder"
-    - name: Continue with other tasks
-      # Additional recovery tasks
+        msg: "Address not found or other error occurred"
+        
+    - name: Continue with fallback actions
+      cdot65.scm.address_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_addresses
+      
+    - name: Log the error and continue
+      debug:
+        msg: "Continuing with list of all addresses instead of specific address"
 ```
-
 
 ## Best Practices
 
-1. **Efficient Filtering**
+### Efficient Filtering
 
-   - Use specific filters to minimize the result set
-   - Combine multiple filters for more precise results
-   - Consider performance implications when retrieving large datasets
+- Use specific filters to minimize the result set
+- Filter by address type when you only need certain address types
+- Combine multiple filters for more precise results
+- Consider performance implications when retrieving large datasets
 
-2. **Container Selection**
+### Container Selection
 
-   - Use folder, snippet, or device consistently across operations
-   - Verify container existence before querying
-   - Use exclusion filters to refine results when working with large containers
+- Use folder, snippet, or device consistently across operations
+- Verify container existence before querying
+- Use exclusion filters to refine results when working with large containers
 
-3. **Using Results**
+### Information Handling
 
-   - Register results to variables for further processing
-   - Use Ansible's filtering capabilities (selectattr, map, etc.) on the returned lists
-   - Check if addresses/address is defined before accessing properties
+- Register results to variables for further processing
+- Use Ansible's filtering capabilities (selectattr, map, etc.) on the returned lists
+- Check if addresses/address is defined before accessing properties
+- Process different address types appropriately (IP/Netmask, FQDN, etc.)
 
-4. **Error Handling**
+### Performance Optimization
 
-   - Implement proper error handling with block/rescue
-   - Provide meaningful error messages
-   - Have fallback actions when objects are not found
+- Retrieve only the information you need
+- Use name parameter when you need only one specific address
+- Use filters to minimize result set size
+- Consider caching results for repeated access within the same playbook
 
-5. **Security Considerations**
+### Security Considerations
 
-   - Protect sensitive information in filter criteria
-   - Store credentials securely using Ansible Vault
-   - Limit information gathering to necessary objects only
+- Protect sensitive information in filter criteria
+- Store credentials securely using Ansible Vault
+- Limit information gathering to necessary objects only
+- Use least privilege accounts for API access
+
+### Integration with Other Modules
+
+- Use retrieved address information to inform other module operations
+- Combine with address_group_info to understand object relationships
+- Create dynamic inventories based on address information
+- Generate reports on address usage and distribution
 
 ## Related Modules
 
@@ -238,7 +303,4 @@ Common errors you might encounter when using this module:
 - [address_group_info](address_group_info.md) - Retrieve information about address groups
 - [address_group](address_group.md) - Manage address group objects
 - [tag_info](tag_info.md) - Retrieve information about tags used with address objects
-
-## Author
-
-- Calvin Remsburg (@cdot65)
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that use addresses

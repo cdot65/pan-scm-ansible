@@ -68,6 +68,13 @@ styling, and design patterns for future documentation.
 - Include HTTP code and description columns
 - Group related exceptions together
 
+## Golden Standards
+
+- Use the golden standard for modules that perform CREATE, UPDATE, and DELETE operations:
+  `docs/collection/modules/wildfire_antivirus_profiles.md`
+- Use the golden standard for modules that perform READ operations:
+  `docs/collection/modules/wildfire_antivirus_profiles_info.md`
+
 ### Code Examples
 
 1. **Language Specific Code Blocks**

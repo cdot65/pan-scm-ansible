@@ -2,61 +2,99 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Module Parameters](#module-parameters)
-3. [Requirements](#requirements)
-4. [Usage Examples](#usage-examples)
-   - [Creating Application Groups](#creating-application-groups)
-   - [Updating Application Groups](#updating-application-groups)
-   - [Deleting Application Groups](#deleting-application-groups)
-5. [Return Values](#return-values)
-6. [Error Handling](#error-handling)
-7. [Best Practices](#best-practices)
-8. [Related Modules](#related-modules)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Application Group Model Attributes](#application-group-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Creating Application Groups](#creating-application-groups)
+    - [Basic Application Group](#basic-application-group)
+    - [Comprehensive Application Group](#comprehensive-application-group)
+    - [Updating Application Groups](#updating-application-groups)
+    - [Deleting Application Groups](#deleting-application-groups)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
 ## Overview
 
-The `application_group` module provides functionality to manage application group objects in Palo
-Alto Networks' Strata Cloud Manager. This module allows you to create, update, and delete
+The `application_group` Ansible module provides functionality to manage application group objects in 
+Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and delete
 application groups that can contain multiple application objects. Application groups simplify
 security policy configuration by allowing you to reference multiple applications as a single object.
 
-## Module Parameters
+## Core Methods
 
-| Parameter              | Required | Type | Choices         | Default | Comments                                           |
-| ---------------------- | -------- | ---- | --------------- | ------- | -------------------------------------------------- |
-| name                   | yes      | str  |                 |         | The name of the application group.                 |
-| members                | yes\*    | list |                 |         | List of application names to include in the group. |
-| folder                 | no       | str  |                 |         | The folder in which the resource is defined.       |
-| snippet                | no       | str  |                 |         | The snippet in which the resource is defined.      |
-| device                 | no       | str  |                 |         | The device in which the resource is defined.       |
-| provider               | yes      | dict |                 |         | Authentication credentials.                        |
-| provider.client_id     | yes      | str  |                 |         | Client ID for authentication.                      |
-| provider.client_secret | yes      | str  |                 |         | Client secret for authentication.                  |
-| provider.tsg_id        | yes      | str  |                 |         | Tenant Service Group ID.                           |
-| provider.log_level     | no       | str  |                 | INFO    | Log level for the SDK.                             |
-| state                  | yes      | str  | present, absent |         | Desired state of the application group object.     |
+| Method     | Description                         | Parameters                          | Return Type                      |
+| ---------- | ----------------------------------- | ----------------------------------- | -------------------------------- |
+| `create()` | Creates a new application group     | `data: Dict[str, Any]`              | `ApplicationGroupResponseModel`  |
+| `update()` | Updates an existing group           | `group: ApplicationGroupUpdateModel`| `ApplicationGroupResponseModel`  |
+| `delete()` | Removes an application group        | `object_id: str`                    | `None`                           |
+| `fetch()`  | Gets an application group by name   | `name: str`, `container: str`       | `ApplicationGroupResponseModel`  |
+| `list()`   | Lists application groups            | `folder: str`, `**filters`          | `List[ApplicationGroupResponseModel]`|
 
-!!! note * Members are required when state is "present".
+## Application Group Model Attributes
 
+| Attribute     | Type | Required       | Description                                                 |
+| ------------- | ---- | -------------- | ----------------------------------------------------------- |
+| `name`        | str  | Yes            | The name of the application group                           |
+| `members`     | list | Yes            | List of application names to include in the group           |
+| `folder`      | str  | One container  | The folder in which the group is defined (max 64 chars)     |
+| `snippet`     | str  | One container  | The snippet in which the group is defined (max 64 chars)    |
+| `device`      | str  | One container  | The device in which the group is defined (max 64 chars)     |
+
+## Exceptions
+
+| Exception                    | Description                         |
+| ---------------------------- | ----------------------------------- |
+| `InvalidObjectError`         | Invalid group data or format        |
+| `NameNotUniqueError`         | Group name already exists           |
+| `ObjectNotPresentError`      | Group or member application not found |
+| `MissingQueryParameterError` | Missing required parameters         |
+| `EmptyMembersError`          | Application group cannot be empty   |
+| `AuthenticationError`        | Authentication failed               |
+| `ServerError`                | Internal server error               |
+
+## Basic Configuration
+
+The Application Group module requires proper authentication credentials to access the Strata Cloud Manager API.
+
+```yaml
+- name: Basic Application Group Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    provider:
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
+      log_level: "INFO"
+  tasks:
+    - name: Ensure an application group exists
+      cdot65.scm.application_group:
+        provider: "{{ provider }}"
+        name: "web-apps"
+        members:
+          - "ssl"
+          - "web-browsing"
+        folder: "Texas"
+        state: "present"
 ```
-\* Exactly one of folder, snippet, or device must be provided.
-```
-
-## Requirements
-
-- SCM Python SDK (`pan-scm-sdk`)
-- Python 3.8 or higher
-- Ansible 2.13 or higher
 
 ## Usage Examples
 
 ### Creating Application Groups
 
+Application groups allow you to organize related applications together for simplified policy management.
 
+### Basic Application Group
+
+This example creates a simple application group with a few members.
 
 ```yaml
-- name: Create web applications group
+- name: Create a basic web applications group
   cdot65.scm.application_group:
     provider: "{{ provider }}"
     name: "web-apps"
@@ -67,30 +105,31 @@ security policy configuration by allowing you to reference multiple applications
     state: "present"
 ```
 
+### Comprehensive Application Group
 
-You can create groups with multiple applications:
-
-
+This example creates a more comprehensive application group with multiple related applications.
 
 ```yaml
-- name: Create network applications group
+- name: Create a comprehensive collaboration applications group
   cdot65.scm.application_group:
     provider: "{{ provider }}"
-    name: "network-apps"
+    name: "collaboration-apps"
     members:
-      - "dns-base"
-      - "ntp"
+      - "ms-teams"
+      - "zoom"
+      - "webex"
+      - "slack"
+      - "google-meet"
+      - "skype"
+      - "whatsapp"
     folder: "Texas"
     state: "present"
 ```
-
 
 ### Updating Application Groups
 
 When updating an application group, you must provide the complete list of members. Any existing
 members not included in the update will be removed from the group.
-
-
 
 ```yaml
 - name: Update web applications group membership
@@ -100,15 +139,15 @@ members not included in the update will be removed from the group.
     members:
       - "ssl"
       - "web-browsing"
-      - "dns-base"
+      - "http"
+      - "https"
     folder: "Texas"
     state: "present"
 ```
 
-
 ### Deleting Application Groups
 
-
+This example removes application groups from the system.
 
 ```yaml
 - name: Remove application groups
@@ -119,97 +158,108 @@ members not included in the update will be removed from the group.
     state: "absent"
   loop:
     - "web-apps"
-    - "network-apps"
+    - "collaboration-apps"
 ```
 
+## Managing Configuration Changes
 
-## Return Values
+After creating, updating, or deleting application groups, you need to commit your changes to apply them.
 
-| Name              | Description                         | Type | Returned              | Sample                                                                                                                                |
-| ----------------- | ----------------------------------- | ---- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| changed           | Whether any changes were made       | bool | always                | true                                                                                                                                  |
-| application_group | Details about the application group | dict | when state is present | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "web-apps", "members": ["ssl", "web-browsing", "dns-base"], "folder": "Texas"} |
+```yaml
+- name: Commit changes
+  cdot65.scm.commit:
+    provider: "{{ provider }}"
+    folders: ["Texas"]
+    description: "Updated application group definitions"
+```
 
 ## Error Handling
 
-Common errors you might encounter when using this module:
-
-| Error                          | Description                                            | Resolution                                                                        |
-| ------------------------------ | ------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| Invalid application group data | Required parameters missing or invalid format          | Ensure all required parameters are provided with valid values                     |
-| Application not found          | One or more of the specified applications don't exist  | Verify that all applications in the members list exist in the specified container |
-| Missing container              | None of folder, snippet, or device is specified        | Provide exactly one of folder, snippet, or device                                 |
-| Application group not found    | Attempt to update or delete a group that doesn't exist | Verify the application group name and container location                          |
-
-
+It's important to handle potential errors when working with application group objects.
 
 ```yaml
-- name: Handle potential errors with block/rescue
+- name: Create or update application group with error handling
   block:
-    - name: Attempt to create application group
+    - name: Ensure application group exists
       cdot65.scm.application_group:
         provider: "{{ provider }}"
         name: "web-apps"
         members:
+          - "ssl"
           - "web-browsing"
-          - "non-existent-app"  # This application doesn't exist
         folder: "Texas"
         state: "present"
-      register: result
+      register: group_result
+      
+    - name: Commit changes
+      cdot65.scm.commit:
+        provider: "{{ provider }}"
+        folders: ["Texas"]
+        description: "Updated application group definitions"
+      
   rescue:
-    - name: Handle validation error
+    - name: Handle errors
       debug:
-        msg: "Failed to create application group. Verify all applications exist."
-    - name: Continue with other tasks
-      # Additional recovery tasks
+        msg: "An error occurred: {{ ansible_failed_result.msg }}"
+        
+    - name: Check if error is due to non-existent application
+      cdot65.scm.application_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_applications
+      
+    - name: Display available applications
+      debug:
+        msg: "Available applications: {{ all_applications.applications | map(attribute='name') | list }}"
+      when: all_applications is defined
 ```
-
 
 ## Best Practices
 
-1. **Group Organization**
+### Group Organization
 
-   - Use descriptive names that indicate the function of the group
-   - Group applications with similar functions or purposes
-   - Use a consistent naming convention across application groups
-   - Limit the number of applications in a group to maintain clarity
+- Use descriptive names that indicate the function of the group
+- Group applications with similar functions or purposes
+- Use a consistent naming convention across application groups
+- Limit the number of applications in a group to maintain clarity
+- Document the purpose of each application group
 
-2. **Member Management**
+### Member Management
 
-   - Verify all member applications exist before creating the group
-   - When updating groups, always provide the complete list of members
-   - Consider organizing applications into functional groups (web, database, collaboration, etc.)
-   - Document which applications are included in each group
+- Verify all member applications exist before creating the group
+- When updating groups, always provide the complete list of members
+- Consider organizing applications into functional groups (web, database, collaboration, etc.)
+- Document which applications are included in each group
+- Regularly review group membership to ensure it remains relevant
 
-3. **Policy Implementation**
+### Policy Implementation
 
-   - Use application groups in security policies to improve policy clarity
-   - Review application group membership regularly as part of security audits
-   - Consider the impact on existing policies when modifying group membership
-   - Test policy behavior after making changes to application groups
+- Use application groups in security policies to improve policy clarity
+- Review application group membership regularly as part of security audits
+- Consider the impact on existing policies when modifying group membership
+- Test policy behavior after making changes to application groups
+- Create separate groups for different security zones or requirements
 
-4. **Performance Considerations**
+### Performance Considerations
 
-   - Balance between using many specific groups versus fewer large groups
-   - Group commonly used applications together to reduce the number of policy rules
-   - Consider the impact on policy processing when designing application groups
-   - Update application groups during maintenance windows if used in active policies
+- Balance between using many specific groups versus fewer large groups
+- Group commonly used applications together to reduce the number of policy rules
+- Consider the impact on policy processing when designing application groups
+- Update application groups during maintenance windows if used in active policies
+- Monitor policy hit counts to optimize application groupings
 
-5. **Module Usage**
+### Security Planning
 
-   - Be aware of idempotent behavior—always providing all members when updating
-   - Use check mode to preview changes before applying
-   - Implement error handling with block/rescue for production playbooks
-   - Use variables or external data sources to maintain group membership lists
+- Create application groups based on risk levels
+- Use separate groups for critical applications
+- Design application groups to support least-privilege access
+- Consider compliance requirements when organizing application groups
+- Document security rationale for group composition
 
 ## Related Modules
 
 - [application](application.md) - Manage application objects
 - [application_info](application_info.md) - Retrieve information about application objects
-- [application_group_info](application_group_info.md) - Retrieve information about application
-  groups
+- [application_group_info](application_group_info.md) - Retrieve information about application groups
 - [security_rule](security_rule.md) - Configure security policies that reference application groups
-
-## Author
-
-- Calvin Remsburg (@cdot65)
+- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that may be applied to application traffic

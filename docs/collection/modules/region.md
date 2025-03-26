@@ -51,15 +51,15 @@ fields are provided in the module parameters, they will be ignored by the SCM AP
 
 ## Requirements
 
-- SCM Python SDK (`pan-scm-sdk`)
-- Python 3.8 or higher
-- Ansible 2.13 or higher
+## Requirements
+
+- SCM Python SDK (`pan-scm-sdk>=0.3.22`)
+- Python 3.12 or higher
+- Ansible 2.17 or higher
 
 ## Usage Examples
 
 ### Creating Region Objects
-
-
 
 ```yaml
 - name: Create a region with geo_location and addresses
@@ -76,9 +76,6 @@ fields are provided in the module parameters, they will be ignored by the SCM AP
     state: "present"
 ```
 
-
-
-
 ```yaml
 - name: Create a region with addresses only
   cdot65.scm.region:
@@ -91,10 +88,7 @@ fields are provided in the module parameters, they will be ignored by the SCM AP
     state: "present"
 ```
 
-
 ### Updating Region Objects
-
-
 
 ```yaml
 - name: Update a region with new geo_location
@@ -112,10 +106,7 @@ fields are provided in the module parameters, they will be ignored by the SCM AP
     state: "present"
 ```
 
-
 ### Deleting Region Objects
-
-
 
 ```yaml
 - name: Delete a region
@@ -125,7 +116,6 @@ fields are provided in the module parameters, they will be ignored by the SCM AP
     folder: "Global"
     state: "absent"
 ```
-
 
 ## Return Values
 
@@ -144,8 +134,6 @@ Common errors you might encounter when using this module:
 | Region name already exists | Attempt to create a region with a name that already exists  | Use a unique name or update the existing region                       |
 | Region not found           | Attempt to update or delete a region that doesn't exist     | Verify the region name and container location                         |
 | Missing required parameter | Required parameter not provided                             | Ensure all required parameters are specified                          |
-
-
 
 ```yaml
 - name: Handle potential errors with block/rescue
@@ -167,7 +155,6 @@ Common errors you might encounter when using this module:
     - name: Continue with other tasks
       # Additional recovery tasks
 ```
-
 
 ## Best Practices
 

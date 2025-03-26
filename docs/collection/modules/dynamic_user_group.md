@@ -1,77 +1,107 @@
 # Dynamic User Group Configuration Object
 
-## Table of Contents
+## 01. Table of Contents
 
 1. [Overview](#overview)
-2. [Module Parameters](#module-parameters)
-3. [Return Values](#return-values)
-4. [Usage Examples](#usage-examples)
+2. [Core Methods](#core-methods)
+3. [Dynamic User Group Model Attributes](#dynamic-user-group-model-attributes)
+4. [Exceptions](#exceptions)
+5. [Basic Configuration](#basic-configuration)
+6. [Usage Examples](#usage-examples)
    - [Creating Dynamic User Groups](#creating-dynamic-user-groups)
+   - [Basic Dynamic User Group](#basic-dynamic-user-group)
+   - [Complex Filter Dynamic User Group](#complex-filter-dynamic-user-group)
    - [Updating Dynamic User Groups](#updating-dynamic-user-groups)
    - [Deleting Dynamic User Groups](#deleting-dynamic-user-groups)
-5. [Filter Expression Syntax](#filter-expression-syntax)
-6. [Error Handling](#error-handling)
-7. [Best Practices](#best-practices)
-8. [Related Modules](#related-modules)
+7. [Filter Expression Syntax](#filter-expression-syntax)
+8. [Managing Configuration Changes](#managing-configuration-changes)
+9. [Error Handling](#error-handling)
+10. [Best Practices](#best-practices)
+11. [Related Modules](#related-modules)
 
-## Overview
+## 02. Overview
 
-The `dynamic_user_group` module allows you to create, update, and delete dynamic user group objects
-within Strata Cloud Manager (SCM). Dynamic user groups are used to group users based on tag-based
-filter expressions, enabling flexible and dynamic security policies based on user attributes.
+The `dynamic_user_group` Ansible module provides functionality to manage dynamic user group objects within Palo Alto Networks' Strata Cloud Manager (SCM). Dynamic user groups are used to group users based on tag-based filter expressions, enabling flexible and dynamic security policies based on user attributes.
 
-This module is part of the `cdot65.scm` collection and requires proper authentication credentials to
-interact with the Strata Cloud Manager API.
+## 03. Core Methods
 
-## Module Parameters
+| Method     | Description                            | Parameters                               | Return Type                           |
+| ---------- | -------------------------------------- | ---------------------------------------- | ------------------------------------- |
+| `create()` | Creates a new dynamic user group       | `data: Dict[str, Any]`                   | `DynamicUserGroupResponseModel`       |
+| `update()` | Updates an existing dynamic user group | `group: DynamicUserGroupUpdateModel`     | `DynamicUserGroupResponseModel`       |
+| `delete()` | Removes a dynamic user group           | `object_id: str`                         | `None`                                |
+| `fetch()`  | Gets a dynamic user group by name      | `name: str`, `container: str`            | `DynamicUserGroupResponseModel`       |
+| `list()`   | Lists dynamic user groups with filters | `folder: str`, `**filters`               | `List[DynamicUserGroupResponseModel]` |
 
-| Parameter     | Type | Required | Default | Choices         | Description                                                   |
-| ------------- | ---- | -------- | ------- | --------------- | ------------------------------------------------------------- |
-| `name`        | str  | yes      |         |                 | Name of the dynamic user group (max 63 chars)                 |
-| `filter`      | str  | yes\*    |         |                 | Tag-based filter expression (max 2047 chars)                  |
-| `description` | str  | no       |         |                 | Description of the dynamic user group (max 1023 chars)        |
-| `tag`         | list | no       |         |                 | List of tags associated with this object (max 127 chars each) |
-| `folder`      | str  | no\*\*   |         |                 | The folder containing the dynamic user group                  |
-| `snippet`     | str  | no\*\*   |         |                 | The snippet containing the dynamic user group                 |
-| `device`      | str  | no\*\*   |         |                 | The device containing the dynamic user group                  |
-| `provider`    | dict | yes      |         |                 | Authentication credentials for SCM API                        |
-| `state`       | str  | yes      |         | present, absent | Whether the group should exist or not                         |
+## 04. Dynamic User Group Model Attributes
 
-\* Required when `state=present`\
-\*\* Exactly one container type (folder, snippet, device) must be specified
+| Attribute     | Type   | Required      | Description                                                   |
+| ------------- | ------ | ------------- | ------------------------------------------------------------- |
+| `name`        | str    | Yes           | Name of the dynamic user group (max 63 chars)                 |
+| `filter`      | str    | Yes\*         | Tag-based filter expression (max 2047 chars)                  |
+| `description` | str    | No            | Description of the dynamic user group (max 1023 chars)        |
+| `tag`         | list   | No            | List of tags associated with this object (max 127 chars each) |
+| `folder`      | str    | One container | The folder containing the dynamic user group                  |
+| `snippet`     | str    | One container | The snippet containing the dynamic user group                 |
+| `device`      | str    | One container | The device containing the dynamic user group                  |
 
-### Provider Dictionary
+\* Required when `state=present`
 
-| Parameter       | Type | Required | Default | Description                      |
+### Provider Dictionary Attributes
+
+| Attribute       | Type | Required | Default | Description                      |
 | --------------- | ---- | -------- | ------- | -------------------------------- |
-| `client_id`     | str  | yes      |         | Client ID for authentication     |
-| `client_secret` | str  | yes      |         | Client secret for authentication |
-| `tsg_id`        | str  | yes      |         | Tenant Service Group ID          |
-| `log_level`     | str  | no       | "INFO"  | Log level for the SDK            |
+| `client_id`     | str  | Yes      |         | Client ID for authentication     |
+| `client_secret` | str  | Yes      |         | Client secret for authentication |
+| `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
+| `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
 
-## Return Values
+## 05. Exceptions
 
-| Key                  | Type | Returned              | Description                                 |
-| -------------------- | ---- | --------------------- | ------------------------------------------- |
-| `changed`            | bool | always                | Whether any changes were made               |
-| `dynamic_user_group` | dict | when state is present | Details about the dynamic user group object |
+| Exception                | Description                                |
+| ------------------------ | ------------------------------------------ |
+| `InvalidObjectError`     | Invalid dynamic user group data or format  |
+| `NameNotUniqueError`     | Dynamic user group name already exists     |
+| `ObjectNotPresentError`  | Dynamic user group not found               |
+| `InvalidFilterError`     | Filter expression syntax is invalid        |
+| `AuthenticationError`    | Authentication failed                      |
+| `ServerError`            | Internal server error                      |
 
-### Dynamic User Group Return Dictionary
+## 06. Basic Configuration
 
-| Key           | Type | Description                                  |
-| ------------- | ---- | -------------------------------------------- |
-| `id`          | str  | Unique identifier for the dynamic user group |
-| `name`        | str  | Name of the dynamic user group               |
-| `filter`      | str  | Tag-based filter expression                  |
-| `description` | str  | Description of the dynamic user group        |
-| `folder`      | str  | The folder containing the dynamic user group |
-| `tag`         | list | List of tags associated with this object     |
+The Dynamic User Group module requires proper authentication credentials to access the Strata Cloud Manager API.
 
-## Usage Examples
+```yaml
+- name: Basic Dynamic User Group Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    provider:
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
+      log_level: "INFO"
+  tasks:
+    - name: Ensure a dynamic user group exists
+      cdot65.scm.dynamic_user_group:
+        provider: "{{ provider }}"
+        name: "high_risk_users"
+        filter: "tag.criticality.high"
+        description: "Users with high risk classification"
+        folder: "Security"
+        tag: ["RiskManagement", "Security"]
+        state: "present"
+```
+
+## 07. Usage Examples
 
 ### Creating Dynamic User Groups
 
+Dynamic user groups can be created with different levels of filter complexity to match specific user attributes and conditions.
 
+### Basic Dynamic User Group
+
+This example creates a simple dynamic user group with a basic filter expression.
 
 ```yaml
 - name: Create a dynamic user group with a simple filter
@@ -89,8 +119,9 @@ interact with the Strata Cloud Manager API.
     state: "present"
 ```
 
+### Complex Filter Dynamic User Group
 
-
+This example creates a dynamic user group with a more complex filter expression using logical operators.
 
 ```yaml
 - name: Create a dynamic user group with a complex filter
@@ -104,10 +135,9 @@ interact with the Strata Cloud Manager API.
     state: "present"
 ```
 
-
 ### Updating Dynamic User Groups
 
-
+This example updates an existing dynamic user group with a modified filter expression and additional tags.
 
 ```yaml
 - name: Update an existing dynamic user group's filter and tags
@@ -121,10 +151,9 @@ interact with the Strata Cloud Manager API.
     state: "present"
 ```
 
-
 ### Deleting Dynamic User Groups
 
-
+This example removes a dynamic user group from SCM.
 
 ```yaml
 - name: Delete a dynamic user group
@@ -135,11 +164,9 @@ interact with the Strata Cloud Manager API.
     state: "absent"
 ```
 
+## 08. Filter Expression Syntax
 
-## Filter Expression Syntax
-
-Dynamic user groups use tag-based filter expressions to determine group membership. The filter
-syntax supports various operations:
+Dynamic user groups use tag-based filter expressions to determine group membership. The filter syntax supports various operations:
 
 | Operator | Description           | Example                                                                     |
 | -------- | --------------------- | --------------------------------------------------------------------------- |
@@ -153,12 +180,23 @@ syntax supports various operations:
 | `.ge.`   | Greater than or equal | `tag.access_level.ge.3`                                                     |
 | `.le.`   | Less than or equal    | `tag.access_level.le.5`                                                     |
 
-These filters allow you to create dynamic groups based on user attributes represented as tags in the
-system.
+These filters allow you to create dynamic groups based on user attributes represented as tags in the system.
 
-## Error Handling
+## 09. Managing Configuration Changes
 
+After creating, updating, or deleting dynamic user groups, you need to commit your changes to apply them.
 
+```yaml
+- name: Commit changes
+  cdot65.scm.commit:
+    provider: "{{ provider }}"
+    folders: ["Security"]
+    description: "Updated dynamic user groups"
+```
+
+## 10. Error Handling
+
+It's important to handle potential errors when working with dynamic user groups.
 
 ```yaml
 - name: Create dynamic user group with error handling
@@ -171,51 +209,79 @@ system.
         folder: "Security"
         state: "present"
       register: result
+      
+    - name: Commit changes
+      cdot65.scm.commit:
+        provider: "{{ provider }}"
+        folders: ["Security"]
+        description: "Added restricted users group"
+      when: result.changed
+        
   rescue:
     - name: Handle creation failure
       debug:
         msg: "Failed to create dynamic user group: {{ ansible_failed_result.msg }}"
+        
+    - name: Check if it's a filter syntax error
+      debug:
+        msg: "The filter expression contains a syntax error, please review it"
+      when: "'invalid filter' in ansible_failed_result.msg"
 ```
 
+## 11. Best Practices
 
-## Best Practices
+### Container Selection
 
-1. **Container Selection**
+- Always specify exactly one container type (folder, snippet, or device)
+- Use consistent container names across operations
+- Verify container existence before operations
+- Group related dynamic user groups in the same container
 
-   - Always specify exactly one container type (folder, snippet, or device)
-   - Use consistent container names across operations
-   - Verify container existence before operations
+### Filter Expressions
 
-2. **Filter Expressions**
+- Create clear, readable filter expressions
+- Test complex expressions in smaller parts before combining
+- Consider query performance for complex expressions
+- Document the purpose of each filter expression in the description field
+- Use parentheses to make logic explicit in complex expressions
+- Validate that tags used in filters exist in your environment
 
-   - Create clear, readable filter expressions
-   - Test complex expressions in smaller parts before combining
-   - Consider query performance for complex expressions
-   - Document the purpose of each filter expression in the description field
+### Naming and Organization
 
-3. **Naming and Organization**
+- Use descriptive names that reflect the group's purpose
+- Implement consistent naming conventions
+- Use tags to categorize and organize dynamic user groups
+- Add detailed descriptions for future reference
+- Consider using a prefix to identify specific categories of groups
 
-   - Use descriptive names that reflect the group's purpose
-   - Implement consistent naming conventions
-   - Use tags to categorize and organize dynamic user groups
-   - Add detailed descriptions for future reference
+### Performance Considerations
 
-4. **Performance Considerations**
+- Keep filter expressions as simple as possible
+- Avoid excessive use of complex operations in filters
+- Consider the evaluation performance of filter expressions in production environments
+- Monitor the performance impact of complex filter expressions on your security policies
+- Test complex filters with a representative user base before deploying
 
-   - Keep filter expressions as simple as possible
-   - Avoid excessive use of complex operations in filters
-   - Consider the evaluation performance of filter expressions in production environments
+### Security Considerations
 
-5. **Security Considerations**
+- Regularly audit dynamic user group definitions
+- Implement strict access controls to dynamic user group management
+- Validate filter expressions to prevent unintended matches
+- Review dynamic user group membership regularly
+- Document the security implications of each dynamic user group
+- Implement change management processes for modifying dynamic user groups
 
-   - Regularly audit dynamic user group definitions
-   - Implement strict access controls to dynamic user group management
-   - Validate filter expressions to prevent unintended matches
-   - Review dynamic user group membership regularly
+### Integration with Security Policies
 
-## Related Modules
+- Plan how dynamic user groups will be used in security policies
+- Test policy behavior with different user tag combinations
+- Create hierarchical groups where appropriate (e.g., all-users, high-risk-users)
+- Document the relationship between groups and policies
+- Implement monitoring to detect unexpected behavior
 
-- [dynamic_user_group_info](dynamic_user_group_info.md): Used to retrieve information about dynamic
-  user groups
-- [tag](tag.md): Used to manage tags that can be used in dynamic user group filters
-- [tag_info](tag_info.md): Used to retrieve information about available tags
+## 12. Related Modules
+
+- [dynamic_user_group_info](dynamic_user_group_info.md) - Retrieve information about dynamic user groups
+- [tag](tag.md) - Create, update, and delete tags that can be used in dynamic user group filters
+- [tag_info](tag_info.md) - Retrieve information about available tags
+- [security_rule](security_rule.md) - Configure security policies that use dynamic user groups

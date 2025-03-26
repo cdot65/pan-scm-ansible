@@ -38,8 +38,6 @@ and manage these connections.
 
 ## 4. Basic Configuration
 
-
-
 ```yaml
 - name: Create a remote network
   cdot65.scm.remote_networks:
@@ -59,12 +57,9 @@ and manage these connections.
     state: "present"
 ```
 
-
 ## 5. Usage Examples
 
 ### Creating a Basic Remote Network
-
-
 
 ```yaml
 - name: Create a basic remote network
@@ -84,10 +79,7 @@ and manage these connections.
     state: "present"
 ```
 
-
 ### Creating a Remote Network with BGP
-
-
 
 ```yaml
 - name: Create a remote network with BGP peering
@@ -111,10 +103,7 @@ and manage these connections.
     state: "present"
 ```
 
-
 ### Updating a Remote Network
-
-
 
 ```yaml
 - name: Update a remote network
@@ -135,10 +124,7 @@ and manage these connections.
     state: "present"
 ```
 
-
 ### Deleting a Remote Network
-
-
 
 ```yaml
 - name: Delete a remote network
@@ -151,10 +137,7 @@ and manage these connections.
     state: "absent"
 ```
 
-
 ### Listing Remote Networks
-
-
 
 ```yaml
 - name: List all remote networks
@@ -171,10 +154,7 @@ and manage these connections.
   loop: "{{ networks.remote_networks }}"
 ```
 
-
 ## 6. Error Handling
-
-
 
 ```yaml
 - name: Create remote network with error handling
@@ -193,7 +173,6 @@ and manage these connections.
       debug:
         msg: "Failed to create remote network. Check if all referenced objects exist."
 ```
-
 
 ## 7. Best Practices
 

@@ -2,21 +2,21 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [HIP Object Model Attributes](#hip-object-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [HIP Object Model Attributes](#hip-object-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
     - [Creating HIP Objects](#creating-hip-objects)
     - [Basic Host Information HIP Object](#basic-host-information-hip-object)
     - [Patch Management HIP Object](#patch-management-hip-object)
     - [Disk Encryption HIP Object](#disk-encryption-hip-object)
     - [Updating HIP Objects](#updating-hip-objects)
     - [Deleting HIP Objects](#deleting-hip-objects)
-7. [Managing Configuration Changes](#managing-configuration-changes)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
 ## Overview
@@ -68,8 +68,6 @@ types.
 The HIP Object module requires proper authentication credentials to access the Strata Cloud Manager
 API.
 
-
-
 ```yaml
 - name: Basic HIP Object Module Configuration
   hosts: localhost
@@ -96,7 +94,6 @@ API.
         state: "present"
 ```
 
-
 ## Usage Examples
 
 ### Creating HIP Objects
@@ -107,8 +104,6 @@ endpoints.
 ### Basic Host Information HIP Object
 
 This example creates a HIP object that matches Windows workstations that are managed.
-
-
 
 ```yaml
 - name: Create a basic HIP object with host information
@@ -126,13 +121,10 @@ This example creates a HIP object that matches Windows workstations that are man
     state: "present"
 ```
 
-
 ### Patch Management HIP Object
 
 This example creates a HIP object that matches endpoints with properly installed and enabled patch
 management software with no severe missing patches.
-
-
 
 ```yaml
 - name: Create HIP object with patch management criteria
@@ -154,13 +146,10 @@ management software with no severe missing patches.
     state: "present"
 ```
 
-
 ### Disk Encryption HIP Object
 
 This example creates a HIP object that matches endpoints with disk encryption enabled on the C:
 drive.
-
-
 
 ```yaml
 - name: Create HIP object with disk encryption requirements
@@ -179,12 +168,9 @@ drive.
     state: "present"
 ```
 
-
 ### Updating HIP Objects
 
 This example updates an existing HIP object with additional criteria.
-
-
 
 ```yaml
 - name: Update an existing HIP object
@@ -204,12 +190,9 @@ This example updates an existing HIP object with additional criteria.
     state: "present"
 ```
 
-
 ### Deleting HIP Objects
 
 This example removes a HIP object.
-
-
 
 ```yaml
 - name: Delete a HIP object
@@ -220,12 +203,9 @@ This example removes a HIP object.
     state: "absent"
 ```
 
-
 ## Managing Configuration Changes
 
 After creating, updating, or deleting HIP objects, you need to commit your changes to apply them.
-
-
 
 ```yaml
 - name: Commit changes
@@ -235,12 +215,9 @@ After creating, updating, or deleting HIP objects, you need to commit your chang
     description: "Updated HIP objects"
 ```
 
-
 ## Error Handling
 
 It's important to handle potential errors when working with HIP objects.
-
-
 
 ```yaml
 - name: Create or update HIP object with error handling
@@ -271,7 +248,6 @@ It's important to handle potential errors when working with HIP objects.
       debug:
         msg: "An error occurred: {{ ansible_failed_result.msg }}"
 ```
-
 
 ## Best Practices
 

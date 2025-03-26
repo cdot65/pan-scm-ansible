@@ -2,20 +2,20 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [WildFire Antivirus Profile Model Attributes](#wildfire-antivirus-profile-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [WildFire Antivirus Profile Model Attributes](#wildfire-antivirus-profile-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
     - [Creating WildFire Antivirus Profiles](#creating-wildfire-antivirus-profiles)
     - [Basic WildFire Antivirus Profile](#basic-wildfire-antivirus-profile)
     - [Comprehensive WildFire Antivirus Profile](#comprehensive-wildfire-antivirus-profile)
     - [Updating WildFire Antivirus Profiles](#updating-wildfire-antivirus-profiles)
     - [Deleting WildFire Antivirus Profiles](#deleting-wildfire-antivirus-profiles)
-7. [Managing Configuration Changes](#managing-configuration-changes)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
 ## Overview
@@ -268,45 +268,45 @@ It's important to handle potential errors when working with WildFire antivirus p
 
 ## Best Practices
 
-1. **Rule Design**
+### Rule Design
 
-   - Create specific, well-defined rules for precise malware detection
-   - Configure rules for different traffic directions based on risk
-   - Use application-specific rules for high-risk applications
-   - Balance detection capabilities with performance considerations
+- Create specific, well-defined rules for precise malware detection
+- Configure rules for different traffic directions based on risk
+- Use application-specific rules for high-risk applications
+- Balance detection capabilities with performance considerations
 
-2. **Analysis Selection**
+### Analysis Selection
 
-   - Use public-cloud analysis for general threat detection
-   - Consider private-cloud analysis for sensitive environments
-   - Match analysis type to your organization's security requirements
+- Use public-cloud analysis for general threat detection
+- Consider private-cloud analysis for sensitive environments
+- Match analysis type to your organization's security requirements
 
-3. **File Type Selection**
+### File Type Selection
 
-   - Focus on high-risk file types (PE, EXE, PDF, etc.)
-   - Consider the performance impact of scanning all file types
-   - Prioritize file types based on your organization's risk profile
+- Focus on high-risk file types (PE, EXE, PDF, etc.)
+- Consider the performance impact of scanning all file types
+- Prioritize file types based on your organization's risk profile
 
-4. **Exception Handling**
+### Exception Handling
 
-   - Use MLAV exceptions judiciously, only for legitimate applications
-   - Document the reason for each exception thoroughly
-   - Review exceptions regularly to ensure they're still required
-   - Implement a robust change management process for exceptions
+- Use MLAV exceptions judiciously, only for legitimate applications
+- Document the reason for each exception thoroughly
+- Review exceptions regularly to ensure they're still required
+- Implement a robust change management process for exceptions
 
-5. **Profile Management**
+### Profile Management
 
-   - Develop a consistent naming convention for profiles
-   - Document each profile's purpose and rules
-   - Test profiles in a non-production environment first
-   - Implement proper change management for profile modifications
+- Develop a consistent naming convention for profiles
+- Document each profile's purpose and rules
+- Test profiles in a non-production environment first
+- Implement proper change management for profile modifications
 
-6. **Performance Considerations**
+### Performance Considerations
 
-   - Monitor the impact of packet capture on network performance
-   - Balance security needs with operational requirements
-   - Consider implementing more targeted rules for high-volume environments
-   - Test changes before implementing in production
+- Monitor the impact of packet capture on network performance
+- Balance security needs with operational requirements
+- Consider implementing more targeted rules for high-volume environments
+- Test changes before implementing in production
 
 ## Related Modules
 
@@ -316,4 +316,3 @@ It's important to handle potential errors when working with WildFire antivirus p
   protection
 - [security_rule](security_rule.md) - Configure security policies that use WildFire antivirus
   profiles
-- commit - Commit configuration changes

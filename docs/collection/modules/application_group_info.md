@@ -2,64 +2,97 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Module Parameters](#module-parameters)
-3. [Requirements](#requirements)
-4. [Usage Examples](#usage-examples)
-   - [Getting Information About a Specific Application Group](#getting-information-about-a-specific-application-group)
-   - [Listing All Application Group Objects](#listing-all-application-group-objects)
-   - [Using Advanced Filtering Options](#using-advanced-filtering-options)
-5. [Return Values](#return-values)
-6. [Error Handling](#error-handling)
-7. [Best Practices](#best-practices)
-8. [Related Modules](#related-modules)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Application Group Info Model Attributes](#application-group-info-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Retrieving Application Group Information](#retrieving-application-group-information)
+    - [Getting a Specific Application Group](#getting-a-specific-application-group)
+    - [Listing All Application Groups](#listing-all-application-groups)
+    - [Analyzing Application Group Membership](#analyzing-application-group-membership)
+    - [Using Advanced Filtering Options](#using-advanced-filtering-options)
+07. [Processing Retrieved Information](#processing-retrieved-information)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
 ## Overview
 
-The `application_group_info` module provides functionality to gather information about application
-group objects in Palo Alto Networks' Strata Cloud Manager. This is a read-only module that can
+The `application_group_info` Ansible module provides functionality to retrieve information about application
+group objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can
 retrieve detailed information about a specific application group by name, or list multiple
 application groups with various filtering options. It supports advanced filtering capabilities
 including container-based filtering and exclusion filters.
 
-## Module Parameters
+## Core Methods
 
-| Parameter              | Required | Type | Choices           | Default    | Comments                                                                   |
-| ---------------------- | -------- | ---- | ----------------- | ---------- | -------------------------------------------------------------------------- |
-| name                   | no       | str  |                   |            | The name of a specific application group object to retrieve.               |
-| gather_subset          | no       | list | ['all', 'config'] | ['config'] | Determines which information to gather about application groups.           |
-| folder                 | no       | str  |                   |            | Filter application groups by folder container.                             |
-| snippet                | no       | str  |                   |            | Filter application groups by snippet container.                            |
-| device                 | no       | str  |                   |            | Filter application groups by device container.                             |
-| exact_match            | no       | bool |                   | false      | When True, only return objects defined exactly in the specified container. |
-| exclude_folders        | no       | list |                   |            | List of folder names to exclude from results.                              |
-| exclude_snippets       | no       | list |                   |            | List of snippet values to exclude from results.                            |
-| provider               | yes      | dict |                   |            | Authentication credentials.                                                |
-| provider.client_id     | yes      | str  |                   |            | Client ID for authentication.                                              |
-| provider.client_secret | yes      | str  |                   |            | Client secret for authentication.                                          |
-| provider.tsg_id        | yes      | str  |                   |            | Tenant Service Group ID.                                                   |
-| provider.log_level     | no       | str  |                   | INFO       | Log level for the SDK.                                                     |
+| Method     | Description                            | Parameters                                | Return Type                         |
+| ---------- | -------------------------------------- | ----------------------------------------- | ----------------------------------- |
+| `get()`    | Gets a specific application group      | `name: str`, `container: str`             | `ApplicationGroupResponseModel`     |
+| `list()`   | Lists application groups with filtering| `folder: str`, `**filters`                | `List[ApplicationGroupResponseModel]`|
+| `filter()` | Applies filters to the results         | `groups: List`, `filter_params: Dict`     | `List[ApplicationGroupResponseModel]`|
 
-!!! note
+## Application Group Info Model Attributes
 
-- Exactly one container type (`folder`, `snippet`, or `device`) must be provided when not specifying
-  a name.
-- When `name` is specified, the module will retrieve a single application group object.
-- When `name` is not specified, the module will return a list of application groups based on filter
-  criteria.
-- This is a read-only module that does not make any changes to the system.
+| Attribute          | Type | Required      | Description                                                      |
+| ------------------ | ---- | ------------- | ---------------------------------------------------------------- |
+| `name`             | str  | No            | The name of a specific application group to retrieve             |
+| `gather_subset`    | list | No            | Determines which information to gather (default: ['config'])     |
+| `folder`           | str  | One container | Filter application groups by folder (max 64 chars)              |
+| `snippet`          | str  | One container | Filter application groups by snippet (max 64 chars)             |
+| `device`           | str  | One container | Filter application groups by device (max 64 chars)              |
+| `exact_match`      | bool | No            | When True, only return objects in the specified container        |
+| `exclude_folders`  | list | No            | List of folder names to exclude from results                     |
+| `exclude_snippets` | list | No            | List of snippet values to exclude from results                   |
 
-## Requirements
+## Exceptions
 
-- SCM Python SDK (`pan-scm-sdk`)
-- Python 3.8 or higher
-- Ansible 2.13 or higher
+| Exception                    | Description                         |
+| ---------------------------- | ----------------------------------- |
+| `ObjectNotPresentError`      | Application group not found         |
+| `MissingQueryParameterError` | Missing required parameters         |
+| `InvalidFilterError`         | Invalid filter parameters           |
+| `AuthenticationError`        | Authentication failed               |
+| `ServerError`                | Internal server error               |
+| `MultipleMatchesError`       | Multiple groups match criteria      |
+
+## Basic Configuration
+
+The Application Group Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+
+```yaml
+- name: Basic Application Group Info Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    provider:
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
+      log_level: "INFO"
+  tasks:
+    - name: Get information about application groups
+      cdot65.scm.application_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: groups_info
+      
+    - name: Display retrieved information
+      debug:
+        var: groups_info.application_groups
+```
 
 ## Usage Examples
 
-### Getting Information About a Specific Application Group
+### Retrieving Application Group Information
 
+The module provides several ways to retrieve application group information based on your specific needs.
 
+### Getting a Specific Application Group
+
+This example retrieves detailed information about a specific application group by name.
 
 ```yaml
 - name: Get information about a specific application group
@@ -74,10 +107,9 @@ including container-based filtering and exclusion filters.
     var: app_group_info.application_group
 ```
 
+### Listing All Application Groups
 
-### Listing All Application Group Objects
-
-
+This example lists all application group objects in a specific folder.
 
 ```yaml
 - name: List all application group objects in a folder
@@ -91,10 +123,32 @@ including container-based filtering and exclusion filters.
     msg: "Found {{ all_app_groups.application_groups | length }} application groups in Texas folder"
 ```
 
+### Analyzing Application Group Membership
+
+This example retrieves application groups and analyzes their membership.
+
+```yaml
+- name: Get application groups and analyze membership
+  cdot65.scm.application_group_info:
+    provider: "{{ provider }}"
+    folder: "Texas"
+  register: app_groups
+
+- name: Display groups with their member counts
+  debug:
+    msg: "Group: {{ item.name }} - Contains {{ item.members | length }} applications"
+  loop: "{{ app_groups.application_groups }}"
+  
+- name: Find groups containing specific applications
+  debug:
+    msg: "Group {{ item.name }} contains web-browsing"
+  loop: "{{ app_groups.application_groups }}"
+  when: "'web-browsing' in item.members"
+```
 
 ### Using Advanced Filtering Options
 
-
+These examples illustrate more advanced filtering options including exact match and exclusions.
 
 ```yaml
 - name: List application groups with exact match and exclusions
@@ -106,91 +160,138 @@ including container-based filtering and exclusion filters.
     exclude_snippets: ["default"]
   register: filtered_app_groups
 
-- name: Process filtered application groups
-  debug:
-    msg: "Application group {{ item.name }} contains {{ item.members | length }} applications"
-  loop: "{{ filtered_app_groups.application_groups }}"
+- name: Get application groups from multiple folders except specific ones
+  cdot65.scm.application_group_info:
+    provider: "{{ provider }}"
+    folder: "Texas"
+    exact_match: false
+    exclude_folders: ["Development", "Testing"]
+  register: production_app_groups
 ```
 
+## Processing Retrieved Information
 
-## Return Values
+After retrieving application group information, you can process the data for various purposes such as 
+policy analysis, inventory management, or security auditing.
 
-| Name               | Description                                                               | Type | Returned                            | Sample                                                                                                                                                                                                                                               |
-| ------------------ | ------------------------------------------------------------------------- | ---- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| application_groups | List of application group objects matching the filter criteria            | list | success, when name is not specified | \[{"id": "123e4567-e89b-12d3-a456-426655440000", "name": "web-apps", "members": ["ssl", "web-browsing"], "folder": "Texas"}, {"id": "234e5678-e89b-12d3-a456-426655440001", "name": "network-apps", "members": ["dns", "dhcp"], "folder": "Texas"}\] |
-| application_group  | Information about the requested application group (when querying by name) | dict | success, when name is specified     | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "web-apps", "members": ["ssl", "web-browsing"], "folder": "Texas"}                                                                                                                            |
+```yaml
+- name: Create an application group analysis report
+  block:
+    - name: Get all application groups
+      cdot65.scm.application_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_app_groups
+      
+    - name: Get applications for cross-reference
+      cdot65.scm.application_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_applications
+      
+    - name: Create analysis data structures
+      set_fact:
+        large_groups: "{{ all_app_groups.application_groups | selectattr('members', 'defined') | selectattr('members', 'length_is_greater_than', 10) | list }}"
+        empty_groups: "{{ all_app_groups.application_groups | selectattr('members', 'defined') | selectattr('members', 'equalto', []) | list }}"
+        app_usage: {}
+        
+    - name: Count application usage across groups
+      set_fact:
+        app_usage: "{{ app_usage | combine({item: (all_app_groups.application_groups | selectattr('members', 'defined') | selectattr('members', 'contains', item) | list | length)}) }}"
+      loop: "{{ all_applications.applications | map(attribute='name') | list }}"
+      when: all_applications.applications is defined
+      
+    - name: Find most commonly used applications in groups
+      set_fact:
+        common_apps: "{{ app_usage.keys() | sort(attribute=app_usage.get, reverse=true) | list | first(5) }}"
+        
+    - name: Display analysis results
+      debug:
+        msg: |
+          Application Group Analysis:
+          - Total Groups: {{ all_app_groups.application_groups | length }}
+          - Large Groups (>10 members): {{ large_groups | length }}
+          - Empty Groups: {{ empty_groups | length }}
+          
+          Most Used Applications in Groups:
+          {% for app in common_apps %}
+          - {{ app }}: Used in {{ app_usage[app] }} groups
+          {% endfor %}
+```
 
 ## Error Handling
 
-Common errors you might encounter when using this module:
-
-| Error                       | Description                                                          | Resolution                                                   |
-| --------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Application group not found | The specified application group name does not exist in the container | Verify the application group name and container location     |
-| Missing required parameter  | Required container parameter not provided                            | Ensure a container (folder, snippet, or device) is specified |
-| Invalid filter parameters   | Incorrect filter values or format                                    | Check the format and validity of filter parameters           |
-
-
+It's important to handle potential errors when retrieving application group information.
 
 ```yaml
-- name: Handle potential errors with block/rescue
+- name: Retrieve application group info with error handling
   block:
     - name: Attempt to retrieve application group information
       cdot65.scm.application_group_info:
         provider: "{{ provider }}"
-        name: "web-apps"
+        name: "nonexistent-group"
         folder: "Texas"
       register: app_group_info
+      
   rescue:
-    - name: Handle application group not found error
+    - name: Handle group not found error
       debug:
-        msg: "Application group web-apps not found in Texas folder"
-    - name: Continue with other tasks
-      # Additional recovery tasks
+        msg: "Application group not found or other error occurred"
+        
+    - name: Continue with fallback actions
+      cdot65.scm.application_group_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_app_groups
+      
+    - name: Log the error and continue
+      debug:
+        msg: "Continuing with list of all application groups instead of specific group"
 ```
-
 
 ## Best Practices
 
-1. **Efficient Filtering**
+### Efficient Filtering
 
-   - Use specific filters to minimize the result set
-   - Use the exact_match parameter when you only want objects defined in the specific container
-   - Consider performance implications when retrieving large datasets
+- Use specific filters to minimize the result set
+- Use the exact_match parameter when you only want objects defined in the specific container
+- Consider performance implications when retrieving large datasets
+- Use exclusion filters to narrow down results when searching across multiple containers
 
-2. **Container Selection**
+### Container Selection
 
-   - Use folder, snippet, or device consistently across operations
-   - Verify container existence before querying
-   - Use exclusion filters to refine results when working with large containers
+- Use folder, snippet, or device consistently across operations
+- Verify container existence before querying
+- Use exclusion filters to refine results when working with large containers
+- Consider folder organization when retrieving application groups
 
-3. **Using Results**
+### Information Handling
 
-   - Register results to variables for further processing
-   - Use Ansible's filtering capabilities (selectattr, map, etc.) on the returned lists
-   - Check if application_groups/application_group is defined before accessing properties
-   - Process member lists to identify application membership patterns
+- Register results to variables for further processing
+- Use Ansible's filtering capabilities (selectattr, map, etc.) on the returned lists
+- Check if application_groups/application_group is defined before accessing properties
+- Process member lists to identify application membership patterns
+- Combine with application_info to get detailed information about member applications
 
-4. **Integration with Security Policies**
+### Security Analysis
 
-   - Use application group information to validate security policy configurations
-   - Verify application group membership before making policy changes
-   - Generate reports on application group usage across policies
+- Use application group information to assess security policy consistency
+- Identify overlapping or redundant application groups
+- Analyze application group composition for security gaps
+- Track application group changes over time
+- Compare application groups across different environments
 
-5. **Error Handling**
+### Integration with Security Policies
 
-   - Implement proper error handling with block/rescue
-   - Provide meaningful error messages
-   - Have fallback actions when objects are not found
+- Use application group information to validate security policy configurations
+- Verify application group membership before making policy changes
+- Generate reports on application group usage across policies
+- Identify unused application groups for cleanup
 
 ## Related Modules
 
-- [application_group](application_group.md) - Manage application group objects (create, update,
-  delete)
+- [application_group](application_group.md) - Manage application group objects (create, update, delete)
 - [application](application.md) - Manage application objects
 - [application_info](application_info.md) - Retrieve information about application objects
 - [security_rule](security_rule.md) - Configure security policies that reference application groups
-
-## Author
-
-- Calvin Remsburg (@cdot65)
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules using application groups
