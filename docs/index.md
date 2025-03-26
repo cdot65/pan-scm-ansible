@@ -1,11 +1,3 @@
-______________________________________________________________________
-
-hide:
-
-- navigation
-
-______________________________________________________________________
-
 <style>
 .md-content .md-typeset h1 { display: none; }
 </style>
@@ -96,7 +88,7 @@ Process completed successfully
         description: "Web server IP address"
         ip_netmask: "192.168.1.100/32"
         folder: "Texas"
-        tag: ["Web", "Production"]
+        tag: [ "Web", "Production" ]
         state: "present"
       register: address_result
 
@@ -111,7 +103,7 @@ Process completed successfully
         description: "DNS server FQDN"
         fqdn: "dns.example.com"
         folder: "Texas"
-        tag: ["DNS", "Infrastructure"]
+        tag: [ "DNS", "Infrastructure" ]
         state: "present"
 
     - name: Create a security rule using these addresses
@@ -119,12 +111,12 @@ Process completed successfully
         provider: "{{ provider }}"
         name: "Allow_Web_to_DNS"
         description: "Allow web servers to access DNS"
-        source_zone: ["trust"]
-        destination_zone: ["trust"]
-        source_address: ["Web_Server"]
-        destination_address: ["DNS_Server"]
-        application: ["dns"]
-        service: ["application-default"]
+        source_zone: [ "trust" ]
+        destination_zone: [ "trust" ]
+        source_address: [ "Web_Server" ]
+        destination_address: [ "DNS_Server" ]
+        application: [ "dns" ]
+        service: [ "application-default" ]
         action: "allow"
         folder: "Texas"
         state: "present"
@@ -142,10 +134,10 @@ ______________________________________________________________________
 - **Complete Configuration Management**: Create, update, and delete SCM configuration objects
 - **Idempotent Operations**: Safe to run multiple times with the same expected outcome
 - **Categorized Modules**:
-  - Network Objects (Address, Service, Tag)
-  - Network Configuration (Zones, VPN, Routing)
-  - Security Services (Rules, Profiles)
-  - Deployment (Remote Networks, Service Connections)
+    - Network Objects (Address, Service, Tag)
+    - Network Configuration (Zones, VPN, Routing)
+    - Security Services (Rules, Profiles)
+    - Deployment (Remote Networks, Service Connections)
 - **Roles for Common Tasks**: Pre-built roles for bootstrapping and configuration deployment
 - **Inventory Plugin**: Dynamically build inventory from SCM
 - **Integration with SCM SDK**: Reliable API interactions with proper error handling
