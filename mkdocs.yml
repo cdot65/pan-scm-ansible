@@ -111,12 +111,6 @@ nav:
               - HIP Object Info: collection/modules/hip_object_info.md
               - HIP Profile: collection/modules/hip_profile.md
               - HIP Profile Info: collection/modules/hip_profile_info.md
-              - Service: collection/modules/service.md
-              - Service Info: collection/modules/service_info.md
-              - Service Group: collection/modules/service_group.md
-              - Service Group Info: collection/modules/service_group_info.md
-              - Tag: collection/modules/tag.md
-              - Tag Info: collection/modules/tag_info.md
               - HTTP Server Profiles: collection/modules/http_server_profiles.md
               - HTTP Server Profiles Info: collection/modules/http_server_profiles_info.md
               - Log Forwarding Profile: collection/modules/log_forwarding_profile.md
@@ -125,8 +119,14 @@ nav:
               - Quarantined Devices Info: collection/modules/quarantined_devices_info.md
               - Region: collection/modules/region.md
               - Region Info: collection/modules/region_info.md
+              - Service: collection/modules/service.md
+              - Service Info: collection/modules/service_info.md
+              - Service Group: collection/modules/service_group.md
+              - Service Group Info: collection/modules/service_group_info.md
               - Syslog Server Profiles: collection/modules/syslog_server_profiles.md
               - Syslog Server Profiles Info: collection/modules/syslog_server_profiles_info.md
+              - Tag: collection/modules/tag.md
+              - Tag Info: collection/modules/tag_info.md
           - Network Configuration:
               - Security Zone: collection/modules/security_zone.md
               - IKE Crypto Profile: collection/modules/ike_crypto_profile.md
