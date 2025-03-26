@@ -67,6 +67,7 @@ These modules configure security policies and profiles:
 | [security_profiles_group](security_profiles_group.md) | Manage security profile groups | - |
 | [url_categories](url_categories.md) | Manage URL categories | [url_categories_info](url_categories_info.md) |
 | [vulnerability_protection_profile](vulnerability_protection_profile.md) | Manage vulnerability protection profiles | [vulnerability_protection_profile_info](vulnerability_protection_profile_info.md) |
+| [wildfire_antivirus_profiles](wildfire_antivirus_profiles.md) | Manage WildFire antivirus profiles | [wildfire_antivirus_profiles_info](wildfire_antivirus_profiles_info.md) |
 
 ## Common Module Parameters
 
