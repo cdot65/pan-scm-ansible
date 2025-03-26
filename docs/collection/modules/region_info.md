@@ -60,15 +60,15 @@ and network addresses.
 
 ## Requirements
 
-- SCM Python SDK (`pan-scm-sdk`)
-- Python 3.8 or higher
-- Ansible 2.13 or higher
+## Requirements
+
+- SCM Python SDK (`pan-scm-sdk>=0.3.22`)
+- Python 3.12 or higher
+- Ansible 2.17 or higher
 
 ## Usage Examples
 
 ### Retrieving a Specific Region
-
-
 
 ```yaml
 - name: Get information about a specific region
@@ -79,10 +79,7 @@ and network addresses.
   register: region_info
 ```
 
-
 ### Listing All Regions
-
-
 
 ```yaml
 - name: List all region objects in a folder
@@ -92,10 +89,7 @@ and network addresses.
   register: all_regions
 ```
 
-
 ### Filtering by Geographic Location
-
-
 
 ```yaml
 - name: List regions with geographic filtering (west coast US)
@@ -112,10 +106,7 @@ and network addresses.
   register: west_coast_regions
 ```
 
-
 ### Filtering by Addresses
-
-
 
 ```yaml
 - name: List regions with specific addresses
@@ -126,10 +117,7 @@ and network addresses.
   register: network_regions
 ```
 
-
 ### Using Advanced Filters
-
-
 
 ```yaml
 - name: List regions with exact match and exclusions
@@ -140,7 +128,6 @@ and network addresses.
     exclude_folders: ["Test", "Development"]
   register: filtered_regions
 ```
-
 
 ## Return Values
 
@@ -160,8 +147,6 @@ Common errors you might encounter when using this module:
 | Missing container parameter | No container parameter provided for listing operations        | Specify at least one container parameter (folder, snippet, device)    |
 | Invalid filter parameters   | The filter parameters are malformed or contain invalid values | Check the format and values of the filter parameters                  |
 
-
-
 ```yaml
 - name: Handle potential errors with block/rescue
   block:
@@ -178,7 +163,6 @@ Common errors you might encounter when using this module:
     - name: Continue with other tasks
       # Additional recovery tasks
 ```
-
 
 ## Best Practices
 

@@ -2,71 +2,102 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Module Parameters](#module-parameters)
-3. [Requirements](#requirements)
-4. [Usage Examples](#usage-examples)
-   - [Retrieving Specific Tag Information](#retrieving-specific-tag-information)
-   - [Listing All Tags](#listing-all-tags)
-   - [Filtering Tags by Color](#filtering-tags-by-color)
-   - [Using Advanced Filters](#using-advanced-filters)
-   - [Filtering Tags by Prefix](#filtering-tags-by-prefix)
-5. [Return Values](#return-values)
-6. [Error Handling](#error-handling)
-7. [Best Practices](#best-practices)
-8. [Related Modules](#related-modules)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Tag Info Parameters](#tag-info-parameters)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Retrieving Specific Tag Information](#retrieving-specific-tag-information)
+    - [Listing All Tags](#listing-all-tags)
+    - [Filtering Tags by Color](#filtering-tags-by-color)
+    - [Using Advanced Filters](#using-advanced-filters)
+    - [Filtering Tags by Prefix](#filtering-tags-by-prefix)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
 ## Overview
 
-The `tag_info` module provides functionality to gather information about tag objects in Palo Alto
-Networks' Strata Cloud Manager. This is an information-gathering module that doesn't make any
-changes to the system. It supports retrieving a specific tag by name or listing all tags with
-various filter options including color, container type, and exclusion filters.
+The `tag_info` module provides functionality to gather information about tag objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an information-gathering module that doesn't make any changes to the system. It supports retrieving a specific tag by name or listing all tags with various filter options including color, container type, and exclusion filters. The module is essential for inventory management, policy planning, and auditing tag usage across the organization.
 
-## Module Parameters
+## Core Methods
 
-| Parameter              | Required | Type | Choices                                                      | Default    | Comments                                                        |
-| ---------------------- | -------- | ---- | ------------------------------------------------------------ | ---------- | --------------------------------------------------------------- |
-| name                   | no       | str  |                                                              |            | The name of a specific tag object to retrieve.                  |
-| gather_subset          | no       | list | all, config                                                  | ['config'] | Determines which information to gather about tags.              |
-| folder                 | no\*     | str  |                                                              |            | Filter tags by folder container.                                |
-| snippet                | no\*     | str  |                                                              |            | Filter tags by snippet container.                               |
-| device                 | no\*     | str  |                                                              |            | Filter tags by device container.                                |
-| exact_match            | no       | bool |                                                              | false      | Only return objects defined exactly in the specified container. |
-| exclude_folders        | no       | list |                                                              |            | List of folder names to exclude from results.                   |
-| exclude_snippets       | no       | list |                                                              |            | List of snippet values to exclude from results.                 |
-| exclude_devices        | no       | list |                                                              |            | List of device values to exclude from results.                  |
-| colors                 | no       | list | Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, etc. |            | Filter by tag colors.                                           |
-| provider               | yes      | dict |                                                              |            | Authentication credentials.                                     |
-| provider.client_id     | yes      | str  |                                                              |            | Client ID for authentication.                                   |
-| provider.client_secret | yes      | str  |                                                              |            | Client secret for authentication.                               |
-| provider.tsg_id        | yes      | str  |                                                              |            | Tenant Service Group ID.                                        |
-| provider.log_level     | no       | str  |                                                              | INFO       | Log level for the SDK.                                          |
+| Method    | Description                  | Parameters                    | Return Type           |
+| --------- | ---------------------------- | ----------------------------- | --------------------- |
+| `fetch()` | Gets a specific tag by name  | `name: str`, `container: str` | `TagResponseModel`    |
+| `list()`  | Lists tags with filtering    | `folder: str`, `**filters`    | `List[TagResponseModel]` |
 
-**Available tag colors:** Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, Burnt Sienna,
-Cerulean Blue, Chestnut, Cobalt Blue, Copper, Cyan, Forest Green, Gold, Gray, Green, Lavender, Light
-Gray, Light Green, Lime, Magenta, Mahogany, Maroon, Medium Blue, Medium Rose, Medium Violet,
-Midnight Blue, Olive, Orange, Orchid, Peach, Purple, Red, Red Violet, Red-Orange, Salmon, Thistle,
-Turquoise Blue, Violet Blue, Yellow, Yellow-Orange
+## Tag Info Parameters
 
-!!! note
+| Parameter          | Type   | Required      | Description                                                    |
+| ------------------ | ------ | ------------- | -------------------------------------------------------------- |
+| `name`             | str    | No            | The name of a specific tag object to retrieve                   |
+| `gather_subset`    | list   | No            | Determines which information to gather (default: ['config'])    |
+| `folder`           | str    | One container* | Filter tags by folder container                                 |
+| `snippet`          | str    | One container* | Filter tags by snippet container                                |
+| `device`           | str    | One container* | Filter tags by device container                                 |
+| `exact_match`      | bool   | No            | Only return objects defined exactly in the specified container  |
+| `exclude_folders`  | list   | No            | List of folder names to exclude from results                    |
+| `exclude_snippets` | list   | No            | List of snippet values to exclude from results                  |
+| `exclude_devices`  | list   | No            | List of device values to exclude from results                   |
+| `colors`           | list   | No            | Filter by tag colors                                            |
 
-- If `name` is not specified, one container type (`folder`, `snippet`, or `device`) must be
-  provided.
-- Container parameters (`folder`, `snippet`, `device`) are mutually exclusive.
-- The `colors` parameter accepts a wide range of color values as listed above.
+*One container parameter is required when `name` is not specified.
 
-## Requirements
+### Available Tag Colors
 
-- SCM Python SDK (`pan-scm-sdk`)
-- Python 3.8 or higher
-- Ansible 2.13 or higher
+Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, Burnt Sienna, Cerulean Blue, Chestnut, Cobalt Blue, Copper, Cyan, Forest Green, Gold, Gray, Green, Lavender, Light Gray, Light Green, Lime, Magenta, Mahogany, Maroon, Medium Blue, Medium Rose, Medium Violet, Midnight Blue, Olive, Orange, Orchid, Peach, Purple, Red, Red Violet, Red-Orange, Salmon, Thistle, Turquoise Blue, Violet Blue, Yellow, Yellow-Orange
+
+### Provider Dictionary
+
+| Parameter       | Type | Required | Description                            |
+| --------------- | ---- | -------- | -------------------------------------- |
+| `client_id`     | str  | Yes      | Client ID for SCM authentication        |
+| `client_secret` | str  | Yes      | Client secret for SCM authentication    |
+| `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
+| `log_level`     | str  | No       | Log level for the SDK (default: "INFO") |
+
+## Exceptions
+
+| Exception                    | Description                     |
+| ---------------------------- | ------------------------------- |
+| `InvalidObjectError`         | Invalid request data or format  |
+| `MissingQueryParameterError` | Missing required parameters     |
+| `ObjectNotPresentError`      | Tag not found                   |
+| `AuthenticationError`        | Authentication failed           |
+| `ServerError`                | Internal server error           |
+
+## Basic Configuration
+
+The Tag Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+
+```yaml
+- name: Basic Tag Info Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    provider:
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
+      log_level: "INFO"
+  tasks:
+    - name: Get information about tags
+      cdot65.scm.tag_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: tags_result
+    
+    - name: Display tags
+      debug:
+        var: tags_result.tags
+```
 
 ## Usage Examples
 
 ### Retrieving Specific Tag Information
-
-
 
 ```yaml
 - name: Get information about a specific tag
@@ -90,10 +121,7 @@ Turquoise Blue, Violet Blue, Yellow, Yellow-Orange
     success_msg: "Successfully retrieved specific tag information"
 ```
 
-
 ### Listing All Tags
-
-
 
 ```yaml
 - name: List all tag objects in a folder
@@ -117,10 +145,7 @@ Turquoise Blue, Violet Blue, Yellow, Yellow-Orange
     success_msg: "Successfully retrieved all tags"
 ```
 
-
 ### Filtering Tags by Color
-
-
 
 ```yaml
 - name: List only tags with specific colors
@@ -145,10 +170,7 @@ Turquoise Blue, Violet Blue, Yellow, Yellow-Orange
     success_msg: "Successfully filtered tags by color"
 ```
 
-
 ### Using Advanced Filters
-
-
 
 ```yaml
 - name: List tags with exact match and exclusions
@@ -166,10 +188,7 @@ Turquoise Blue, Violet Blue, Yellow, Yellow-Orange
     verbosity: 1
 ```
 
-
 ### Filtering Tags by Prefix
-
-
 
 ```yaml
 # Since we can't filter by prefix directly using the module,
@@ -203,8 +222,39 @@ Turquoise Blue, Violet Blue, Yellow, Yellow-Orange
     success_msg: "Successfully filtered tags by prefix"
 ```
 
+## Managing Configuration Changes
 
-## Return Values
+As an info module, `tag_info` does not make any configuration changes. However, you can use the information it retrieves to make decisions about other configuration operations.
+
+```yaml
+- name: Use tag information for dynamic address group configuration
+  block:
+    - name: Get available tags
+      cdot65.scm.tag_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        colors: ["Red"]  # Get only production tags
+      register: production_tags
+      
+    - name: Create dynamic address group using production tags
+      cdot65.scm.address_group:
+        provider: "{{ provider }}"
+        name: "Production-Servers"
+        folder: "Texas"
+        dynamic_filter: "{{ production_tags.tags | map(attribute='name') | join(' or ') }}"
+        description: "Dynamic group of all production servers"
+        state: "present"
+      when: production_tags.tags | length > 0
+      
+    - name: Commit changes if address group was created
+      cdot65.scm.commit:
+        provider: "{{ provider }}"
+        folders: ["Texas"]
+        description: "Created dynamic address group for production servers"
+      when: production_tags.tags | length > 0
+```
+
+### Return Values
 
 | Name | Description                                       | Type | Returned                   | Sample                                                                                                                                                     |
 | ---- | ------------------------------------------------- | ---- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -221,8 +271,6 @@ Common errors you might encounter when using this module:
 | Invalid color             | Provided color not in list of valid colors          | Check valid color options in module documentation |
 | Missing query parameter   | Required parameter not provided                     | Ensure all required parameters are specified      |
 | Invalid filter parameters | Filter parameters in incorrect format               | Check parameter format requirements               |
-
-
 
 ```yaml
 - name: Handle potential errors with block/rescue
@@ -241,51 +289,65 @@ Common errors you might encounter when using this module:
       # Additional recovery tasks
 ```
 
-
 ## Best Practices
 
-1. **Querying Strategies**
+### Querying Strategies
 
-   - Use name parameter for querying specific tags
-   - Use container filters (folder, snippet, device) for listing tags
-   - Combine with JMESPath filters in Ansible for advanced filtering
-   - Create utility tasks for common filtering operations
+- Use name parameter for querying specific tags
+- Use container filters (folder, snippet, device) for listing tags
+- Combine with JMESPath filters in Ansible for advanced filtering
+- Create utility tasks for common filtering operations
+- Document query patterns for reuse across playbooks
 
-2. **Performance Optimization**
+### Performance Optimization
 
-   - Include specific container parameters to narrow search scope
-   - Use exact_match parameter when possible to improve performance
-   - Use exclusion filters to narrow down results when querying large systems
-   - Cache results when making multiple queries on the same dataset
+- Include specific container parameters to narrow search scope
+- Use exact_match parameter when possible to improve performance
+- Use exclusion filters to narrow down results when querying large systems
+- Cache results when making multiple queries on the same dataset
+- Process large result sets in batches for better performance
 
-3. **Color Filtering**
+### Color Filtering
 
-   - Remember colors are case-sensitive in filter parameters
-   - Use list notation even for single color filtering
-   - Combine color filtering with other filters for precise results
-   - Consider creating color variables or dictionaries for consistency
+- Remember colors are case-sensitive in filter parameters
+- Use list notation even for single color filtering
+- Combine color filtering with other filters for precise results
+- Consider creating color variables or dictionaries for consistency
+- Document color coding standards across your organization
 
-4. **Testing and Validation**
+### Testing and Validation
 
-   - Use assert tasks to validate results as shown in examples
-   - Include proper error handling for non-existent tags
-   - Set up test tags with a variety of attributes for thorough testing
-   - Use meaningful tag names that reflect their purpose
+- Use assert tasks to validate results as shown in examples
+- Include proper error handling for non-existent tags
+- Set up test tags with a variety of attributes for thorough testing
+- Use meaningful tag names that reflect their purpose
+- Verify tag existence before dependency creation
 
-5. **Integration with Other Modules**
+### Integration with Other Modules
 
-   - Use tag_info module output as input for tag module operations
-   - Chain tag_info queries with other modules to automate complex workflows
-   - Leverage the registered variables for conditional tasks
-   - Consider creating custom filters for common tag operations
+- Use tag_info module output as input for tag module operations
+- Chain tag_info queries with other modules to automate complex workflows
+- Leverage the registered variables for conditional tasks
+- Consider creating custom filters for common tag operations
+- Build helper roles for frequently used tag operations
+
+### Dynamic Address Group Integration
+
+- Retrieve tags strategically for dynamic address group filters
+- Create standardized naming conventions for tags used in filters
+- Document the relationship between tags and dynamic address groups
+- Test tag expression updates before applying them to production
+- Consider tag hierarchy when designing dynamic address groups
 
 ## Related Modules
 
-- [tag](tag.md) - Manage tag objects
+- [tag](tag.md) - Manage tag objects (create, update, delete)
 - [address](address.md) - Manage address objects that can use tags
-- [service](service.md) - Manage service objects that can use tags
-- [application](application.md) - Manage application objects that can use tags
 - [address_group](address_group.md) - Use tags in dynamic address group filters
+- [service](service.md) - Manage service objects that can use tags
+- [service_group](service_group.md) - Apply tags to service group objects
+- [security_rule](security_rule.md) - Configure security policies that may use tagged objects
+- [application](application.md) - Manage application objects that can use tags
 
 ## Author
 

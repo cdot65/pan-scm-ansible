@@ -1,150 +1,304 @@
 # Ike Crypto Profile Configuration Object
 
-## Overview
+## 01. Table of Contents
 
-The `ike_crypto_profile` module enables management of Internet Key Exchange (IKE) Crypto Profiles in
-Palo Alto Networks Strata Cloud Manager (SCM). IKE Crypto Profiles define the encryption and
-authentication algorithms to be used during the IKE Phase-1 negotiation when establishing a secure
-VPN tunnel.
+1. [Overview](#overview)
+2. [Core Methods](#core-methods)
+3. [IKE Crypto Profile Model Attributes](#ike-crypto-profile-model-attributes)
+4. [Exceptions](#exceptions)
+5. [Basic Configuration](#basic-configuration)
+6. [Usage Examples](#usage-examples)
+   - [Creating IKE Crypto Profiles](#creating-ike-crypto-profiles)
+   - [Basic IKE Crypto Profile](#basic-ike-crypto-profile)
+   - [Strong Encryption IKE Crypto Profile](#strong-encryption-ike-crypto-profile)
+   - [Updating IKE Crypto Profiles](#updating-ike-crypto-profiles)
+   - [Deleting IKE Crypto Profiles](#deleting-ike-crypto-profiles)
+7. [Managing Configuration Changes](#managing-configuration-changes)
+8. [Error Handling](#error-handling)
+9. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
-## Core Methods
+## 02. Overview
 
-| Method   | Description                                               |
-| -------- | --------------------------------------------------------- |
-| `create` | Creates a new IKE Crypto Profile in SCM                   |
-| `update` | Modifies an existing IKE Crypto Profile                   |
-| `delete` | Removes an IKE Crypto Profile from SCM                    |
-| `get`    | Retrieves information about a specific IKE Crypto Profile |
-| `list`   | Returns a list of all configured IKE Crypto Profiles      |
+The `ike_crypto_profile` Ansible module provides functionality to manage Internet Key Exchange (IKE) Crypto Profiles in Palo Alto Networks' Strata Cloud Manager (SCM). IKE Crypto Profiles define the encryption and authentication algorithms to be used during the IKE Phase-1 negotiation when establishing a secure VPN tunnel.
 
-## Model Attributes
+## 03. Core Methods
 
-| Attribute        | Type   | Description                       | Required |
-| ---------------- | ------ | --------------------------------- | -------- |
-| `name`           | String | Name of the IKE Crypto Profile    | Yes      |
-| `description`    | String | Description of the profile        | No       |
-| `encryption`     | List   | List of encryption algorithms     | Yes      |
-| `authentication` | List   | List of authentication algorithms | Yes      |
-| `dh_group`       | List   | List of Diffie-Hellman groups     | Yes      |
-| `lifetime`       | Dict   | IKE SA lifetime settings          | No       |
+| Method     | Description                              | Parameters                            | Return Type                        |
+| ---------- | ---------------------------------------- | ------------------------------------- | ---------------------------------- |
+| `create()` | Creates a new IKE Crypto Profile         | `data: Dict[str, Any]`                | `IkeCryptoProfileResponseModel`    |
+| `update()` | Updates an existing profile              | `profile: IkeCryptoProfileUpdateModel` | `IkeCryptoProfileResponseModel`    |
+| `delete()` | Removes a profile                        | `object_id: str`                      | `None`                             |
+| `fetch()`  | Gets a profile by name                   | `name: str`, `container: str`         | `IkeCryptoProfileResponseModel`    |
+| `list()`   | Lists profiles with filtering            | `folder: str`, `**filters`            | `List[IkeCryptoProfileResponseModel]` |
 
-## Configuration Examples
+## 04. IKE Crypto Profile Model Attributes
 
-### Creating an IKE Crypto Profile
+| Attribute        | Type   | Required      | Description                                                |
+| ---------------- | ------ | ------------- | ---------------------------------------------------------- |
+| `name`           | str    | Yes           | Name of the IKE Crypto Profile                             |
+| `description`    | str    | No            | Description of the profile                                 |
+| `encryption`     | list   | Yes           | List of encryption algorithms                              |
+| `authentication` | list   | Yes           | List of authentication algorithms                          |
+| `dh_group`       | list   | Yes           | List of Diffie-Hellman groups                             |
+| `lifetime`       | dict   | No            | IKE SA lifetime settings                                   |
+| `folder`         | str    | One container | The folder in which the profile is defined (max 64 chars)  |
+| `snippet`        | str    | One container | The snippet in which the profile is defined (max 64 chars) |
+| `device`         | str    | One container | The device in which the profile is defined (max 64 chars)  |
+
+### Lifetime Attributes
+
+| Attribute | Type | Required | Description                            |
+| --------- | ---- | -------- | -------------------------------------- |
+| `days`    | int  | No       | Number of days for lifetime (0-365)    |
+| `hours`   | int  | No       | Number of hours for lifetime (0-24)    |
+| `minutes` | int  | No       | Number of minutes for lifetime (0-60)  |
+| `seconds` | int  | No       | Number of seconds for lifetime (0-60)  |
+
+### Provider Dictionary Attributes
+
+| Attribute       | Type | Required | Default | Description                      |
+| --------------- | ---- | -------- | ------- | -------------------------------- |
+| `client_id`     | str  | Yes      |         | Client ID for authentication     |
+| `client_secret` | str  | Yes      |         | Client secret for authentication |
+| `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
+| `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
+
+## 05. Exceptions
+
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid profile data or format |
+| `NameNotUniqueError`         | Profile name already exists    |
+| `ObjectNotPresentError`      | Profile not found              |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
+| `InvalidAlgorithmError`      | Invalid algorithm specified    |
+
+## 06. Basic Configuration
+
+The IKE Crypto Profile module requires proper authentication credentials to access the Strata Cloud Manager API.
 
 ```yaml
-- name: Create IKE Crypto Profile
-  cdot65.pan_scm.ike_crypto_profile:
-    provider: "{{ scm_provider }}"
-    state: present
+- name: Basic IKE Crypto Profile Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    provider:
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
+      log_level: "INFO"
+  tasks:
+    - name: Ensure an IKE Crypto Profile exists
+      cdot65.scm.ike_crypto_profile:
+        provider: "{{ provider }}"
+        name: "Standard-Encryption"
+        description: "Standard encryption profile for VPN tunnels"
+        encryption: 
+          - "aes-256-cbc"
+          - "aes-256-gcm"
+        authentication: 
+          - "sha384"
+        dh_group: 
+          - "group14"
+          - "group19"
+        lifetime:
+          days: 1
+        folder: "Texas"
+        state: "present"
+```
+
+## 07. Usage Examples
+
+### Creating IKE Crypto Profiles
+
+IKE Crypto Profiles define the security parameters for IKE negotiation when establishing a VPN tunnel. Different profiles can be created for different security requirements.
+
+### Basic IKE Crypto Profile
+
+This example creates a standard IKE Crypto Profile with moderate security settings.
+
+```yaml
+- name: Create a basic IKE Crypto Profile
+  cdot65.scm.ike_crypto_profile:
+    provider: "{{ provider }}"
     name: "Standard-Encryption"
-    description: "Standard encryption profile for VPN tunnels"
+    description: "Standard encryption profile for general VPN tunnels"
     encryption: 
+      - "aes-128-cbc"
       - "aes-256-cbc"
+    authentication: 
+      - "sha1"
+      - "sha256"
+    dh_group: 
+      - "group14"
+      - "group2"
+    lifetime:
+      days: 1
+    folder: "Texas"
+    state: "present"
+```
+
+### Strong Encryption IKE Crypto Profile
+
+This example creates a high-security IKE Crypto Profile with stronger algorithms.
+
+```yaml
+- name: Create a strong encryption IKE Crypto Profile
+  cdot65.scm.ike_crypto_profile:
+    provider: "{{ provider }}"
+    name: "Strong-Encryption"
+    description: "Strong encryption profile for sensitive VPN tunnels"
+    encryption: 
       - "aes-256-gcm"
     authentication: 
+      - "sha512"
+    dh_group: 
+      - "group20"
+    lifetime:
+      hours: 8
+    folder: "Texas"
+    state: "present"
+```
+
+### Updating IKE Crypto Profiles
+
+This example updates an existing IKE Crypto Profile with new algorithms and settings.
+
+```yaml
+- name: Update an IKE Crypto Profile
+  cdot65.scm.ike_crypto_profile:
+    provider: "{{ provider }}"
+    name: "Standard-Encryption"
+    description: "Updated standard encryption profile"
+    encryption: 
+      - "aes-128-gcm"
+      - "aes-256-gcm"
+    authentication: 
+      - "sha256"
       - "sha384"
     dh_group: 
       - "group14"
       - "group19"
     lifetime:
-      days: 1
-      hours: 0
-      minutes: 0
-      seconds: 0
+      hours: 12
+    folder: "Texas"
+    state: "present"
 ```
 
-### Deleting an IKE Crypto Profile
+### Deleting IKE Crypto Profiles
+
+This example removes an IKE Crypto Profile.
 
 ```yaml
-- name: Delete IKE Crypto Profile
-  cdot65.pan_scm.ike_crypto_profile:
-    provider: "{{ scm_provider }}"
-    state: absent
+- name: Delete an IKE Crypto Profile
+  cdot65.scm.ike_crypto_profile:
+    provider: "{{ provider }}"
     name: "Standard-Encryption"
+    folder: "Texas"
+    state: "absent"
 ```
 
-## Usage Examples
+## 08. Managing Configuration Changes
 
-### Complete Example
+After creating, updating, or deleting IKE Crypto Profiles, you need to commit your changes to apply them.
 
 ```yaml
----
-- name: IKE Crypto Profile Management
-  hosts: localhost
-  gather_facts: false
-  connection: local
-  
-  vars:
-    scm_provider:
-      client_id: "{{ lookup('env', 'SCM_CLIENT_ID') }}"
-      client_secret: "{{ lookup('env', 'SCM_CLIENT_SECRET') }}"
-      scope: "profile tsg_id:9876"
-      token_url: "{{ lookup('env', 'SCM_TOKEN_URL') }}"
-  
-  tasks:
-    - name: Create Strong Encryption IKE Profile
-      cdot65.pan_scm.ike_crypto_profile:
-        provider: "{{ scm_provider }}"
-        state: present
-        name: "Strong-Encryption"
-        description: "Strong encryption profile for sensitive VPN tunnels"
+- name: Commit changes
+  cdot65.scm.commit:
+    provider: "{{ provider }}"
+    folders: ["Texas"]
+    description: "Updated IKE Crypto Profiles"
+```
+
+## 09. Error Handling
+
+It's important to handle potential errors when working with IKE Crypto Profiles.
+
+```yaml
+- name: Create or update IKE Crypto Profile with error handling
+  block:
+    - name: Ensure IKE Crypto Profile exists
+      cdot65.scm.ike_crypto_profile:
+        provider: "{{ provider }}"
+        name: "Standard-Encryption"
+        description: "Standard encryption profile for VPN tunnels"
         encryption: 
+          - "aes-256-cbc"
           - "aes-256-gcm"
         authentication: 
-          - "sha512"
-        dh_group: 
-          - "group20"
-        lifetime:
-          hours: 8
-      register: profile_result
-    
-    - name: Display Profile Result
-      debug:
-        var: profile_result
-
-    - name: Create Standard Encryption IKE Profile
-      cdot65.pan_scm.ike_crypto_profile:
-        provider: "{{ scm_provider }}"
-        state: present
-        name: "Standard-Encryption"
-        description: "Standard encryption profile for general VPN tunnels"
-        encryption: 
-          - "aes-128-cbc"
-          - "aes-256-cbc"
-        authentication: 
-          - "sha1"
-          - "sha256"
+          - "sha384"
         dh_group: 
           - "group14"
-          - "group2"
+          - "group19"
         lifetime:
           days: 1
+        folder: "Texas"
+        state: "present"
+      register: profile_result
+      
+    - name: Commit changes
+      cdot65.scm.commit:
+        provider: "{{ provider }}"
+        folders: ["Texas"]
+        description: "Updated IKE Crypto Profiles"
+      when: profile_result.changed
+      
+  rescue:
+    - name: Handle errors
+      debug:
+        msg: "An error occurred: {{ ansible_failed_result.msg }}"
+        
+    - name: Check if it's an algorithm error
+      debug:
+        msg: "Please check the encryption, authentication, or DH group settings"
+      when: "'algorithm' in ansible_failed_result.msg"
 ```
 
-## Error Handling
+## 10. Best Practices
 
-The module will fail with proper error messages if:
-
-- Authentication with SCM fails
-- The profile already exists when trying to create it
-- The profile doesn't exist when trying to update or delete it
-- Required parameters are missing
-- Invalid encryption, authentication, or DH group options are specified
-- Action fails due to API errors or permission issues
-
-## Best Practices
+### Algorithm Selection
 
 - Use strong encryption algorithms (AES-256-GCM) where possible
 - Avoid using deprecated or weak algorithms (DES, MD5)
 - Use larger DH groups (14 or higher) for better security
+- Balance security requirements with compatibility needs
+- Follow industry standards and compliance requirements
+
+### Lifetime Management
+
 - Set reasonable lifetimes based on your security requirements
+- Shorter lifetimes increase security but also increase rekeying overhead
+- Consider the performance impact of frequent rekeying
+- Document your lifetime decisions and rationale
+
+### Profile Organization
+
 - Create different profiles for different security levels needed by various connections
+- Use high-security profiles for sensitive networks
+- Use standard profiles for general-purpose connections
 - Document profile usage to track where each profile is applied
+- Use descriptive names that indicate security level or purpose
 
-## Related Models
+### Implementation Strategy
 
-- [IKE Gateway](ike_gateway.md) - References IKE Crypto profiles during tunnel establishment
-- [IPSec Crypto Profile](ipsec_crypto_profile.md) - Used alongside IKE Crypto profiles for VPN
-  tunnels
-- [IPSec Tunnel](ipsec_tunnel.md) - VPN tunnel configurations that utilize IKE Crypto profiles
+- Test profiles in a non-production environment before deployment
+- Verify compatibility with peer devices before implementation
+- Implement changes during maintenance windows
+- Have a rollback plan for unsuccessful implementations
+- Monitor VPN connections after implementation
+
+### Audit and Compliance
+
+- Regularly review profiles for outdated or weak algorithms
+- Update profiles as new security vulnerabilities are discovered
+- Document profiles for compliance and audit purposes
+- Maintain an inventory of profiles and their applications
+
+## 11. Related Modules
+
+- [ike_gateway](ike_gateway.md) - Configure IKE gateways that reference IKE Crypto profiles
+- [ipsec_crypto_profile](ipsec_crypto_profile.md) - Configure IPsec Crypto profiles for Phase-2 negotiations
+- [ipsec_tunnel](ipsec_tunnel.md) - Configure IPsec tunnels that use IKE gateways and crypto profiles

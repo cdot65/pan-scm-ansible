@@ -1,53 +1,69 @@
 # External Dynamic Lists Configuration Object
 
-## Overview
+## 01. Table of Contents
 
-The External Dynamic Lists module (`cdot65.scm.external_dynamic_lists`) manages external dynamic
-lists (EDLs) in Palo Alto Networks' Strata Cloud Manager. EDLs are used to dynamically fetch updated
-lists of IPs, domains, URLs, IMSIs, or IMEIs from external sources to use in security policies. This
-module enables you to create, update, and delete various types of external dynamic lists with
-configurable update intervals.
+1. [Overview](#overview)
+2. [Core Methods](#core-methods)
+3. [External Dynamic List Model Attributes](#external-dynamic-list-model-attributes)
+4. [Exceptions](#exceptions)
+5. [Basic Configuration](#basic-configuration)
+6. [Usage Examples](#usage-examples)
+   - [Creating External Dynamic Lists](#creating-external-dynamic-lists)
+   - [Basic IP-Based External Dynamic List](#basic-ip-based-external-dynamic-list)
+   - [Domain-Based External Dynamic List](#domain-based-external-dynamic-list)
+   - [Advanced URL-Based External Dynamic List](#advanced-url-based-external-dynamic-list)
+   - [Updating External Dynamic Lists](#updating-external-dynamic-lists)
+   - [Deleting External Dynamic Lists](#deleting-external-dynamic-lists)
+7. [Managing Configuration Changes](#managing-configuration-changes)
+8. [Error Handling](#error-handling)
+9. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
-## Module Parameters
+## 02. Overview
 
-| Parameter     | Type    | Required         | Default | Choices         | Description                                                 |
-| ------------- | ------- | ---------------- | ------- | --------------- | ----------------------------------------------------------- |
-| `name`        | string  | Yes              |         |                 | Name of the external dynamic list (max 63 chars)            |
-| `description` | string  | No               |         |                 | Description of the external dynamic list (max 255 chars)    |
-| `ip_list`     | dict    | One Required     |         |                 | Configuration for an IP-based external dynamic list         |
-| `domain_list` | dict    | One Required     |         |                 | Configuration for a domain-based external dynamic list      |
-| `url_list`    | dict    | One Required     |         |                 | Configuration for a URL-based external dynamic list         |
-| `imsi_list`   | dict    | One Required     |         |                 | Configuration for an IMSI-based external dynamic list       |
-| `imei_list`   | dict    | One Required     |         |                 | Configuration for an IMEI-based external dynamic list       |
-| `five_minute` | boolean | One Required\*   |         |                 | Configure list to update every five minutes                 |
-| `hourly`      | boolean | One Required\*   |         |                 | Configure list to update hourly                             |
-| `daily`       | dict    | One Required\*   |         |                 | Configure list to update daily at specified hour            |
-| `weekly`      | dict    | One Required\*   |         |                 | Configure list to update weekly on specified day and time   |
-| `monthly`     | dict    | One Required\*   |         |                 | Configure list to update monthly on specified day and time  |
-| `folder`      | string  | One Required\*\* |         |                 | The folder in which the resource is defined (max 64 chars)  |
-| `snippet`     | string  | One Required\*\* |         |                 | The snippet in which the resource is defined (max 64 chars) |
-| `device`      | string  | One Required\*\* |         |                 | The device in which the resource is defined (max 64 chars)  |
-| `provider`    | dict    | Yes              |         |                 | Authentication credentials                                  |
-| `state`       | string  | Yes              |         | present, absent | Desired state of the external dynamic list                  |
+The `external_dynamic_lists` Ansible module provides functionality to manage External Dynamic Lists (EDLs) in Palo Alto Networks' Strata Cloud Manager (SCM). EDLs are used to dynamically fetch updated lists of IPs, domains, URLs, IMSIs, or IMEIs from external sources to use in security policies. This module enables you to create, update, and delete various types of external dynamic lists with configurable update intervals.
 
-\*Note: Exactly one update interval (five_minute, hourly, daily, weekly, or monthly) must be
-specified.\
-\*\*Note: Exactly one container parameter (folder, snippet, or device) must be specified.
+## 03. Core Methods
 
-### List Type Details
+| Method     | Description                         | Parameters                              | Return Type                           |
+| ---------- | ----------------------------------- | --------------------------------------- | ------------------------------------- |
+| `create()` | Creates a new external dynamic list | `data: Dict[str, Any]`                  | `ExternalDynamicListResponseModel`    |
+| `update()` | Updates an existing EDL             | `edl: ExternalDynamicListUpdateModel`   | `ExternalDynamicListResponseModel`    |
+| `delete()` | Removes an EDL                      | `object_id: str`                        | `None`                                |
+| `fetch()`  | Gets an EDL by name                 | `name: str`, `container: str`           | `ExternalDynamicListResponseModel`    |
+| `list()`   | Lists EDLs with filtering           | `folder: str`, `**filters`              | `List[ExternalDynamicListResponseModel]` |
 
-Each list type (`ip_list`, `domain_list`, `url_list`, `imsi_list`, `imei_list`) supports the
-following parameters:
+## 04. External Dynamic List Model Attributes
 
-| Parameter             | Type    | Required | Description                                               |
-| --------------------- | ------- | -------- | --------------------------------------------------------- |
-| `url`                 | string  | Yes      | URL to fetch the list content                             |
-| `exception_list`      | list    | No       | List of entries to exclude from the external dynamic list |
-| `certificate_profile` | string  | No       | Client certificate profile for secure connections         |
-| `auth`                | dict    | No       | Authentication credentials for the list URL               |
-| `expand_domain`       | boolean | No       | Domain expansion (domain_list only)                       |
+| Attribute     | Type   | Required        | Description                                                 |
+| ------------- | ------ | --------------- | ----------------------------------------------------------- |
+| `name`        | str    | Yes             | Name of the external dynamic list (max 63 chars)            |
+| `description` | str    | No              | Description of the external dynamic list (max 255 chars)    |
+| `ip_list`     | dict   | One list type   | Configuration for an IP-based external dynamic list         |
+| `domain_list` | dict   | One list type   | Configuration for a domain-based external dynamic list      |
+| `url_list`    | dict   | One list type   | Configuration for a URL-based external dynamic list         |
+| `imsi_list`   | dict   | One list type   | Configuration for an IMSI-based external dynamic list       |
+| `imei_list`   | dict   | One list type   | Configuration for an IMEI-based external dynamic list       |
+| `five_minute` | bool   | One update type | Configure list to update every five minutes                 |
+| `hourly`      | bool   | One update type | Configure list to update hourly                             |
+| `daily`       | dict   | One update type | Configure list to update daily at specified hour            |
+| `weekly`      | dict   | One update type | Configure list to update weekly on specified day and time   |
+| `monthly`     | dict   | One update type | Configure list to update monthly on specified day and time  |
+| `folder`      | str    | One container   | The folder in which the resource is defined (max 64 chars)  |
+| `snippet`     | str    | One container   | The snippet in which the resource is defined (max 64 chars) |
+| `device`      | str    | One container   | The device in which the resource is defined (max 64 chars)  |
 
-### Update Interval Details
+### List Type Attributes
+
+| Attribute             | Type  | Required | Description                                               |
+| --------------------- | ----- | -------- | --------------------------------------------------------- |
+| `url`                 | str   | Yes      | URL to fetch the list content                             |
+| `exception_list`      | list  | No       | List of entries to exclude from the external dynamic list |
+| `certificate_profile` | str   | No       | Client certificate profile for secure connections         |
+| `auth`                | dict  | No       | Authentication credentials for the list URL               |
+| `expand_domain`       | bool  | No       | Domain expansion (domain_list only)                       |
+
+### Update Interval Attributes
 
 | Parameter     | Sub-parameters                           | Description                                   |
 | ------------- | ---------------------------------------- | --------------------------------------------- |
@@ -57,18 +73,64 @@ following parameters:
 | `weekly`      | `day_of_week`: Day of week<br>`at`: Hour | Update once a week on specified day and time  |
 | `monthly`     | `day_of_month`: Day (1-31)<br>`at`: Hour | Update once a month on specified day and time |
 
-### Provider Dictionary
+### Provider Dictionary Attributes
 
-| Parameter       | Type   | Required | Default | Choices                               | Description                      |
-| --------------- | ------ | -------- | ------- | ------------------------------------- | -------------------------------- |
-| `client_id`     | string | Yes      |         |                                       | Client ID for authentication     |
-| `client_secret` | string | Yes      |         |                                       | Client secret for authentication |
-| `tsg_id`        | string | Yes      |         |                                       | Tenant Service Group ID          |
-| `log_level`     | string | No       | "INFO"  | DEBUG, INFO, WARNING, ERROR, CRITICAL | Log level for the SDK            |
+| Attribute       | Type | Required | Default | Description                      |
+| --------------- | ---- | -------- | ------- | -------------------------------- |
+| `client_id`     | str  | Yes      |         | Client ID for authentication     |
+| `client_secret` | str  | Yes      |         | Client secret for authentication |
+| `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
+| `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
 
-## Examples
+## 05. Exceptions
 
+| Exception                    | Description                   |
+| ---------------------------- | ----------------------------- |
+| `InvalidObjectError`         | Invalid EDL data or format    |
+| `NameNotUniqueError`         | EDL name already exists       |
+| `ObjectNotPresentError`      | EDL not found                 |
+| `MissingQueryParameterError` | Missing required parameters   |
+| `AuthenticationError`        | Authentication failed         |
+| `ServerError`                | Internal server error         |
+| `InvalidURLError`            | Invalid URL format            |
+| `InvalidIntervalError`       | Invalid update interval       |
 
+## 06. Basic Configuration
+
+The External Dynamic Lists module requires proper authentication credentials to access the Strata Cloud Manager API.
+
+```yaml
+- name: Basic External Dynamic List Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    provider:
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
+      log_level: "INFO"
+  tasks:
+    - name: Ensure an IP-based external dynamic list exists
+      cdot65.scm.external_dynamic_lists:
+        provider: "{{ provider }}"
+        name: "malicious-ips"
+        description: "Known malicious IPs"
+        folder: "Texas"
+        ip_list:
+          url: "https://threatfeeds.example.com/ips.txt"
+        hourly: true
+        state: "present"
+```
+
+## 07. Usage Examples
+
+### Creating External Dynamic Lists
+
+External dynamic lists can be created with different list types (IP, domain, URL, IMSI, IMEI) and update intervals to meet various security requirements.
+
+### Basic IP-Based External Dynamic List
+
+This example creates a simple IP-based external dynamic list with hourly updates.
 
 ```yaml
 - name: Create IP-based external dynamic list with hourly updates
@@ -84,7 +146,13 @@ following parameters:
         password: "pass123"
     hourly: true
     state: "present"
+```
 
+### Domain-Based External Dynamic List
+
+This example creates a domain-based external dynamic list with daily updates.
+
+```yaml
 - name: Create domain-based external dynamic list with daily updates at 3 AM
   cdot65.scm.external_dynamic_lists:
     provider: "{{ provider }}"
@@ -97,7 +165,13 @@ following parameters:
     daily:
       at: "03"
     state: "present"
+```
 
+### Advanced URL-Based External Dynamic List
+
+This example creates a URL-based external dynamic list with weekly updates and exception list.
+
+```yaml
 - name: Create URL-based external dynamic list with weekly updates
   cdot65.scm.external_dynamic_lists:
     provider: "{{ provider }}"
@@ -109,11 +183,18 @@ following parameters:
       exception_list:
         - "example.com/allowed"
         - "example.org/allowed"
+      certificate_profile: "default-certificate-profile"
     weekly:
       day_of_week: "monday"
       at: "12"
     state: "present"
+```
 
+### Updating External Dynamic Lists
+
+This example updates an existing external dynamic list with a new update interval and authentication.
+
+```yaml
 - name: Update external dynamic list with new description and auth
   cdot65.scm.external_dynamic_lists:
     provider: "{{ provider }}"
@@ -127,7 +208,13 @@ following parameters:
         password: "newpass"
     five_minute: true
     state: "present"
+```
 
+### Deleting External Dynamic Lists
+
+This example removes an external dynamic list from SCM.
+
+```yaml
 - name: Delete external dynamic list
   cdot65.scm.external_dynamic_lists:
     provider: "{{ provider }}"
@@ -136,202 +223,102 @@ following parameters:
     state: "absent"
 ```
 
+## 08. Managing Configuration Changes
 
-## Return Values
-
-
+After creating, updating, or deleting external dynamic lists, you need to commit your changes to apply them.
 
 ```yaml
-changed:
-    description: Whether any changes were made.
-    returned: always
-    type: bool
-    sample: true
-external_dynamic_list:
-    description: Details about the external dynamic list.
-    returned: when state is present
-    type: dict
-    sample:
-        id: "123e4567-e89b-12d3-a456-426655440000"
+- name: Commit changes
+  cdot65.scm.commit:
+    provider: "{{ provider }}"
+    folders: ["Texas"]
+    description: "Updated external dynamic lists"
+```
+
+## 09. Error Handling
+
+It's important to handle potential errors when working with external dynamic lists.
+
+```yaml
+- name: Create or update external dynamic list with error handling
+  block:
+    - name: Ensure external dynamic list exists
+      cdot65.scm.external_dynamic_lists:
+        provider: "{{ provider }}"
         name: "malicious-ips"
         description: "Known malicious IPs"
-        type:
-          ip:
-            url: "https://threatfeeds.example.com/ips.txt"
-            description: "Known malicious IPs"
-            recurring:
-              hourly: {}
         folder: "Texas"
-```
-
-
-## Complete Playbook Example
-
-This example demonstrates a complete workflow for managing external dynamic lists, including
-creation, retrieval, updating, and deletion.
-
-
-
-```yaml
----
-# Playbook for managing External Dynamic Lists in Strata Cloud Manager
-- name: Manage External Dynamic Lists in SCM
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vault.yaml
-  vars:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-      log_level: "INFO"
-    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
-    test_folder: "Texas"
-  tasks:
-    # First clean up any existing test objects if they exist
-    - name: Remove test external dynamic lists if they exist
-      cdot65.scm.external_dynamic_lists:
-        provider: "{{ provider }}"
-        name: "{{ item }}"
-        folder: "{{ test_folder }}"
-        state: "absent"
-      ignore_errors: true
-      loop:
-        - "Test_EDL_URL_{{ test_timestamp }}"
-        - "Test_EDL_Domain_{{ test_timestamp }}"
-
-    # Create a URL-based external dynamic list
-    - name: Create a URL-based external dynamic list
-      cdot65.scm.external_dynamic_lists:
-        provider: "{{ provider }}"
-        name: "Test_EDL_URL_{{ test_timestamp }}"
-        description: "Test URL list for Ansible module"
-        folder: "{{ test_folder }}"
-        url_list:
-          url: "https://example.com/urls.txt"
-          certificate_profile: "default-certificate-profile"
-          exception_list: 
-            - "example.com/exception"
-          auth:
-            username: "testuser"
-            password: "testpass"
-        five_minute: true
+        ip_list:
+          url: "https://threatfeeds.example.com/ips.txt"
+        hourly: true
         state: "present"
-      register: create_url_result
-
-    # Display the created EDL for verification
-    - name: Debug URL EDL creation result
+      register: edl_result
+      
+    - name: Commit changes
+      cdot65.scm.commit:
+        provider: "{{ provider }}"
+        folders: ["Texas"]
+        description: "Updated external dynamic lists"
+      when: edl_result.changed
+      
+  rescue:
+    - name: Handle errors
       debug:
-        var: create_url_result
-        verbosity: 0
-
-    # Create a domain-based external dynamic list
-    - name: Create a domain-based external dynamic list
-      cdot65.scm.external_dynamic_lists:
-        provider: "{{ provider }}"
-        name: "Test_EDL_Domain_{{ test_timestamp }}"
-        description: "Test domain list for Ansible module"
-        folder: "{{ test_folder }}"
-        domain_list:
-          url: "https://threatfeeds.example.com/domains.txt"
-          certificate_profile: "default-certificate-profile"
-          exception_list: 
-            - "example.com"
-          auth:
-            username: "testuser"
-            password: "testpass"
-          expand_domain: true
-        daily:
-          at: "03"
-        state: "present"
-      register: create_domain_result
-
-    # Get information about the created URL-based EDL using info module
-    - name: Get information about the URL-based external dynamic list
-      cdot65.scm.external_dynamic_lists_info:
-        provider: "{{ provider }}"
-        name: "{{ create_url_result.external_dynamic_list.name }}"
-        folder: "{{ test_folder }}"
-      register: url_info_result
-
-    # Update the URL-based external dynamic list
-    - name: Update the URL-based external dynamic list
-      cdot65.scm.external_dynamic_lists:
-        provider: "{{ provider }}"
-        name: "{{ create_url_result.external_dynamic_list.name }}"
-        description: "Updated URL list for Ansible module"
-        folder: "{{ test_folder }}"
-        url_list:
-          url: "https://threatfeeds.example.com/urls.txt"
-          certificate_profile: "default-certificate-profile"
-          exception_list: 
-            - "example.com/exception"
-          auth:
-            username: "testuser"
-            password: "testpass"
-        daily:
-          at: "03"
-        state: "present"
-      register: update_result
-
-    # Clean up by deleting the test EDLs
-    - name: Delete the external dynamic lists
-      cdot65.scm.external_dynamic_lists:
-        provider: "{{ provider }}"
-        name: "{{ item }}"
-        folder: "{{ test_folder }}"
-        state: "absent"
-      loop:
-        - "{{ create_url_result.external_dynamic_list.name }}"
-        - "{{ create_domain_result.external_dynamic_list.name }}"
+        msg: "An error occurred: {{ ansible_failed_result.msg }}"
+        
+    - name: Check if it's a URL error
+      debug:
+        msg: "Please check the URL format or accessibility"
+      when: "'url' in ansible_failed_result.msg"
 ```
 
+## 10. Best Practices
 
-## Notes and Limitations
+### List Type Selection
 
-### Certificate Profile Handling
+- Choose the appropriate list type (IP, domain, URL, IMSI, IMEI) based on your security requirements
+- Use IP lists for IP address filtering, domain lists for FQDN filtering, URL lists for specific path filtering
+- Consider domain expansion settings for domain-based lists to improve coverage
+- Document the purpose and source of each EDL
 
-When working with certificate profiles in any EDL type, be aware of the following:
+### Update Interval Selection
 
-- If `certificate_profile` is provided as an empty string or `null`, the module will remove it from
-  the request to avoid API validation issues
-- To specify a certificate profile, provide a valid profile name such as
-  "default-certificate-profile"
-- Certificate profiles must already exist in SCM before they can be referenced
+- Set update intervals based on the volatility of the threat intelligence source
+- Use shorter intervals (five-minute, hourly) for frequently changing threat feeds
+- Use longer intervals (daily, weekly) for more stable lists to reduce load
+- Consider time zones when configuring specific update times
 
-### Exception List Handling
+### Source Configuration
 
-Exception lists have these behaviors:
+- Use trusted and reliable threat intelligence sources
+- Implement proper authentication for secure access to EDL sources
+- Use certificate profiles for HTTPS connections to verify source authenticity
+- Test EDL sources before implementing in production
 
-- If the exception list is empty, it will be removed from the request
-- Exception list entries must be formatted according to the EDL type (IP addresses for IP lists,
-  domain names for domain lists, etc.)
+### Exception List Management
 
-### Update Interval Requirements
+- Document all exceptions thoroughly with justification
+- Review exception lists regularly to ensure they're still required
+- Keep exception lists as small as possible to maintain security posture
+- Implement change management for exception list modifications
 
-- Exactly one update interval must be specified (`five_minute`, `hourly`, `daily`, `weekly`, or
-  `monthly`)
-- For `daily`, `weekly`, and `monthly` intervals, additional parameters are required:
-  - `daily` requires `at` parameter specifying the hour (00-23)
-  - `weekly` requires `day_of_week` parameter and optionally `at`
-  - `monthly` requires `day_of_month` parameter and optionally `at`
+### EDL Content Considerations
 
-### Container Requirements
+- Understand the format requirements for each list type
+- Ensure source lists provide clean, well-formatted data
+- Consider size limitations and performance impact of large lists
+- Validate list content before using in production
 
-- Exactly one container parameter must be specified: `folder`, `snippet`, or `device`
+### Performance and Scalability
 
-## Idempotency
+- Monitor the impact of EDLs on firewall performance
+- Consolidate similar EDLs to reduce management overhead
+- Consider the frequency of updates and potential impact on resources
+- Test large or frequently updated EDLs thoroughly before deployment
 
-The module attempts to handle idempotency, but there are known issues:
+## 11. Related Modules
 
-- An EDL is considered unchanged if all parameters match exactly
-- Any difference in parameters will trigger an update
-- There are some known limitations with idempotency that may cause unnecessary updates in some cases
-
-## Related Information
-
-- [External Dynamic Lists Info module](external_dynamic_lists_info.md) - Module for retrieving
-  information about external dynamic lists
-- [Security Rule module](security_rule.md) - For configuring security rules that utilize external
-  dynamic lists
+- [external_dynamic_lists_info](external_dynamic_lists_info.md) - Retrieve information about external dynamic lists
+- [security_rule](security_rule.md) - Configure security policies that use external dynamic lists
+- [tag](tag.md) - Create, update, and delete tags for organizing external dynamic lists
+- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that might reference external dynamic lists

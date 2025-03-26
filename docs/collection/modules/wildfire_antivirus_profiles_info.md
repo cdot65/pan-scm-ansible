@@ -24,10 +24,10 @@ filtering options.
 
 ## Core Methods
 
-| Method     | Description                     | Parameters                               | Return Type                               |
-|------------|--------------------------------|------------------------------------------|--------------------------------------------|
-| `fetch()`  | Gets a specific profile by name | `name: str`, `container: str`           | `WildfireAvProfileResponseModel`          |
-| `list()`   | Lists profiles with filtering   | `folder: str`, `**filters`              | `List[WildfireAvProfileResponseModel]`    |
+| Method    | Description                     | Parameters                    | Return Type                            |
+| --------- | ------------------------------- | ----------------------------- | -------------------------------------- |
+| `fetch()` | Gets a specific profile by name | `name: str`, `container: str` | `WildfireAvProfileResponseModel`       |
+| `list()`  | Lists profiles with filtering   | `folder: str`, `**filters`    | `List[WildfireAvProfileResponseModel]` |
 
 ## WildFire Antivirus Profile Info Parameters
 
@@ -199,41 +199,41 @@ profiles.
 
 ## Best Practices
 
-1. **Efficient Querying**
+### Efficient Querying
 
-   - Use specific filters to reduce API load and improve performance
-   - When looking for a specific profile, use the `name` parameter instead of filtering results
-   - Use container parameters consistently across queries
+- Use specific filters to reduce API load and improve performance
+- When looking for a specific profile, use the `name` parameter instead of filtering results
+- Use container parameters consistently across queries
 
-2. **Result Processing**
+### Result Processing
 
-   - Always register the module output to a variable for later use
-   - Check if the expected data is present before processing it
-   - Use appropriate Ansible filters and tests when processing complex nested structures
+- Always register the module output to a variable for later use
+- Check if the expected data is present before processing it
+- Use appropriate Ansible filters and tests when processing complex nested structures
 
-3. **Filter Usage**
+### Filter Usage
 
-   - Use `exact_match` when you only want profiles defined directly in the specified container
-   - Use exclusion filters to refine results without overcomplicating queries
-   - Filter by rule names to find profiles with specific rules
+- Use `exact_match` when you only want profiles defined directly in the specified container
+- Use exclusion filters to refine results without overcomplicating queries
+- Filter by rule names to find profiles with specific rules
 
-4. **Error Handling**
+### Error Handling
 
-   - Implement try/except blocks to handle potential errors
-   - Verify that the profiles exist before attempting operations on them
-   - Provide meaningful error messages for troubleshooting
+- Implement try/except blocks to handle potential errors
+- Verify that the profiles exist before attempting operations on them
+- Provide meaningful error messages for troubleshooting
 
-5. **Integration with Other Modules**
+### Integration with Other Modules
 
-   - Use the info module to check for existing profiles before creating new ones
-   - Combine with the wildfire_antivirus_profiles module for complete profile management
-   - Use the retrieved information to make decisions in your playbooks
+- Use the info module to check for existing profiles before creating new ones
+- Combine with the wildfire_antivirus_profiles module for complete profile management
+- Use the retrieved information to make decisions in your playbooks
 
-6. **Performance Considerations**
+### Performance Considerations
 
-   - Cache results when making multiple queries for the same information
-   - Limit the data retrieved to only what's needed for your task
-   - Consider batching operations when processing multiple profiles
+- Cache results when making multiple queries for the same information
+- Limit the data retrieved to only what's needed for your task
+- Consider batching operations when processing multiple profiles
 
 ## Related Modules
 
@@ -243,4 +243,3 @@ profiles.
   anti-spyware profiles
 - [security_rule_info](security_rule_info.md) - Retrieve information about security rules that use
   WildFire antivirus profiles
-- commit - Commit configuration changes

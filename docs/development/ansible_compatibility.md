@@ -5,7 +5,7 @@ focusing on Ansible test compatibility requirements.
 
 ## Python Version Compatibility
 
-While the core functionality of this collection targets Python 3.11+ (as specified in
+While the core functionality of this collection targets Python 3.12+ (as specified in
 `pyproject.toml`), the Ansible Galaxy ecosystem requires compatibility with older Python versions
 for testing purposes.
 
@@ -13,7 +13,7 @@ for testing purposes.
 
 1. **Ansible Test Python Versions**:
 
-   - Ansible tests against multiple Python versions including 3.11 and 3.12
+   - Ansible tests against multiple Python versions including 3.12
    - Our code needs to be syntax-compatible with these versions even if we don't officially support
      them
 

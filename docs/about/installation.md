@@ -7,8 +7,8 @@ dependencies.
 
 Before installing the collection, ensure you have the following prerequisites:
 
-- Python 3.8 or higher
-- Ansible 2.13 or higher
+- Python 3.12 or higher
+- Ansible 2.17 or higher
 - pip (Python package manager)
 
 ## Installing from Ansible Galaxy
@@ -30,7 +30,7 @@ ansible-galaxy collection install cdot65.scm:1.0.0
 This collection depends on the `pan-scm-sdk` Python package. Install it using pip:
 
 ```bash
-pip install pan-scm-sdk
+pip install pan-scm-sdk>=0.3.22
 ```
 
 ## Installing from Source

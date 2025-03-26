@@ -2,21 +2,21 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [Log Forwarding Profile Model Attributes](#log-forwarding-profile-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Log Forwarding Profile Model Attributes](#log-forwarding-profile-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
     - [Creating Log Forwarding Profiles](#creating-log-forwarding-profiles)
     - [Basic Log Forwarding Profile](#basic-log-forwarding-profile)
     - [Complex Log Forwarding Profile](#complex-log-forwarding-profile)
     - [Updating Log Forwarding Profiles](#updating-log-forwarding-profiles)
     - [Deleting Log Forwarding Profiles](#deleting-log-forwarding-profiles)
-7. [Managing Configuration Changes](#managing-configuration-changes)
+07. [Managing Configuration Changes](#managing-configuration-changes)
     - [Performing Commits](#performing-commits)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
 ## Overview
@@ -87,8 +87,6 @@ centralized logging.
 The Log Forwarding Profile module requires proper authentication credentials to access the Strata
 Cloud Manager API.
 
-
-
 ```yaml
 - name: Basic Log Forwarding Profile Configuration
   hosts: localhost
@@ -119,7 +117,6 @@ Cloud Manager API.
         state: "present"
 ```
 
-
 ## Usage Examples
 
 ### Creating Log Forwarding Profiles
@@ -130,8 +127,6 @@ where to send them.
 ### Basic Log Forwarding Profile
 
 This example creates a simple log forwarding profile with a single filter and match list.
-
-
 
 ```yaml
 - name: Create a log forwarding profile with filter and match list
@@ -153,12 +148,9 @@ This example creates a simple log forwarding profile with a single filter and ma
     state: "present"
 ```
 
-
 ### Complex Log Forwarding Profile
 
 This example creates a more complex log forwarding profile with multiple filters and match lists.
-
-
 
 ```yaml
 - name: Create a complex log forwarding profile
@@ -195,12 +187,9 @@ This example creates a more complex log forwarding profile with multiple filters
     state: "present"
 ```
 
-
 ### Updating Log Forwarding Profiles
 
 This example updates an existing log forwarding profile with additional filters and match lists.
-
-
 
 ```yaml
 - name: Update an existing log forwarding profile
@@ -228,12 +217,9 @@ This example updates an existing log forwarding profile with additional filters 
     state: "present"
 ```
 
-
 ### Deleting Log Forwarding Profiles
 
 This example removes a log forwarding profile.
-
-
 
 ```yaml
 - name: Delete a log forwarding profile
@@ -244,15 +230,12 @@ This example removes a log forwarding profile.
     state: "absent"
 ```
 
-
 ## Managing Configuration Changes
 
 ### Performing Commits
 
 After creating, updating, or deleting log forwarding profiles, you need to commit your changes to
 apply them.
-
-
 
 ```yaml
 - name: Commit changes
@@ -262,12 +245,9 @@ apply them.
     description: "Updated log forwarding profiles"
 ```
 
-
 ## Error Handling
 
 It's important to handle potential errors when working with log forwarding profiles.
-
-
 
 ```yaml
 - name: Create or update log forwarding profile with error handling
@@ -302,7 +282,6 @@ It's important to handle potential errors when working with log forwarding profi
       debug:
         msg: "An error occurred: {{ ansible_failed_result.msg }}"
 ```
-
 
 ## Best Practices
 

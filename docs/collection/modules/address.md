@@ -2,62 +2,101 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Module Parameters](#module-parameters)
-3. [Requirements](#requirements)
-4. [Usage Examples](#usage-examples)
-   - [Creating Address Objects](#creating-address-objects)
-   - [Updating Address Objects](#updating-address-objects)
-   - [Deleting Address Objects](#deleting-address-objects)
-5. [Return Values](#return-values)
-6. [Error Handling](#error-handling)
-7. [Best Practices](#best-practices)
-8. [Related Modules](#related-modules)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Address Model Attributes](#address-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Creating Address Objects](#creating-address-objects)
+    - [Basic IP/Netmask Address](#basic-ipnetmask-address)
+    - [IP Range Address](#ip-range-address)
+    - [IP Wildcard Address](#ip-wildcard-address)
+    - [FQDN Address](#fqdn-address)
+    - [Updating Address Objects](#updating-address-objects)
+    - [Deleting Address Objects](#deleting-address-objects)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
 ## Overview
 
-The `address` module provides functionality to manage address objects in Palo Alto Networks' Strata
-Cloud Manager. This module allows you to create, update, and delete address objects of various types
+The `address` Ansible module provides functionality to manage address objects in Palo Alto Networks' Strata 
+Cloud Manager (SCM). This module allows you to create, update, and delete address objects of various types 
 including IP/Netmask, IP Range, IP Wildcard, and FQDN (Fully Qualified Domain Name).
 
-## Module Parameters
+## Core Methods
 
-| Parameter              | Required | Type | Choices         | Default | Comments                                                             |
-| ---------------------- | -------- | ---- | --------------- | ------- | -------------------------------------------------------------------- |
-| name                   | yes      | str  |                 |         | The name of the address object (max 63 chars).                       |
-| description            | no       | str  |                 |         | Description of the address object (max 1023 chars).                  |
-| tag                    | no       | list |                 |         | List of tags associated with the address object (max 64 chars each). |
-| fqdn                   | no       | str  |                 |         | Fully Qualified Domain Name (FQDN) of the address (max 255 chars).   |
-| ip_netmask             | no       | str  |                 |         | IP address with CIDR notation (e.g. "192.168.1.0/24").               |
-| ip_range               | no       | str  |                 |         | IP address range (e.g. "192.168.1.100-192.168.1.200").               |
-| ip_wildcard            | no       | str  |                 |         | IP wildcard mask format (e.g. "10.20.1.0/0.0.248.255").              |
-| folder                 | no       | str  |                 |         | The folder in which the resource is defined (max 64 chars).          |
-| snippet                | no       | str  |                 |         | The snippet in which the resource is defined (max 64 chars).         |
-| device                 | no       | str  |                 |         | The device in which the resource is defined (max 64 chars).          |
-| provider               | yes      | dict |                 |         | Authentication credentials.                                          |
-| provider.client_id     | yes      | str  |                 |         | Client ID for authentication.                                        |
-| provider.client_secret | yes      | str  |                 |         | Client secret for authentication.                                    |
-| provider.tsg_id        | yes      | str  |                 |         | Tenant Service Group ID.                                             |
-| provider.log_level     | no       | str  |                 | INFO    | Log level for the SDK.                                               |
-| state                  | yes      | str  | present, absent |         | Desired state of the address object.                                 |
+| Method     | Description                    | Parameters                     | Return Type                 |
+| ---------- | ------------------------------ | ------------------------------ | --------------------------- |
+| `create()` | Creates a new address object   | `data: Dict[str, Any]`         | `AddressResponseModel`      |
+| `update()` | Updates an existing address    | `address: AddressUpdateModel`  | `AddressResponseModel`      |
+| `delete()` | Removes an address             | `object_id: str`               | `None`                      |
+| `fetch()`  | Gets an address by name        | `name: str`, `container: str`  | `AddressResponseModel`      |
+| `list()`   | Lists addresses with filtering | `folder: str`, `**filters`     | `List[AddressResponseModel]`|
 
-!!! note
+## Address Model Attributes
 
-- Exactly one address type (`ip_netmask`, `ip_range`, `ip_wildcard`, or `fqdn`) must be provided
-  when state is present.
-- Exactly one container type (`folder`, `snippet`, or `device`) must be provided.
+| Attribute      | Type | Required      | Description                                               |
+| -------------- | ---- | ------------- | --------------------------------------------------------- |
+| `name`         | str  | Yes           | The name of the address object (max 63 chars)             |
+| `description`  | str  | No            | Description of the address object (max 1023 chars)        |
+| `tag`          | list | No            | List of tags associated with the address object           |
+| `fqdn`         | str  | One type only | Fully Qualified Domain Name (max 255 chars)               |
+| `ip_netmask`   | str  | One type only | IP address with CIDR notation (e.g. "192.168.1.0/24")     |
+| `ip_range`     | str  | One type only | IP address range (e.g. "192.168.1.100-192.168.1.200")     |
+| `ip_wildcard`  | str  | One type only | IP wildcard mask format (e.g. "10.20.1.0/0.0.248.255")    |
+| `folder`       | str  | One container | The folder in which the address is defined (max 64 chars) |
+| `snippet`      | str  | One container | The snippet in which the address is defined (max 64 chars)|
+| `device`       | str  | One container | The device in which the address is defined (max 64 chars) |
 
-## Requirements
+## Exceptions
 
-- SCM Python SDK (`pan-scm-sdk`)
-- Python 3.8 or higher
-- Ansible 2.13 or higher
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid address data or format |
+| `NameNotUniqueError`         | Address name already exists    |
+| `ObjectNotPresentError`      | Address not found              |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
+
+## Basic Configuration
+
+The Address module requires proper authentication credentials to access the Strata Cloud Manager API.
+
+```yaml
+- name: Basic Address Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    provider:
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
+      log_level: "INFO"
+  tasks:
+    - name: Ensure an IP/Netmask address exists
+      cdot65.scm.address:
+        provider: "{{ provider }}"
+        name: "Web-Server"
+        description: "Web server network"
+        folder: "Texas"
+        ip_netmask: "192.168.1.0/24"
+        tag: ["Web", "Internal"]
+        state: "present"
+```
 
 ## Usage Examples
 
 ### Creating Address Objects
 
+Address objects can be created with different types to match specific network addressing needs.
 
+### Basic IP/Netmask Address
+
+This example creates a simple address object with an IP/Netmask.
 
 ```yaml
 - name: Create an address object with ip_netmask
@@ -71,8 +110,9 @@ including IP/Netmask, IP Range, IP Wildcard, and FQDN (Fully Qualified Domain Na
     state: "present"
 ```
 
+### IP Range Address
 
-
+This example creates an address object with an IP range.
 
 ```yaml
 - name: Create an address object with ip_range
@@ -85,8 +125,9 @@ including IP/Netmask, IP Range, IP Wildcard, and FQDN (Fully Qualified Domain Na
     state: "present"
 ```
 
+### IP Wildcard Address
 
-
+This example creates an address object with an IP wildcard mask.
 
 ```yaml
 - name: Create an address object with ip_wildcard
@@ -99,8 +140,9 @@ including IP/Netmask, IP Range, IP Wildcard, and FQDN (Fully Qualified Domain Na
     state: "present"
 ```
 
+### FQDN Address
 
-
+This example creates an address object with a fully qualified domain name.
 
 ```yaml
 - name: Create an address object with fqdn
@@ -113,10 +155,9 @@ including IP/Netmask, IP Range, IP Wildcard, and FQDN (Fully Qualified Domain Na
     state: "present"
 ```
 
-
 ### Updating Address Objects
 
-
+This example updates an existing address object with a new description and tags.
 
 ```yaml
 - name: Update an address object with new description and tags
@@ -130,10 +171,9 @@ including IP/Netmask, IP Range, IP Wildcard, and FQDN (Fully Qualified Domain Na
     state: "present"
 ```
 
-
 ### Deleting Address Objects
 
-
+This example removes an address object.
 
 ```yaml
 - name: Delete address object
@@ -144,79 +184,89 @@ including IP/Netmask, IP Range, IP Wildcard, and FQDN (Fully Qualified Domain Na
     state: "absent"
 ```
 
+## Managing Configuration Changes
 
-## Return Values
+After creating, updating, or deleting address objects, you need to commit your changes to apply them.
 
-| Name    | Description                      | Type | Returned              | Sample                                                                                                                                                                                                                |
-| ------- | -------------------------------- | ---- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| changed | Whether any changes were made    | bool | always                | true                                                                                                                                                                                                                  |
-| address | Details about the address object | dict | when state is present | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "Test_Address_Netmask", "description": "An address object with ip_netmask", "ip_netmask": "192.168.1.0/24", "folder": "Texas", "tag": ["Network", "Internal"]} |
+```yaml
+- name: Commit changes
+  cdot65.scm.commit:
+    provider: "{{ provider }}"
+    folders: ["Texas"]
+    description: "Updated address objects"
+```
 
 ## Error Handling
 
-Common errors you might encounter when using this module:
-
-| Error                       | Description                                                  | Resolution                                                        |
-| --------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------- |
-| Invalid address data        | The address parameters don't match required formats          | Verify the format of address values (e.g., correct CIDR notation) |
-| Address name already exists | Attempt to create an address with a name that already exists | Use a unique name or update the existing address                  |
-| Address not found           | Attempt to update or delete an address that doesn't exist    | Verify the address name and container location                    |
-| Missing required parameter  | Required parameter not provided                              | Ensure all required parameters are specified                      |
-
-
+It's important to handle potential errors when working with address objects.
 
 ```yaml
-- name: Handle potential errors with block/rescue
+- name: Create or update address object with error handling
   block:
-    - name: Attempt to create address
+    - name: Ensure address object exists
       cdot65.scm.address:
         provider: "{{ provider }}"
-        name: "test_address"
-        ip_netmask: "192.168.1.0/24"
+        name: "Web-Server"
+        description: "Web server network"
         folder: "Texas"
+        ip_netmask: "192.168.1.0/24"
+        tag: ["Web", "Internal"]
         state: "present"
-      register: result
+      register: address_result
+      
+    - name: Commit changes
+      cdot65.scm.commit:
+        provider: "{{ provider }}"
+        folders: ["Texas"]
+        description: "Updated address objects"
+      
   rescue:
-    - name: Handle address already exists error
+    - name: Handle errors
       debug:
-        msg: "Address already exists or invalid input provided"
-    - name: Continue with other tasks
-      # Additional recovery tasks
+        msg: "An error occurred: {{ ansible_failed_result.msg }}"
 ```
-
 
 ## Best Practices
 
-1. **Container Management**
+### Address Type Selection
 
-   - Always specify exactly one container (folder, snippet, or device)
-   - Use consistent container names across operations
-   - Validate container existence before operations
+- Choose the appropriate address type for your specific use case
+- Use IP/Netmask for subnets and network segments
+- Use IP Range when specific ranges of addresses need to be defined
+- Use IP Wildcard for more complex network matching requirements
+- Use FQDN for domain-based addressing that may resolve to different IPs
 
-2. **Address Types**
+### Container Management
 
-   - Specify exactly one address type per object
-   - Use appropriate address format for each type
-   - Validate address formats before creation
+- Always specify exactly one container (folder, snippet, or device)
+- Use consistent container names across operations
+- Validate container existence before operations
 
-3. **Using Tags**
+### Using Tags
 
-   - Leverage tags for classification and filtering
-   - Keep tag names consistent across objects
-   - Consider creating tag conventions (environment, purpose, etc.)
+- Leverage tags for classification and filtering
+- Keep tag names consistent across objects
+- Consider creating tag conventions (environment, purpose, etc.)
 
-4. **Module Usage**
+### Naming Conventions
 
-   - Use idempotent operations to safely run playbooks multiple times
-   - Leverage check mode (`--check`) to preview changes before executing them
-   - Implement proper error handling with block/rescue
-   - Generate unique names when creating multiple similar objects
+- Develop a consistent naming convention for address objects
+- Make names descriptive of the address's purpose or location
+- Use a consistent format like "Location-Function-Number"
+- Document naming standards for team consistency
 
-5. **Performance Optimization**
+### Module Usage
 
-   - Use loops efficiently when creating multiple address objects
-   - Consider using roles for standardized address object creation
-   - Organize related address objects in the same folders
+- Use idempotent operations to safely run playbooks multiple times
+- Leverage check mode (`--check`) to preview changes before executing them
+- Implement proper error handling with block/rescue
+- Generate unique names when creating multiple similar objects
+
+### Performance Optimization
+
+- Use loops efficiently when creating multiple address objects
+- Consider using roles for standardized address object creation
+- Organize related address objects in the same folders
 
 ## Related Modules
 
@@ -224,7 +274,3 @@ Common errors you might encounter when using this module:
 - [address_group](address_group.md) - Manage address group objects
 - [tag](tag.md) - Manage tags used with address objects
 - [security_rule](security_rule.md) - Manage security rules that use address objects
-
-## Author
-
-- Calvin Remsburg (@cdot65)

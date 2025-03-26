@@ -2,21 +2,21 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [HIP Profile Model Attributes](#hip-profile-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [HIP Profile Model Attributes](#hip-profile-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
     - [Creating HIP Profiles](#creating-hip-profiles)
     - [Basic HIP Profile](#basic-hip-profile)
     - [Complex Match Expression](#complex-match-expression)
     - [Updating HIP Profiles](#updating-hip-profiles)
     - [Deleting HIP Profiles](#deleting-hip-profiles)
-7. [Managing Configuration Changes](#managing-configuration-changes)
+07. [Managing Configuration Changes](#managing-configuration-changes)
     - [Performing Commits](#performing-commits)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
 ## Overview
@@ -62,8 +62,6 @@ posture-based access control.
 The HIP Profile module requires proper authentication credentials to access the Strata Cloud Manager
 API.
 
-
-
 ```yaml
 - name: Basic HIP Profile Module Configuration
   hosts: localhost
@@ -85,7 +83,6 @@ API.
         state: "present"
 ```
 
-
 ## Usage Examples
 
 ### Creating HIP Profiles
@@ -98,8 +95,6 @@ for endpoints.
 This example creates a simple HIP profile with a basic match expression that matches Windows
 workstations.
 
-
-
 ```yaml
 - name: Create a basic HIP profile with single match expression
   cdot65.scm.hip_profile:
@@ -111,13 +106,10 @@ workstations.
     state: "present"
 ```
 
-
 ### Complex Match Expression
 
 This example creates a HIP profile with a more complex match expression that combines multiple
 conditions.
-
-
 
 ```yaml
 - name: Create a HIP profile with complex match expression
@@ -130,12 +122,9 @@ conditions.
     state: "present"
 ```
 
-
 ### Updating HIP Profiles
 
 This example updates an existing HIP profile with a new match expression.
-
-
 
 ```yaml
 - name: Update a HIP profile with new match expression
@@ -148,12 +137,9 @@ This example updates an existing HIP profile with a new match expression.
     state: "present"
 ```
 
-
 ### Deleting HIP Profiles
 
 This example removes a HIP profile.
-
-
 
 ```yaml
 - name: Delete a HIP profile
@@ -164,14 +150,11 @@ This example removes a HIP profile.
     state: "absent"
 ```
 
-
 ## Managing Configuration Changes
 
 ### Performing Commits
 
 After creating, updating, or deleting HIP profiles, you need to commit your changes to apply them.
-
-
 
 ```yaml
 - name: Commit changes
@@ -181,12 +164,9 @@ After creating, updating, or deleting HIP profiles, you need to commit your chan
     description: "Updated HIP profiles"
 ```
 
-
 ## Error Handling
 
 It's important to handle potential errors when working with HIP profiles.
-
-
 
 ```yaml
 - name: Create or update HIP profile with error handling
@@ -212,7 +192,6 @@ It's important to handle potential errors when working with HIP profiles.
       debug:
         msg: "An error occurred: {{ ansible_failed_result.msg }}"
 ```
-
 
 ## Best Practices
 

@@ -38,6 +38,7 @@ help:
 	@echo "  make lint-docs             Lint markdown files in docs/ directory"
 	@echo "  make format-module-docs    Format module documentation"
 	@echo "  make fix-module-doc-styling Fix module docs to comply with style guide"
+	@echo "  make standardize-module-docs Standardize module docs based on golden standard"
 	@echo "  make check-docs-links      Check documentation for broken links"
 	@echo "  make docs-prepare-release  Prepare all documentation for release"
 	@echo "  make test-address          Run address module tests"
@@ -297,12 +298,27 @@ fix-module-doc-styling:
 	poetry run mkdocs build --strict || echo "Warning: MkDocs validation found issues but continuing..."
 	@echo "Module documentation styling completed successfully."
 
+# Standardize module docs based on golden standard
+.PHONY: standardize-module-docs
+standardize-module-docs:
+	@echo "Standardizing module docs based on golden standard..."
+	@# Make the script executable
+	chmod +x standardize_docs.sh
+	@# Run the script
+	./standardize_docs.sh
+	@echo "Module documentation standardization completed."
+	@echo "Now validating with MkDocs build..."
+	poetry run mkdocs build --strict || echo "Warning: MkDocs validation found issues but continuing..."
+	@echo "Module documentation standardization completed successfully."
+
 # Prepare all documentation for release
 .PHONY: docs-prepare-release
 docs-prepare-release:
 	@echo "Preparing all documentation for release..."
 	@# First, fix module documentation styling
 	$(MAKE) fix-module-doc-styling
+	@# Then, standardize module docs
+	$(MAKE) standardize-module-docs
 	@# Then, format all docs
 	$(MAKE) format-docs
 	@# Then, run special formatting for module docs

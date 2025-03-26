@@ -2,237 +2,243 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Module Parameters](#module-parameters)
-3. [Examples](#examples)
-   - [List All Quarantined Devices](#list-all-quarantined-devices)
-   - [Filter by Host ID](#filter-by-host-id)
-   - [Filter by Serial Number](#filter-by-serial-number)
-   - [Using Different Gather Subsets](#using-different-gather-subsets)
-4. [Return Values](#return-values)
-5. [Error Handling](#error-handling)
-6. [Best Practices](#best-practices)
-7. [Related Modules](#related-modules)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Quarantined Devices Info Parameters](#quarantined-devices-info-parameters)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Retrieving Quarantined Devices Information](#retrieving-quarantined-devices-information)
+    - [Listing All Quarantined Devices](#listing-all-quarantined-devices)
+    - [Filtering by Host ID](#filtering-by-host-id)
+    - [Filtering by Serial Number](#filtering-by-serial-number)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
 ## Overview
 
-The `quarantined_devices_info` module provides functionality to retrieve information about
-quarantined devices in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to
-list all quarantined devices or filter the results by host ID or serial number. As an info module,
-it only retrieves information and does not modify any configuration.
+The `quarantined_devices_info` Ansible module provides functionality to retrieve information about quarantined devices in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to list all quarantined devices or filter the results by host ID or serial number. As an info module, it only retrieves information and does not modify any configuration.
 
-## Module Parameters
+## Core Methods
 
-| Parameter       | Type | Required | Description                                                  |
-| --------------- | ---- | -------- | ------------------------------------------------------------ |
-| `host_id`       | str  | No       | Filter quarantined devices by host ID                        |
-| `serial_number` | str  | No       | Filter quarantined devices by serial number                  |
-| `gather_subset` | list | No       | Determines which information to gather (default: ['config']) |
-| `provider`      | dict | Yes      | Authentication credentials for SCM                           |
+| Method    | Description                           | Parameters                | Return Type                            |
+| --------- | ------------------------------------- | ------------------------- | -------------------------------------- |
+| `list()`  | Lists all quarantined devices         | `filters: Dict[str, Any]` | `List[QuarantinedDeviceResponseModel]` |
+
+## Quarantined Devices Info Parameters
+
+| Parameter       | Type   | Required | Description                                                  |
+| --------------- | ------ | -------- | ------------------------------------------------------------ |
+| `host_id`       | str    | No       | Filter quarantined devices by host ID                        |
+| `serial_number` | str    | No       | Filter quarantined devices by serial number                  |
+| `gather_subset` | list   | No       | Determines which information to gather (default: ['config']) |
 
 ### Provider Dictionary
 
 | Parameter       | Type | Required | Description                             |
 | --------------- | ---- | -------- | --------------------------------------- |
-| `client_id`     | str  | Yes      | Client ID for authentication            |
-| `client_secret` | str  | Yes      | Client secret for authentication        |
-| `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
-| `log_level`     | str  | No       | Log level for the SDK (default: "INFO") |
+| `client_id`     | str  | Yes      | Client ID for SCM authentication         |
+| `client_secret` | str  | Yes      | Client secret for SCM authentication     |
+| `tsg_id`        | str  | Yes      | Tenant Service Group ID                  |
+| `log_level`     | str  | No       | Log level for the SDK (default: "INFO")  |
 
-## Examples
+## Exceptions
 
-### List All Quarantined Devices
+| Exception                    | Description                     |
+| ---------------------------- | ------------------------------- |
+| `InvalidObjectError`         | Invalid request data or format  |
+| `MissingQueryParameterError` | Missing required parameters     |
+| `AuthenticationError`        | Authentication failed           |
+| `ServerError`                | Internal server error           |
 
+## Basic Configuration
 
-
-```yaml
----
-- name: List all quarantined devices in Strata Cloud Manager
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vault.yaml
-  vars:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-      log_level: "INFO"
-  tasks:
-    - name: List all quarantined devices
-      cdot65.scm.quarantined_devices_info:
-        provider: "{{ provider }}"
-      register: result
-
-    - name: Display all quarantined devices
-      debug:
-        var: result.quarantined_devices
-```
-
-
-### Filter by Host ID
-
-
+The Quarantined Devices Info module requires proper authentication credentials to access the Strata Cloud Manager API.
 
 ```yaml
----
-- name: Filter quarantined devices by host ID
+- name: Basic Quarantined Devices Info Configuration
   hosts: localhost
   gather_facts: false
-  vars_files:
-    - vault.yaml
   vars:
     provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
       log_level: "INFO"
   tasks:
-    - name: List quarantined devices by host ID
+    - name: Get information about quarantined devices
       cdot65.scm.quarantined_devices_info:
         provider: "{{ provider }}"
-        host_id: "device-12345"
-      register: result
-
-    - name: Display filtered devices
+      register: devices_result
+    
+    - name: Display quarantined devices
       debug:
-        var: result.quarantined_devices
+        var: devices_result.quarantined_devices
 ```
 
+## Usage Examples
 
-### Filter by Serial Number
+### Retrieving Quarantined Devices Information
 
+You can retrieve information about quarantined devices with various filtering options.
 
+### Listing All Quarantined Devices
+
+This example retrieves a list of all quarantined devices in the SCM environment.
 
 ```yaml
----
-- name: Filter quarantined devices by serial number
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vault.yaml
-  vars:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-      log_level: "INFO"
-  tasks:
-    - name: List quarantined devices by serial number
-      cdot65.scm.quarantined_devices_info:
-        provider: "{{ provider }}"
-        serial_number: "PA-987654321"
-      register: result
+- name: List all quarantined devices
+  cdot65.scm.quarantined_devices_info:
+    provider: "{{ provider }}"
+  register: result
 
-    - name: Display filtered devices
-      debug:
-        var: result.quarantined_devices
+- name: Display all quarantined devices
+  debug:
+    var: result.quarantined_devices
+
+- name: Display count of quarantined devices
+  debug:
+    msg: "Found {{ result.quarantined_devices | length }} quarantined devices"
 ```
 
+### Filtering by Host ID
 
-### Using Different Gather Subsets
-
-
+This example demonstrates how to retrieve information about a specific quarantined device by its host ID.
 
 ```yaml
----
-- name: Use different gather subsets for quarantined devices
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vault.yaml
-  vars:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-      log_level: "INFO"
-  tasks:
-    - name: Gather all information about quarantined devices
-      cdot65.scm.quarantined_devices_info:
-        provider: "{{ provider }}"
-        gather_subset: 
-          - all
-      register: result_all
+- name: List quarantined devices by host ID
+  cdot65.scm.quarantined_devices_info:
+    provider: "{{ provider }}"
+    host_id: "device-12345"
+  register: result
 
-    - name: Display full information
-      debug:
-        var: result_all.quarantined_devices
+- name: Display filtered devices
+  debug:
+    var: result.quarantined_devices
+
+- name: Check if device is quarantined
+  debug:
+    msg: "Device is quarantined"
+  when: result.quarantined_devices | length > 0
 ```
 
+### Filtering by Serial Number
 
-## Return Values
+This example shows how to filter quarantined devices by serial number.
 
-| Name                  | Description                                          | Type | Sample                                                           |
-| --------------------- | ---------------------------------------------------- | ---- | ---------------------------------------------------------------- |
-| `quarantined_devices` | List of quarantined devices matching filter criteria | list | `[{"host_id": "device-12345", "serial_number": "PA-987654321"}]` |
+```yaml
+- name: List quarantined devices by serial number
+  cdot65.scm.quarantined_devices_info:
+    provider: "{{ provider }}"
+    serial_number: "PA-987654321"
+  register: result
+
+- name: Display filtered devices
+  debug:
+    var: result.quarantined_devices
+
+- name: Process devices matching serial number
+  debug:
+    msg: "Found device with host_id: {{ item.host_id }}"
+  loop: "{{ result.quarantined_devices }}"
+  when: result.quarantined_devices | length > 0
+```
+
+## Managing Configuration Changes
+
+As an info module, `quarantined_devices_info` does not make any configuration changes. However, you can use the information it retrieves to make decisions about other configuration operations.
+
+```yaml
+- name: Make decisions based on quarantined device information
+  block:
+    - name: Get list of quarantined devices
+      cdot65.scm.quarantined_devices_info:
+        provider: "{{ provider }}"
+      register: device_info
+      
+    - name: Create security policy for quarantined devices
+      cdot65.scm.security_rule:
+        provider: "{{ provider }}"
+        name: "Block-Quarantined-Devices"
+        folder: "Shared"
+        source_addresses: "{{ device_info.quarantined_devices | map(attribute='host_id') | list }}"
+        action: "deny"
+        # Other parameters...
+        state: "present"
+      when: device_info.quarantined_devices | length > 0
+      
+    - name: Commit changes if policy was created
+      cdot65.scm.commit:
+        provider: "{{ provider }}"
+        folder: "Shared"
+        description: "Added security rules for quarantined devices"
+      when: device_info.quarantined_devices | length > 0
+```
 
 ## Error Handling
 
-
+It's important to handle potential errors when retrieving quarantined device information.
 
 ```yaml
----
-- name: Error handling example for info module
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vault.yaml
-  vars:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-      log_level: "INFO"
-  tasks:
-    - name: Try to get quarantined device info with error handling
+- name: Get quarantined device information with error handling
+  block:
+    - name: Try to get quarantined device info
       cdot65.scm.quarantined_devices_info:
         provider: "{{ provider }}"
         host_id: "device-12345"
       register: result
-      failed_when: false
-
-    - name: Handle potential errors
+      
+  rescue:
+    - name: Handle errors
       debug:
-        msg: "Error occurred: {{ result.msg }}"
-      when: result.failed is defined and result.failed
-
-    - name: Check if devices were found
-      debug:
-        msg: "No devices found matching the criteria"
-      when: result.quarantined_devices is defined and result.quarantined_devices | length == 0
+        msg: "An error occurred: {{ ansible_failed_result.msg }}"
+        
+    - name: Log API failure
+      syslog:
+        msg: "Failed to retrieve quarantined device info: {{ ansible_failed_result.msg }}"
+        facility: local7
+        priority: err
 ```
-
 
 ## Best Practices
 
-1. **Filtering**
+### Filtering Strategies
 
-   - Filter by host_id when you want to check a specific device
-   - Filter by serial_number when integrating with physical device inventory systems
-   - Avoid unnecessary filtering when you need the complete list
-   - Combine multiple filters for more precise results
+- Filter by host_id when you need information about a specific device
+- Filter by serial_number when integrating with physical device inventory systems
+- Avoid unnecessary filtering when you need the complete list
+- Combine with other info modules to build comprehensive security reports
+- Cache results when making multiple queries for the same information
 
-2. **Error Handling**
+### Data Processing
 
-   - Implement proper error handling for API failures
-   - Handle cases where no devices match the filters
-   - Validate return structures before accessing nested data
+- Always verify the data structure before accessing nested elements
+- Handle cases where no devices match your filter criteria
+- Process quarantined device data efficiently in large environments
+- Use Ansible filters to transform data into useful formats
+- Create variables or facts for frequently referenced values
 
-3. **Performance**
+### Security Operations
 
-   - Be mindful of listing all devices in large environments
-   - Use specific filters when possible to reduce response size
-   - Process results efficiently when dealing with large device lists
+- Regularly audit quarantined devices to review status
+- Create automated reports of quarantined devices
+- Integrate with security incident response workflows
+- Correlate quarantined devices with security events
+- Monitor quarantine status changes over time
 
-4. **Integration**
+### Error Management
 
-   - Use with monitoring systems to track quarantined devices
-   - Combine with security automation for incident response
-   - Create reports of quarantined devices for security operations
+- Implement proper error handling for API failures
+- Validate results before using them in critical operations
+- Include timeout handling for API operations
+- Create alerts for changes in quarantine status
+- Document error scenarios and remediation steps
 
 ## Related Modules
 
-- [quarantined_devices](quarantined_devices.md): Manage quarantined devices (create, delete)
-- [address_info](address_info.md): Retrieve information about address objects
-- [service_info](service_info.md): Retrieve information about service objects
+- [quarantined_devices](quarantined_devices.md) - Manage quarantined devices
+- [address_info](address_info.md) - Retrieve information about address objects
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that may affect quarantined devices
+- [tag_info](tag_info.md) - Retrieve information about tags that may be applied to quarantined devices

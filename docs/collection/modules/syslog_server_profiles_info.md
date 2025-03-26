@@ -2,62 +2,99 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Module Parameters](#module-parameters)
-3. [Requirements](#requirements)
-4. [Usage Examples](#usage-examples)
-   - [Retrieving a Specific Syslog Server Profile](#retrieving-a-specific-syslog-server-profile)
-   - [Listing Syslog Server Profiles](#listing-syslog-server-profiles)
-   - [Filtering Syslog Server Profiles](#filtering-syslog-server-profiles)
-5. [Return Values](#return-values)
-6. [Error Handling](#error-handling)
-7. [Best Practices](#best-practices)
-8. [Related Modules](#related-modules)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Syslog Server Profile Info Parameters](#syslog-server-profile-info-parameters)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Retrieving a Specific Syslog Server Profile](#retrieving-a-specific-syslog-server-profile)
+    - [Listing Syslog Server Profiles](#listing-syslog-server-profiles)
+    - [Filtering Syslog Server Profiles](#filtering-syslog-server-profiles)
+    - [Advanced Filtering with Ansible](#advanced-filtering-with-ansible)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
 ## Overview
 
-The `syslog_server_profiles_info` module provides functionality to retrieve information about syslog
-server profile objects in Palo Alto Networks' Strata Cloud Manager. This module allows you to fetch
-details about a specific syslog server profile by name or list multiple profiles with various
-filtering options.
+The `syslog_server_profiles_info` module provides functionality to retrieve information about syslog server profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to fetch details about a specific syslog server profile by name or list multiple profiles with various filtering options. It's a read-only module that helps with inventory management, auditing configurations, and collecting information needed for other operations.
 
-## Module Parameters
+## Core Methods
 
-| Parameter              | Required | Type | Choices     | Default    | Comments                                                             |
-| ---------------------- | -------- | ---- | ----------- | ---------- | -------------------------------------------------------------------- |
-| name                   | no       | str  |             |            | The name of a specific syslog server profile to retrieve.            |
-| gather_subset          | no       | list | all, config | ['config'] | Determines which information to gather about syslog server profiles. |
-| folder                 | no\*     | str  |             |            | Filter syslog server profiles by folder container.                   |
-| snippet                | no\*     | str  |             |            | Filter syslog server profiles by snippet container.                  |
-| device                 | no\*     | str  |             |            | Filter syslog server profiles by device container.                   |
-| exact_match            | no       | bool |             | false      | When True, only return objects defined exactly in the container.     |
-| exclude_folders        | no       | list |             |            | List of folder names to exclude from results.                        |
-| exclude_snippets       | no       | list |             |            | List of snippet values to exclude from results.                      |
-| exclude_devices        | no       | list |             |            | List of device values to exclude from results.                       |
-| transport              | no       | list | UDP, TCP    |            | Filter by transport protocol used by the syslog servers.             |
-| provider               | yes      | dict |             |            | Authentication credentials.                                          |
-| provider.client_id     | yes      | str  |             |            | Client ID for authentication.                                        |
-| provider.client_secret | yes      | str  |             |            | Client secret for authentication.                                    |
-| provider.tsg_id        | yes      | str  |             |            | Tenant Service Group ID.                                             |
-| provider.log_level     | no       | str  |             | INFO       | Log level for the SDK.                                               |
+| Method    | Description                             | Parameters                    | Return Type                              |
+| --------- | --------------------------------------- | ----------------------------- | ---------------------------------------- |
+| `fetch()` | Gets a specific syslog server profile   | `name: str`, `container: str` | `SyslogServerProfileResponseModel`       |
+| `list()`  | Lists syslog server profiles with filtering | `folder: str`, `**filters`    | `List[SyslogServerProfileResponseModel]` |
 
-!!! note
+## Syslog Server Profile Info Parameters
 
-- At least one container type (`folder`, `snippet`, or `device`) is required when `name` is not
-  specified.
-- Only one container type can be specified at a time.
+| Parameter          | Type   | Required      | Description                                                    |
+| ------------------ | ------ | ------------- | -------------------------------------------------------------- |
+| `name`             | str    | No            | The name of a specific syslog server profile to retrieve       |
+| `gather_subset`    | list   | No            | Determines which information to gather (default: ['config'])   |
+| `folder`           | str    | One container* | Filter syslog server profiles by folder container              |
+| `snippet`          | str    | One container* | Filter syslog server profiles by snippet container             |
+| `device`           | str    | One container* | Filter syslog server profiles by device container              |
+| `exact_match`      | bool   | No            | Only return objects defined exactly in the specified container |
+| `exclude_folders`  | list   | No            | List of folder names to exclude from results                   |
+| `exclude_snippets` | list   | No            | List of snippet values to exclude from results                 |
+| `exclude_devices`  | list   | No            | List of device values to exclude from results                  |
+| `transport`        | list   | No            | Filter by transport protocol used (UDP, TCP)                   |
 
-## Requirements
+*One container parameter is required when `name` is not specified.
 
-- SCM Python SDK (`pan-scm-sdk`)
-- Python 3.11 or higher
-- Ansible 2.15 or higher
+### Provider Dictionary
+
+| Parameter       | Type | Required | Description                            |
+| --------------- | ---- | -------- | -------------------------------------- |
+| `client_id`     | str  | Yes      | Client ID for SCM authentication        |
+| `client_secret` | str  | Yes      | Client secret for SCM authentication    |
+| `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
+| `log_level`     | str  | No       | Log level for the SDK (default: "INFO") |
+
+## Exceptions
+
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid request data or format |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `ObjectNotPresentError`      | Profile not found              |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
+
+## Basic Configuration
+
+The Syslog Server Profiles Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+
+```yaml
+- name: Basic Syslog Server Profiles Info Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    provider:
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
+      log_level: "INFO"
+  tasks:
+    - name: Get information about syslog server profiles
+      cdot65.scm.syslog_server_profiles_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: profiles_result
+    
+    - name: Display profiles
+      debug:
+        var: profiles_result.syslog_server_profiles
+```
 
 ## Usage Examples
 
 ### Retrieving a Specific Syslog Server Profile
 
-
+This example retrieves information about a specific syslog server profile by name.
 
 ```yaml
 - name: Get information about a specific syslog server profile
@@ -70,12 +107,16 @@ filtering options.
 - name: Display profile details
   debug:
     var: profile_info.syslog_server_profile
+    
+- name: Check server transport protocol
+  debug:
+    msg: "The profile uses {{ profile_info.syslog_server_profile.servers.transport }} transport"
+  when: profile_info.syslog_server_profile is defined
 ```
-
 
 ### Listing Syslog Server Profiles
 
-
+This example lists all syslog server profiles in a specific folder.
 
 ```yaml
 - name: List all syslog server profiles in a folder
@@ -87,12 +128,15 @@ filtering options.
 - name: Display all profiles
   debug:
     var: all_profiles.syslog_server_profiles
+    
+- name: Count number of profiles
+  debug:
+    msg: "Found {{ all_profiles.syslog_server_profiles | length }} syslog server profiles"
 ```
-
 
 ### Filtering Syslog Server Profiles
 
-
+This example demonstrates filtering profiles by transport protocol and other criteria.
 
 ```yaml
 - name: List only UDP profiles
@@ -102,6 +146,10 @@ filtering options.
     transport: ["UDP"]
   register: udp_profiles
 
+- name: Display UDP profiles count
+  debug:
+    msg: "Found {{ udp_profiles.syslog_server_profiles | length }} UDP syslog server profiles"
+    
 - name: List profiles with exact match and exclusions
   cdot65.scm.syslog_server_profiles_info:
     provider: "{{ provider }}"
@@ -110,10 +158,71 @@ filtering options.
     exclude_folders: ["All"]
     exclude_snippets: ["default"]
   register: filtered_profiles
+    
+- name: Process filtered profiles
+  debug:
+    msg: "Profile {{ item.name }} is in folder {{ item.folder }}"
+  loop: "{{ filtered_profiles.syslog_server_profiles }}"
 ```
 
+### Advanced Filtering with Ansible
 
-## Return Values
+This example shows how to use Ansible's filters to further process results.
+
+```yaml
+- name: Get all syslog profiles for further filtering
+  cdot65.scm.syslog_server_profiles_info:
+    provider: "{{ provider }}"
+    folder: "Texas"
+  register: all_profiles_for_filtering
+  
+# Filter profiles by name pattern in memory
+- name: Filter profiles for names starting with "log-"
+  set_fact:
+    log_profiles: 
+      syslog_server_profiles: "{{ all_profiles_for_filtering.syslog_server_profiles | selectattr('name', 'match', '^log-.*') | list }}"
+
+# Work with the filtered results
+- name: Display filtered profiles
+  debug:
+    var: log_profiles
+```
+
+## Managing Configuration Changes
+
+As an info module, `syslog_server_profiles_info` does not make any configuration changes. However, you can use the information it retrieves to make decisions about other configuration operations.
+
+```yaml
+- name: Use syslog server profile information for log forwarding configuration
+  block:
+    - name: Get available syslog server profiles
+      cdot65.scm.syslog_server_profiles_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: syslog_profiles
+      
+    - name: Create log forwarding profile using existing syslog profiles
+      cdot65.scm.log_forwarding_profile:
+        provider: "{{ provider }}"
+        name: "system-logs-forwarding"
+        folder: "Texas"
+        match_list:
+          - name: "System-Logs"
+            log_type: "system"
+            filter: "All Logs"
+            send_to_syslog: "{{ syslog_profiles.syslog_server_profiles[0].name }}"
+        state: "present"
+      when: syslog_profiles.syslog_server_profiles | length > 0
+      
+    - name: Commit changes if log forwarding profile was created
+      cdot65.scm.commit:
+        provider: "{{ provider }}"
+        folders: ["Texas"]
+        description: "Created log forwarding profile using existing syslog server profiles"
+      when: syslog_profiles.syslog_server_profiles | length > 0
+```
+
+### Return Values
 
 | Name                   | Description                                                        | Type | Returned                         | Sample                                                                                                                                                         |
 | ---------------------- | ------------------------------------------------------------------ | ---- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -129,8 +238,6 @@ Common errors you might encounter when using this module:
 | Syslog server profile not found | Attempt to retrieve a profile that doesn't exist | Verify the profile name and container location              |
 | Missing query parameter         | Required parameter not provided for filtering    | Ensure required container parameters are specified          |
 | Invalid filter parameters       | Invalid filter values provided                   | Check filter values for proper format and supported options |
-
-
 
 ```yaml
 - name: Handle potential errors with block/rescue
@@ -149,45 +256,63 @@ Common errors you might encounter when using this module:
       # Additional recovery tasks
 ```
 
-
 ## Best Practices
 
-1. **Efficient Filtering**
+### Efficient Filtering
 
-   - Use specific filters to reduce the number of results
-   - Utilize the transport filter to find profiles with specific server types
-   - Combine multiple filters for precise results
+- Use specific filters to reduce the number of results
+- Utilize the transport filter to find profiles with specific server types
+- Combine multiple filters for precise results
+- Use exact_match parameter for exact container filtering
+- Filter at the API level rather than client side when possible for better performance
 
-2. **Container Management**
+### Container Management
 
-   - Only specify one container type (folder, snippet, or device) at a time
-   - Use the same container type consistently across operations
+- Only specify one container type (folder, snippet, or device) at a time
+- Use the same container type consistently across operations
+- Document container hierarchy for better organization
+- Create consistent naming conventions for containers
+- Include container paths in reports and documentation
 
-3. **Result Handling**
+### Result Handling
 
-   - Check if results are empty before processing
-   - Handle potential errors with try/except or block/rescue
-   - Register results for further processing
+- Check if results are empty before processing
+- Handle potential errors with try/except or block/rescue
+- Register results for further processing
+- Use conditional logic based on returned data
+- Process large result sets in batches for better performance
 
-4. **Performance Optimization**
+### Performance Optimization
 
-   - Use exact_match for faster, more specific queries
-   - Include exclusion filters to eliminate unwanted results
-   - Fetch specific profiles by name when possible instead of filtering large lists
+- Use exact_match for faster, more specific queries
+- Include exclusion filters to eliminate unwanted results
+- Fetch specific profiles by name when possible instead of filtering large lists
+- Minimize the number of API calls by retrieving all needed information at once
+- Only request the gather_subset data that you need
 
-5. **Integration with Other Modules**
+### Integration with Other Modules
 
-   - Use the info module to verify existence before creating or updating profiles
-   - Chain tasks to create conditional workflows based on query results
-   - Use returned data as input for other tasks
+- Use the info module to verify existence before creating or updating profiles
+- Chain tasks to create conditional workflows based on query results
+- Use returned data as input for other tasks
+- Combine with log_forwarding_profile for complete logging configuration
+- Create documentation from retrieved information
+
+### Automation and Inventory
+
+- Use this module for automated documentation generation
+- Build inventory reports of syslog configurations
+- Create validation tasks to ensure correct syslog configuration
+- Implement regular configuration checks and audits
+- Develop configuration baseline templates from existing profiles
 
 ## Related Modules
 
-- [syslog_server_profiles](syslog_server_profiles.md) - Manage syslog server profiles
-- [log_forwarding_profile](log_forwarding_profile.md) - Manage log forwarding profiles that might
-  use syslog server profiles
-- [log_forwarding_profile_info](log_forwarding_profile_info.md) - Retrieve information about log
-  forwarding profiles
+- [syslog_server_profiles](syslog_server_profiles.md) - Manage syslog server profiles (create, update, delete)
+- [log_forwarding_profile](log_forwarding_profile.md) - Manage log forwarding profiles that use syslog server profiles
+- [log_forwarding_profile_info](log_forwarding_profile_info.md) - Retrieve information about log forwarding profiles
+- [security_rule](security_rule.md) - Configure security policies that might reference log forwarding profiles
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules
 
 ## Author
 

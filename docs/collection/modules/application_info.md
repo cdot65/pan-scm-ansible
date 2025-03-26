@@ -2,68 +2,101 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Module Parameters](#module-parameters)
-3. [Requirements](#requirements)
-4. [Usage Examples](#usage-examples)
-   - [Getting Information About a Specific Application](#getting-information-about-a-specific-application)
-   - [Listing All Application Objects](#listing-all-application-objects)
-   - [Filtering by Category](#filtering-by-category)
-   - [Filtering by Risk Level](#filtering-by-risk-level)
-   - [Using Advanced Filtering Options](#using-advanced-filtering-options)
-5. [Return Values](#return-values)
-6. [Error Handling](#error-handling)
-7. [Best Practices](#best-practices)
-8. [Related Modules](#related-modules)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Application Info Model Attributes](#application-info-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Retrieving Application Information](#retrieving-application-information)
+    - [Getting a Specific Application](#getting-a-specific-application)
+    - [Listing All Applications](#listing-all-applications)
+    - [Filtering by Category](#filtering-by-category)
+    - [Filtering by Risk Level](#filtering-by-risk-level)
+    - [Using Advanced Filtering Options](#using-advanced-filtering-options)
+07. [Processing Retrieved Information](#processing-retrieved-information)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
 ## Overview
 
-The `application_info` module provides functionality to gather information about application objects
-in Palo Alto Networks' Strata Cloud Manager. This is a read-only module that can retrieve detailed
-information about a specific application object by name, or list multiple application objects with
-various filtering options. It supports advanced filtering capabilities including container-based
-filtering, category filtering, technology filtering, risk level filtering, and exclusion filters.
+The `application_info` Ansible module provides functionality to retrieve information about application 
+objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can retrieve 
+detailed information about a specific application object by name, or list multiple application objects 
+with various filtering options including container-based filtering, category filtering, technology 
+filtering, risk level filtering, and exclusion filters.
 
-## Module Parameters
+## Core Methods
 
-| Parameter              | Required | Type | Choices           | Default    | Comments                                                                   |
-| ---------------------- | -------- | ---- | ----------------- | ---------- | -------------------------------------------------------------------------- |
-| name                   | no       | str  |                   |            | The name of a specific application object to retrieve.                     |
-| gather_subset          | no       | list | ['all', 'config'] | ['config'] | Determines which information to gather about applications.                 |
-| folder                 | no       | str  |                   |            | Filter applications by folder container.                                   |
-| snippet                | no       | str  |                   |            | Filter applications by snippet container.                                  |
-| exact_match            | no       | bool |                   | false      | When True, only return objects defined exactly in the specified container. |
-| exclude_folders        | no       | list |                   |            | List of folder names to exclude from results.                              |
-| exclude_snippets       | no       | list |                   |            | List of snippet values to exclude from results.                            |
-| category               | no       | list |                   |            | Filter by application category.                                            |
-| subcategory            | no       | list |                   |            | Filter by application subcategory.                                         |
-| technology             | no       | list |                   |            | Filter by application technology.                                          |
-| risk                   | no       | list |                   |            | Filter by application risk level (1-5).                                    |
-| provider               | yes      | dict |                   |            | Authentication credentials.                                                |
-| provider.client_id     | yes      | str  |                   |            | Client ID for authentication.                                              |
-| provider.client_secret | yes      | str  |                   |            | Client secret for authentication.                                          |
-| provider.tsg_id        | yes      | str  |                   |            | Tenant Service Group ID.                                                   |
-| provider.log_level     | no       | str  |                   | INFO       | Log level for the SDK.                                                     |
+| Method     | Description                         | Parameters                                | Return Type                    |
+| ---------- | ----------------------------------- | ----------------------------------------- | ------------------------------ |
+| `get()`    | Gets a specific application by name | `name: str`, `container: str`             | `ApplicationResponseModel`     |
+| `list()`   | Lists applications with filtering   | `folder: str`, `**filters`                | `List[ApplicationResponseModel]`|
+| `filter()` | Applies filters to the results      | `applications: List`, `filter_params: Dict`| `List[ApplicationResponseModel]`|
 
-!!! note
+## Application Info Model Attributes
 
-- Exactly one container type (`folder` or `snippet`) must be provided when not specifying a name.
-- When `name` is specified, the module will retrieve a single application object.
-- When `name` is not specified, the module will return a list of applications based on filter
-  criteria.
-- This is a read-only module that does not make any changes to the system.
+| Attribute          | Type | Required      | Description                                                      |
+| ------------------ | ---- | ------------- | ---------------------------------------------------------------- |
+| `name`             | str  | No            | The name of a specific application to retrieve                   |
+| `gather_subset`    | list | No            | Determines which information to gather (default: ['config'])     |
+| `folder`           | str  | One container | Filter applications by folder (max 64 chars)                     |
+| `snippet`          | str  | One container | Filter applications by snippet (max 64 chars)                    |
+| `exact_match`      | bool | No            | When True, only return objects in the specified container        |
+| `exclude_folders`  | list | No            | List of folder names to exclude from results                     |
+| `exclude_snippets` | list | No            | List of snippet values to exclude from results                   |
+| `category`         | list | No            | Filter by application category                                   |
+| `subcategory`      | list | No            | Filter by application subcategory                                |
+| `technology`       | list | No            | Filter by application technology                                 |
+| `risk`             | list | No            | Filter by application risk level (1-5)                           |
 
-## Requirements
+## Exceptions
 
-- SCM Python SDK (`pan-scm-sdk`)
-- Python 3.8 or higher
-- Ansible 2.13 or higher
+| Exception                    | Description                         |
+| ---------------------------- | ----------------------------------- |
+| `ObjectNotPresentError`      | Application not found               |
+| `MissingQueryParameterError` | Missing required parameters         |
+| `InvalidFilterError`         | Invalid filter parameters           |
+| `AuthenticationError`        | Authentication failed               |
+| `ServerError`                | Internal server error               |
+| `MultipleMatchesError`       | Multiple applications match criteria|
+
+## Basic Configuration
+
+The Application Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+
+```yaml
+- name: Basic Application Info Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    provider:
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
+      log_level: "INFO"
+  tasks:
+    - name: Get information about applications
+      cdot65.scm.application_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: applications_info
+      
+    - name: Display retrieved information
+      debug:
+        var: applications_info.applications
+```
 
 ## Usage Examples
 
-### Getting Information About a Specific Application
+### Retrieving Application Information
 
+The module provides several ways to retrieve application information based on your specific needs.
 
+### Getting a Specific Application
+
+This example retrieves detailed information about a specific application by name.
 
 ```yaml
 - name: Get information about a specific application
@@ -78,10 +111,9 @@ filtering, category filtering, technology filtering, risk level filtering, and e
     var: application_info.application
 ```
 
+### Listing All Applications
 
-### Listing All Application Objects
-
-
+This example lists all application objects in a specific folder.
 
 ```yaml
 - name: List all application objects in a folder
@@ -95,10 +127,9 @@ filtering, category filtering, technology filtering, risk level filtering, and e
     msg: "Found {{ all_applications.applications | length }} applications in Texas folder"
 ```
 
-
 ### Filtering by Category
 
-
+This example demonstrates how to filter applications by their category.
 
 ```yaml
 - name: List applications by category
@@ -114,10 +145,9 @@ filtering, category filtering, technology filtering, risk level filtering, and e
   loop: "{{ business_applications.applications }}"
 ```
 
-
 ### Filtering by Risk Level
 
-
+This example shows how to filter applications by their risk level.
 
 ```yaml
 - name: List high-risk applications
@@ -133,10 +163,9 @@ filtering, category filtering, technology filtering, risk level filtering, and e
   loop: "{{ high_risk_applications.applications }}"
 ```
 
-
 ### Using Advanced Filtering Options
 
-
+These examples illustrate more advanced filtering options including exact match, exclusions, and combined filters.
 
 ```yaml
 - name: List applications with exact match and exclusions
@@ -158,84 +187,128 @@ filtering, category filtering, technology filtering, risk level filtering, and e
   register: collaboration_applications
 ```
 
+## Processing Retrieved Information
 
-## Return Values
+After retrieving application information, you can process the data for various purposes such as 
+security analysis, inventory management, or integration with other systems.
 
-| Name         | Description                                                                        | Type | Returned                            | Sample                                                                                                                                                                                                                                                                                                                                            |
-| ------------ | ---------------------------------------------------------------------------------- | ---- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| applications | List of application objects matching the filter criteria                           | list | success, when name is not specified | \[{"id": "123e4567-e89b-12d3-a456-426655440000", "name": "custom-app", "category": "business-systems", "subcategory": "database", "technology": "client-server", "risk": 3, "description": "Custom database application", "folder": "Texas", "ports": ["tcp/1521"]}, {"id": "234e5678-e89b-12d3-a456-426655440001", "name": "secure-chat", ...}\] |
-| application  | Information about the requested application (when querying a specific application) | dict | success, when name is specified     | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "custom-app", "category": "business-systems", "subcategory": "database", "technology": "client-server", "risk": 3, "description": "Custom database application", "folder": "Texas", "ports": ["tcp/1521"]}                                                                                 |
+```yaml
+- name: Create a security analysis of applications
+  block:
+    - name: Get all applications
+      cdot65.scm.application_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_applications
+      
+    - name: Group applications by risk level
+      set_fact:
+        critical_risk_apps: "{{ all_applications.applications | selectattr('risk', 'equalto', 5) | list }}"
+        high_risk_apps: "{{ all_applications.applications | selectattr('risk', 'equalto', 4) | list }}"
+        medium_risk_apps: "{{ all_applications.applications | selectattr('risk', 'equalto', 3) | list }}"
+        low_risk_apps: "{{ all_applications.applications | selectattr('risk', 'in', [1, 2]) | list }}"
+        
+    - name: Count applications with security flags
+      set_fact:
+        vulnerable_apps: "{{ all_applications.applications | selectattr('has_known_vulnerabilities', 'defined') | selectattr('has_known_vulnerabilities', 'equalto', true) | list }}"
+        evasive_apps: "{{ all_applications.applications | selectattr('evasive', 'defined') | selectattr('evasive', 'equalto', true) | list }}"
+        malware_apps: "{{ all_applications.applications | selectattr('used_by_malware', 'defined') | selectattr('used_by_malware', 'equalto', true) | list }}"
+        
+    - name: Display security analysis
+      debug:
+        msg: |
+          Application Security Analysis:
+          - Total Applications: {{ all_applications.applications | length }}
+          
+          Risk Distribution:
+          - Critical Risk (5): {{ critical_risk_apps | length }}
+          - High Risk (4): {{ high_risk_apps | length }}
+          - Medium Risk (3): {{ medium_risk_apps | length }}
+          - Low Risk (1-2): {{ low_risk_apps | length }}
+          
+          Security Flags:
+          - Apps with Known Vulnerabilities: {{ vulnerable_apps | length }}
+          - Apps with Evasive Behavior: {{ evasive_apps | length }}
+          - Apps Used by Malware: {{ malware_apps | length }}
+```
 
 ## Error Handling
 
-Common errors you might encounter when using this module:
-
-| Error                      | Description                                                    | Resolution                                          |
-| -------------------------- | -------------------------------------------------------------- | --------------------------------------------------- |
-| Application not found      | The specified application name does not exist in the container | Verify the application name and container location  |
-| Missing required parameter | Required container parameter not provided                      | Ensure a container (folder or snippet) is specified |
-| Invalid filter parameters  | Incorrect filter values or format                              | Check the format and validity of filter parameters  |
-
-
+It's important to handle potential errors when retrieving application information.
 
 ```yaml
-- name: Handle potential errors with block/rescue
+- name: Retrieve application info with error handling
   block:
     - name: Attempt to retrieve application information
       cdot65.scm.application_info:
         provider: "{{ provider }}"
-        name: "custom-app"
+        name: "nonexistent-app"
         folder: "Texas"
       register: application_info
+      
   rescue:
     - name: Handle application not found error
       debug:
-        msg: "Application custom-app not found in Texas folder"
-    - name: Continue with other tasks
-      # Additional recovery tasks
+        msg: "Application not found or other error occurred"
+        
+    - name: Continue with fallback actions
+      cdot65.scm.application_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_applications
+      
+    - name: Log the error and continue
+      debug:
+        msg: "Continuing with list of all applications instead of specific application"
 ```
-
 
 ## Best Practices
 
-1. **Efficient Filtering**
+### Efficient Filtering
 
-   - Use specific filters like category, subcategory, and risk level to minimize the result set
-   - Combine multiple filters for more precise results
-   - Consider performance implications when retrieving large datasets
+- Use specific filters to minimize the result set
+- Filter by category, subcategory, or technology when looking for application types
+- Filter by risk level when performing security analysis
+- Combine multiple filters for more precise results
 
-2. **Container Selection**
+### Container Selection
 
-   - Use folder or snippet consistently across operations
-   - Verify container existence before querying
-   - Use exclusion filters to refine results when working with large containers
+- Use folder or snippet consistently across operations
+- Verify container existence before querying
+- Use exclusion filters to refine results when working with large containers
 
-3. **Risk-Based Analysis**
+### Risk-Based Analysis
 
-   - Filter applications by risk level to identify high-risk applications
-   - Combine risk filtering with category filtering for targeted risk assessment
-   - Regularly review high-risk applications for security policy adjustments
+- Filter applications by risk level to identify high-risk applications
+- Combine risk filtering with category filtering for targeted risk assessment
+- Regularly review high-risk applications for security policy adjustments
+- Identify applications with security flags for additional scrutiny
 
-4. **Using Results**
+### Information Handling
 
-   - Register results to variables for further processing
-   - Use Ansible's filtering capabilities (selectattr, map, etc.) on the returned lists
-   - Check if applications/application is defined before accessing properties
+- Register results to variables for further processing
+- Use Ansible's filtering capabilities (selectattr, map, etc.) on the returned lists
+- Check if applications/application is defined before accessing properties
+- Process different application characteristics separately for detailed analysis
 
-5. **Security Considerations**
+### Performance Optimization
 
-   - Identify applications with security flags like `used_by_malware` or `has_known_vulnerabilities`
-   - Group applications by category and risk for security planning
-   - Use the module for audit and compliance verification
+- Retrieve only the information you need
+- Use name parameter when you need only one specific application
+- Use filters to minimize result set size
+- Consider caching results for repeated access within the same playbook
+
+### Integration with Security Policies
+
+- Use retrieved application information to inform security policy creation
+- Identify high-risk applications that require stricter controls
+- Group applications by category or risk level for policy development
+- Track applications with security flags for special handling
 
 ## Related Modules
 
 - [application](application.md) - Manage application objects (create, update, delete)
-- [application_group_info](application_group_info.md) - Retrieve information about application
-  groups
 - [application_group](application_group.md) - Manage application group objects
+- [application_group_info](application_group_info.md) - Retrieve information about application groups
 - [security_rule](security_rule.md) - Configure security policies that reference applications
-
-## Author
-
-- Calvin Remsburg (@cdot65)
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules using applications

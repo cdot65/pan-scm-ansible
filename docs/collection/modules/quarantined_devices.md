@@ -2,60 +2,73 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Module Parameters](#module-parameters)
-3. [Examples](#examples)
-   - [Quarantine a Device](#quarantine-a-device)
-   - [Remove a Device from Quarantine](#remove-a-device-from-quarantine)
-   - [Using Check Mode](#using-check-mode)
-4. [Return Values](#return-values)
-5. [Error Handling](#error-handling)
-6. [Best Practices](#best-practices)
-7. [Related Modules](#related-modules)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Quarantined Devices Model Attributes](#quarantined-devices-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Quarantining Devices](#quarantining-devices)
+    - [Basic Device Quarantine](#basic-device-quarantine)
+    - [Device Quarantine with Serial Number](#device-quarantine-with-serial-number)
+    - [Removing Devices from Quarantine](#removing-devices-from-quarantine)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
 ## Overview
 
-The `quarantined_devices` module provides functionality to manage quarantined devices in Palo Alto
-Networks' Strata Cloud Manager (SCM). This module enables you to add devices to quarantine and
-remove them from quarantine. Note that SCM's API only supports create, list, and delete operations
-for quarantined devices (no direct fetch or update).
+The `quarantined_devices` Ansible module provides functionality to manage quarantined devices in Palo Alto Networks' Strata Cloud Manager (SCM). This module enables you to add devices to quarantine and remove them from quarantine. Note that SCM's API only supports create, list, and delete operations for quarantined devices (no direct fetch or update).
 
-## Module Parameters
+## Core Methods
 
-| Parameter       | Type | Required | Description                                                     |
-| --------------- | ---- | -------- | --------------------------------------------------------------- |
-| `host_id`       | str  | Yes      | The host ID of the device to quarantine                         |
-| `serial_number` | str  | No       | The serial number of the device to quarantine                   |
-| `provider`      | dict | Yes      | Authentication credentials for SCM                              |
-| `state`         | str  | Yes      | Desired state of the quarantined device (`present` or `absent`) |
+| Method     | Description                       | Parameters                      | Return Type                      |
+| ---------- | --------------------------------- | ------------------------------- | -------------------------------- |
+| `create()` | Adds a device to quarantine       | `data: Dict[str, Any]`          | `QuarantinedDeviceResponseModel` |
+| `delete()` | Removes a device from quarantine  | `host_id: str`                  | `None`                           |
+| `list()`   | Lists quarantined devices         | `filters: Dict[str, Any]`       | `List[QuarantinedDeviceResponseModel]` |
+
+## Quarantined Devices Model Attributes
+
+| Attribute       | Type | Required | Description                                      |
+| --------------- | ---- | -------- | ------------------------------------------------ |
+| `host_id`       | str  | Yes      | The host ID of the device to quarantine          |
+| `serial_number` | str  | No       | The serial number of the device to quarantine    |
 
 ### Provider Dictionary
 
 | Parameter       | Type | Required | Description                             |
 | --------------- | ---- | -------- | --------------------------------------- |
-| `client_id`     | str  | Yes      | Client ID for authentication            |
-| `client_secret` | str  | Yes      | Client secret for authentication        |
-| `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
-| `log_level`     | str  | No       | Log level for the SDK (default: "INFO") |
+| `client_id`     | str  | Yes      | Client ID for SCM authentication         |
+| `client_secret` | str  | Yes      | Client secret for SCM authentication     |
+| `tsg_id`        | str  | Yes      | Tenant Service Group ID                  |
+| `log_level`     | str  | No       | Log level for the SDK (default: "INFO")  |
 
-## Examples
+## Exceptions
 
-### Quarantine a Device
+| Exception                    | Description                     |
+| ---------------------------- | ------------------------------- |
+| `InvalidObjectError`         | Invalid device data or format   |
+| `NameNotUniqueError`         | Device already quarantined      |
+| `ObjectNotPresentError`      | Device not found in quarantine  |
+| `MissingQueryParameterError` | Missing required parameters     |
+| `AuthenticationError`        | Authentication failed           |
+| `ServerError`                | Internal server error           |
 
+## Basic Configuration
 
+The Quarantined Devices module requires proper authentication credentials to access the Strata Cloud Manager API.
 
 ```yaml
----
-- name: Quarantine a device in Strata Cloud Manager
+- name: Basic Quarantined Devices Configuration
   hosts: localhost
   gather_facts: false
-  vars_files:
-    - vault.yaml
   vars:
     provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
+      client_id: "your_client_id"
+      client_secret: "your_client_secret"
+      tsg_id: "your_tsg_id"
       log_level: "INFO"
   tasks:
     - name: Quarantine a device
@@ -64,148 +77,153 @@ for quarantined devices (no direct fetch or update).
         host_id: "device-12345"
         serial_number: "PA-987654321"
         state: "present"
-      register: result
-
-    - name: Display result
-      debug:
-        var: result
 ```
 
+## Usage Examples
 
-### Remove a Device from Quarantine
+### Quarantining Devices
 
+Quarantined devices allow for isolating potentially compromised or problematic devices from your network.
 
+### Basic Device Quarantine
+
+This example shows how to add a device to quarantine using its host ID.
 
 ```yaml
----
-- name: Remove a device from quarantine in Strata Cloud Manager
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vault.yaml
-  vars:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-      log_level: "INFO"
-  tasks:
-    - name: Remove a device from quarantine
-      cdot65.scm.quarantined_devices:
-        provider: "{{ provider }}"
-        host_id: "device-12345"
-        state: "absent"
-      register: result
+- name: Quarantine a device
+  cdot65.scm.quarantined_devices:
+    provider: "{{ provider }}"
+    host_id: "device-12345"
+    state: "present"
+  register: result
 
-    - name: Display result
-      debug:
-        var: result
+- name: Display result
+  debug:
+    var: result
 ```
 
+### Device Quarantine with Serial Number
 
-### Using Check Mode
-
-
+This example shows how to quarantine a device with both host ID and serial number for better identification.
 
 ```yaml
----
-- name: Test changes in check mode without applying
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vault.yaml
-  vars:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-      log_level: "INFO"
-  tasks:
-    - name: Check what would happen when quarantining a device
+- name: Quarantine a device with serial number
+  cdot65.scm.quarantined_devices:
+    provider: "{{ provider }}"
+    host_id: "device-12345"
+    serial_number: "PA-987654321"
+    state: "present"
+  register: result
+
+- name: Display result
+  debug:
+    var: result
+```
+
+### Removing Devices from Quarantine
+
+This example demonstrates how to remove a device from quarantine.
+
+```yaml
+- name: Remove a device from quarantine
+  cdot65.scm.quarantined_devices:
+    provider: "{{ provider }}"
+    host_id: "device-12345"
+    state: "absent"
+  register: result
+
+- name: Display result
+  debug:
+    var: result
+```
+
+## Managing Configuration Changes
+
+Quarantining or unquarantining devices takes effect immediately and does not require a commit operation.
+
+```yaml
+- name: Manage quarantined devices
+  block:
+    - name: Quarantine a device
       cdot65.scm.quarantined_devices:
         provider: "{{ provider }}"
         host_id: "device-12345"
         serial_number: "PA-987654321"
         state: "present"
-      check_mode: yes
-      register: result
+      register: quarantine_result
 
-    - name: Display check mode result
-      debug:
-        var: result
+    - name: Log successful quarantine action
+      syslog:
+        msg: "Device {{ quarantine_result.quarantined_device.host_id }} successfully quarantined"
+        facility: local7
+        priority: info
+      when: quarantine_result.changed
 ```
-
-
-## Return Values
-
-| Name                 | Description                          | Type    | Sample                                                         |
-| -------------------- | ------------------------------------ | ------- | -------------------------------------------------------------- |
-| `changed`            | Whether any changes were made        | boolean | `true`                                                         |
-| `quarantined_device` | Details about the quarantined device | dict    | `{"host_id": "device-12345", "serial_number": "PA-987654321"}` |
 
 ## Error Handling
 
-
+It's important to handle potential errors when working with quarantined devices.
 
 ```yaml
----
-- name: Error handling example
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vault.yaml
-  vars:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-      log_level: "INFO"
-  tasks:
-    - name: Quarantine a device with error handling
+- name: Quarantine a device with error handling
+  block:
+    - name: Attempt to quarantine a device
       cdot65.scm.quarantined_devices:
         provider: "{{ provider }}"
         host_id: "device-12345"
         serial_number: "PA-987654321"
         state: "present"
       register: result
-      failed_when: false
-
-    - name: Handle potential errors
+      
+  rescue:
+    - name: Handle errors
       debug:
-        msg: "Error occurred: {{ result.msg }}"
-      when: result.failed is defined and result.failed
+        msg: "An error occurred: {{ ansible_failed_result.msg }}"
+        
+    - name: Log quarantine failure
+      syslog:
+        msg: "Failed to quarantine device: {{ ansible_failed_result.msg }}"
+        facility: local7
+        priority: err
 ```
-
 
 ## Best Practices
 
-1. **Basic Usage**
+### Device Identification
 
-   - Always specify the host_id when quarantining devices
-   - Include the serial_number when available for better identification
-   - Use meaningful host_id values that make devices easily identifiable
+- Always specify a meaningful host_id that makes devices easily identifiable
+- Include the serial_number when available for better device tracking
+- Establish a consistent naming convention for host_id values
+- Document the purpose and reason for each quarantine action
+- Maintain an inventory of quarantined devices with quarantine reasons
 
-2. **Error Handling**
+### Security Operations
 
-   - Implement proper error handling for API failures
-   - Use the failed_when pattern to handle potential errors gracefully
-   - Log error details for troubleshooting
+- Integrate quarantine operations into security incident response playbooks
+- Establish clear criteria for when devices should be quarantined
+- Create automated workflows for quarantine based on security alerts
+- Implement approval processes for quarantine actions in production environments
+- Regularly review quarantined devices to determine if they can be released
 
-3. **Security**
+### Error Management
 
-   - Store credentials securely using Ansible Vault
-   - Use the least privileged access principle for SCM authentication
-   - Regularly rotate client credentials
+- Implement proper error handling for API failures
+- Create notification mechanisms for quarantine failures
+- Log all quarantine actions for audit purposes
+- Verify quarantine status after operations using the info module
+- Handle timeouts and connection issues gracefully
 
-4. **Workflow Integration**
+### Workflow Integration
 
-   - Integrate quarantine operations into security incident response playbooks
-   - Use with monitoring systems to automate quarantine of suspicious devices
-   - Include validation steps before and after quarantining devices
+- Use with monitoring systems to automate quarantine of suspicious devices
+- Include validation steps before and after quarantining devices
+- Integrate with ticketing systems for tracking quarantine incidents
+- Implement automated remediation workflows for quarantined devices
+- Create reports of quarantine actions for security teams
 
 ## Related Modules
 
-- [quarantined_devices_info](quarantined_devices_info.md): Retrieve information about quarantined
-  devices
-- [address](address.md): Manage address objects
-- [tag](tag.md): Manage tag objects that can be used to mark quarantined devices
+- [quarantined_devices_info](quarantined_devices_info.md) - Retrieve information about quarantined devices
+- [address](address.md) - Manage address objects that can be used to represent quarantined devices
+- [tag](tag.md) - Manage tag objects that can be used to mark quarantined devices
+- [security_rule](security_rule.md) - Create security policies affecting quarantined devices
