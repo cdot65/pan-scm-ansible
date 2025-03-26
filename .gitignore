@@ -84,3 +84,4 @@ collections
 scripts
 /.env
 /ansible_collections/
+tests/vault.yaml

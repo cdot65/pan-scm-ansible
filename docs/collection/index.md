@@ -144,6 +144,7 @@ The collection includes modules for managing various SCM configuration objects:
 | [DNS Security Profile](modules/dns_security_profile.md) | Manage DNS security profiles | [DNS Security Profile Info](modules/dns_security_profile_info.md) |
 | [Security Profiles Group](modules/security_profiles_group.md) | Manage security profile groups | - |
 | [URL Categories](modules/url_categories.md) | Manage URL categories | [URL Categories Info](modules/url_categories_info.md) |
+| [Vulnerability Protection Profile](modules/vulnerability_protection_profile.md) | Manage vulnerability protection profiles | [Vulnerability Protection Profile Info](modules/vulnerability_protection_profile_info.md) |
 
 [View All Modules →](modules/index.md)
 

@@ -66,6 +66,7 @@ These modules configure security policies and profiles:
 | [dns_security_profile](dns_security_profile.md) | Manage DNS security profiles | [dns_security_profile_info](dns_security_profile_info.md) |
 | [security_profiles_group](security_profiles_group.md) | Manage security profile groups | - |
 | [url_categories](url_categories.md) | Manage URL categories | [url_categories_info](url_categories_info.md) |
+| [vulnerability_protection_profile](vulnerability_protection_profile.md) | Manage vulnerability protection profiles | [vulnerability_protection_profile_info](vulnerability_protection_profile_info.md) |
 
 ## Common Module Parameters
 

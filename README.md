@@ -105,6 +105,7 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 | [decryption_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/decryption_profile/)           | Manage decryption profiles     | [decryption_profile_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/decryption_profile_info/)     |
 | [dns_server_profiles](https://cdot65.github.io/pan-scm-ansible/collection/modules/dns_server_profiles/)         | Manage DNS server profiles     | [dns_server_profiles_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/dns_server_profiles_info/)   |
 | [security_profiles_group](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_profiles_group/) | Manage security profile groups | -                                                                                                                   |
+| [vulnerability_protection_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/vulnerability_protection_profile/) | Manage vulnerability protection profiles | [vulnerability_protection_profile_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/vulnerability_protection_profile_info/) |
 
 ## Example Usage
 
