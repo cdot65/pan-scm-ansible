@@ -33,6 +33,11 @@ help:
 	@echo "  make format-path PATH=path Format a specific path with ruff"
 	@echo "  make isort                 Run isort on all modules"
 	@echo "  make fix-lint              Fix common linting issues"
+	@echo "  make format-docs           Format markdown files in docs/ for MkDocs"
+	@echo "  make format-docs-file FILE=file Format a specific markdown file for MkDocs"
+	@echo "  make lint-docs             Lint markdown files in docs/ directory"
+	@echo "  make format-module-docs    Format module documentation"
+	@echo "  make docs-prepare-release  Prepare all documentation for release"
 	@echo "  make test-address          Run address module tests"
 	@echo "  make test-address-info     Run address_info module tests"
 	@echo "  make test-wildfire         Run wildfire_antivirus_profiles module tests"
@@ -203,6 +208,68 @@ check:
 	@echo "Running diagnostic checks..."
 	chmod +x check_installation.sh
 	ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ./check_installation.sh
+
+# Format markdown files in docs/
+.PHONY: format-docs
+format-docs:
+	@echo "Formatting markdown files in docs/ directory for MkDocs..."
+	@# Format with all plugins helpful for MkDocs
+	poetry run mdformat --wrap=100 --number --plugins mkdocs,gfm,frontmatter,tables,admon docs/
+	@# Fix tables formatting for better compatibility with MkDocs material theme
+	find docs/ -name "*.md" -exec poetry run mdformat --wrap=100 --number --plugins tables,admon {} \;
+	@echo "Markdown formatting completed."
+	@echo "Now running post-format validation to ensure MkDocs compatibility..."
+	poetry run mkdocs build --strict
+	@echo "All documents validated successfully."
+
+# Format a specific markdown file
+.PHONY: format-docs-file
+format-docs-file:
+ifndef FILE
+	$(error FILE is undefined. Usage: make format-docs-file FILE=path/to/file.md)
+endif
+	@echo "Formatting markdown file $(FILE) for MkDocs..."
+	poetry run mdformat --wrap=100 --number --plugins mkdocs,gfm,frontmatter,tables,admon "$(FILE)"
+	@echo "Markdown formatting completed."
+	@echo "Now validating file with MkDocs build..."
+	poetry run mkdocs build --strict
+	@echo "Document validated successfully."
+
+# Lint markdown files in docs/
+.PHONY: lint-docs
+lint-docs:
+	@echo "Linting markdown files in docs/ directory..."
+	poetry run mdformat --check --plugins mkdocs,gfm,frontmatter,tables,admon docs/
+	@echo "Checking MkDocs build validation..."
+	poetry run mkdocs build --strict
+	@echo "Markdown linting and validation completed successfully."
+
+# Format module documentation specifically
+.PHONY: format-module-docs
+format-module-docs:
+	@echo "Formatting module documentation for MkDocs..."
+	@# Format module documentation with special handling for tables and code blocks
+	poetry run mdformat --wrap=100 --number --plugins mkdocs,gfm,frontmatter,tables,admon docs/collection/modules/
+	@# Special clean-up for module docs tables
+	find docs/collection/modules/ -name "*.md" -exec poetry run mdformat --wrap=100 --number --plugins tables {} \;
+	@echo "Module documentation formatting completed."
+	@echo "Validating module documentation with MkDocs build..."
+	poetry run mkdocs build --strict
+	@echo "All module documentation validated successfully."
+
+# Prepare all documentation for release
+.PHONY: docs-prepare-release
+docs-prepare-release:
+	@echo "Preparing all documentation for release..."
+	@# First, format all docs
+	$(MAKE) format-docs
+	@# Then, run special formatting for module docs
+	$(MAKE) format-module-docs
+	@# Verify docs build correctly
+	poetry run mkdocs build --strict
+	@# Check all links in documentation
+	poetry run mkdocs build --strict
+	@echo "Documentation has been prepared for release and validated successfully."
 
 # Build docs
 .PHONY: docs
