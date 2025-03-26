@@ -1,0 +1,42 @@
+---
+# Playbook for testing Strata Cloud Manager BGP Routing operations
+# Usage: ansible-playbook tests/test_bgp_routing.yaml --vault-password-file=tests/.vault_password
+#
+# Note: This is a placeholder test file that follows the golden template pattern.
+# To run this test, the bgp_routing module needs to be registered in the SCM SDK.
+# The current SDK version does not include the bgp_routing module/service.
+# This test will be completed once the SDK supports the bgp_routing module.
+
+- name: Test SCM BGP Routing Module CRUD Operations
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+    
+  tasks:
+    # ==========================================
+    # PLACEHOLDER
+    # ==========================================
+    - name: Print test information - SDK BGP Module Not Available
+      ansible.builtin.debug:
+        msg: |
+          This is a placeholder test file for the BGP Routing module.
+          The current SCM SDK version does not support the bgp_routing module.
+          This test will be completed once the SDK adds support for BGP routing.
+          
+          The test follows the golden template pattern with:
+          - Initial setup and cleanup
+          - CREATE operations with idempotency checks
+          - READ operations
+          - UPDATE operations with idempotency checks 
+          - DELETE operations
+          - Final cleanup
+      tags:
+        - dev-test
