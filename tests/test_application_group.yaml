@@ -1,0 +1,190 @@
+---
+- name: Test Application Group Module in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # First clean up any existing test application groups if they exist
+    - name: Remove test application groups if they exist
+      cdot65.scm.application_group:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "web-apps"
+        - "network-apps"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # Create required tags
+    - name: Create tags needed for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        color: "{{ item.color }}"
+        comments: "Test tag for application group module testing"
+        folder: "Texas"
+        state: "present"
+      ignore_errors: true
+      loop:
+        - { name: "dev-ansible", color: "Blue" }
+        - { name: "dev-automation", color: "Green" }
+        - { name: "dev-test", color: "Orange" }
+        - { name: "dev-cicd", color: "Red" }
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
+    - name: Create web applications group
+      cdot65.scm.application_group:
+        provider: "{{ provider }}"
+        name: "web-apps"
+        members:
+          - "ssl"
+          - "web-browsing"
+        folder: "Texas"
+        state: "present"
+      register: web_app_group_result
+      tags:
+        - dev-test
+
+    - name: Verify web applications group creation
+      ansible.builtin.assert:
+        that:
+          - web_app_group_result is changed
+          - web_app_group_result.application_group is defined
+          - web_app_group_result.application_group.name == "web-apps"
+          - web_app_group_result.application_group.members | length == 2
+          - '"ssl" in web_app_group_result.application_group.members'
+          - '"web-browsing" in web_app_group_result.application_group.members'
+        fail_msg: "Failed to create web applications group"
+        success_msg: "Successfully created web applications group"
+      tags:
+        - dev-cicd
+
+    - name: Create network applications group
+      cdot65.scm.application_group:
+        provider: "{{ provider }}"
+        name: "network-apps"
+        members:
+          - "dns-base"
+          - "ntp"
+        folder: "Texas"
+        state: "present"
+      register: network_app_group_result
+      tags:
+        - dev-automation
+
+    - name: Verify network applications group creation
+      ansible.builtin.assert:
+        that:
+          - network_app_group_result is changed
+          - network_app_group_result.application_group is defined
+          - network_app_group_result.application_group.name == "network-apps"
+          - network_app_group_result.application_group.members | length == 2
+          - '"dns-base" in network_app_group_result.application_group.members'
+          - '"ntp" in network_app_group_result.application_group.members'
+        fail_msg: "Failed to create network applications group"
+        success_msg: "Successfully created network applications group"
+
+    # Test idempotency
+    - name: Test idempotency for application group (re-run same create)
+      cdot65.scm.application_group:
+        provider: "{{ provider }}"
+        name: "web-apps"
+        members:
+          - "ssl"
+          - "web-browsing"
+        folder: "Texas"
+        state: "present"
+      register: idempotency_result
+
+    - name: Verify application group idempotency
+      ansible.builtin.assert:
+        that:
+          - idempotency_result is not changed
+        fail_msg: "Application group module failed idempotency test"
+        success_msg: "Application group module passed idempotency test"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    - name: Update web applications group membership
+      cdot65.scm.application_group:
+        provider: "{{ provider }}"
+        name: "web-apps"
+        members:
+          - "ssl"
+          - "web-browsing"
+          - "dns-base"
+        folder: "Texas"
+        state: "present"
+      register: update_result
+      tags:
+        - dev-ansible
+
+    - name: Verify application group update
+      ansible.builtin.assert:
+        that:
+          - update_result is changed
+          - update_result.application_group is defined
+          - update_result.application_group.members | length == 3
+          - '"dns-base" in update_result.application_group.members'
+        fail_msg: "Failed to update application group"
+        success_msg: "Successfully updated application group"
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Remove application groups
+      cdot65.scm.application_group:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      loop:
+        - "web-apps"
+        - "network-apps"
+      register: delete_result
+      tags:
+        - dev-test
+
+    - name: Verify application groups were deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is succeeded
+        fail_msg: "Failed to delete application groups"
+        success_msg: "Successfully deleted application groups"
+      tags:
+        - dev-cicd
+
+    # Clean up test tags
+    - name: Remove tags created for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+      tags:
+        - dev-cleanup

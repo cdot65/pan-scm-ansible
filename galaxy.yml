@@ -1,0 +1,45 @@
+---
+authors:
+  - Calvin Remsburg <calvin@cdot.io>
+description: Ansible Collection for managing SCM with pan-scm-sdk.
+documentation: https://github.com/cdot65/pan-scm-ansible/blob/main/pan_scm_ansible/README.md
+homepage: https://github.com/cdot65/pan-scm-ansible/
+issues: https://github.com/cdot65/pan-scm-ansible/issues
+license:
+  - MIT
+namespace: cdot65
+name: scm
+repository: https://github.com/cdot65/pan-scm-ansible
+readme: README.md
+tags:
+  - stratacloudmanager
+  - firewall
+  - sase
+  - prismaaccess
+  - networksecurity
+  - cybersecurity
+  - infrastructure
+  - paloaltonetworks
+  - panos
+  - automation
+  - networkautomation
+version: 0.2.0 # New version to avoid conflicts with previous builds
+build_ignore:
+  - tools
+  - setup.cfg
+  - galaxy.yml.j2
+  - template_galaxy.yml
+  - "*.tar.gz"
+  - ".CLAUDE"
+  - ".CLAUDE/**"
+  - ".ansible"
+  - ".ansible/**"
+  - "collections"
+  - "collections/**"
+  - "site"
+  - "site/**"
+  - "dist"
+  - "dist/**"
+  - "__pycache__"
+  - "__pycache__/**"
+  - "*.pyc"

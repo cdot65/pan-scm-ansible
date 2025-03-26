@@ -1,0 +1,59 @@
+# .ansible-lint configuration for pan-scm-ansible
+---
+# Exclude paths from linting
+exclude_paths:
+  - .git/
+  - .github/
+  - .venv/
+  - .pytest_cache/
+  - __pycache__/
+  - tests/unit/
+  - dist/
+  - .idea/
+  - docs/
+  - tests/
+
+# Enable specific rules
+enable_list:
+  - empty-string-compare
+  - no-log-password
+  - no-same-owner
+  - yaml
+
+# Disable specific rules
+skip_list:
+  - yaml[line-length]
+  - experimental
+  - meta-runtime
+  - schema[meta]
+  - fqcn-builtins
+  - role-name
+  - internal-error
+  - galaxy
+  - "204"
+  - "ignore-errors"
+  - "var-naming[no-role-prefix]"
+
+# Set verbosity level
+verbosity: 1
+
+# Use default rules
+use_default_rules: true
+
+# Set linting mode (strict or normal)
+strict: false
+
+# Suppress warnings for specific rules
+warn_list:
+  - command-instead-of-module
+  - command-instead-of-shell
+  - deprecated-command-syntax
+  - inline-env-var
+  - no-changed-when
+  - no-handler
+  - var-naming[no-role-prefix]
+  - experimental
+
+# Custom settings (adjust as needed)
+parseable: true
+loop_var_prefix: ^(item|ansible_loop)

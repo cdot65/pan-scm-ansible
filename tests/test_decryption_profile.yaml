@@ -1,0 +1,295 @@
+---
+# Playbook for testing Strata Cloud Manager decryption profile operations
+# Usage: ansible-playbook tests/test_decryption_profile.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM Decryption Profile Module CRUD Operations
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+    test_folder: "Texas"
+  tasks:
+    # First clean up any existing test decryption profile objects if they exist
+    - name: Remove test decryption profile objects if they exist
+      cdot65.scm.decryption_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Test_Decryption_FwdProxy"
+        - "Test_Decryption_Inbound"
+        - "Test_Decryption_NoProxy"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
+    - name: Create a decryption profile with SSL Forward Proxy enabled
+      cdot65.scm.decryption_profile:
+        provider: "{{ provider }}"
+        name: "Test_Decryption_FwdProxy"
+        description: "A decryption profile with SSL Forward Proxy enabled"
+        ssl_forward_proxy:
+          enabled: true
+          block_expired_cert: true
+          block_untrusted_issuer: true
+        ssl_protocol_settings:
+          min_version: "tls1-2"
+          max_version: "tls1-3"
+          keyxchg_algorithm: ["ecdhe"]
+          encrypt_algorithm: ["aes-128-gcm", "aes-256-gcm"]
+          auth_algorithm: ["sha256", "sha384"]
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_fwdproxy_result
+      tags:
+        - dev-test
+
+    - name: Debug forward proxy creation result
+      debug:
+        var: create_fwdproxy_result
+        verbosity: 1
+
+    - name: Verify SSL Forward Proxy profile creation
+      ansible.builtin.assert:
+        that:
+          - create_fwdproxy_result is changed
+          - create_fwdproxy_result.decryption_profile is defined
+        fail_msg: "Failed to create SSL Forward Proxy decryption profile"
+        success_msg: "Successfully created SSL Forward Proxy decryption profile"
+      tags:
+        - dev-cicd
+
+    - name: Create a decryption profile with SSL Inbound Inspection enabled
+      cdot65.scm.decryption_profile:
+        provider: "{{ provider }}"
+        name: "Test_Decryption_Inbound"
+        description: "A decryption profile with SSL Inbound Inspection enabled"
+        ssl_inbound_inspection:
+          enabled: true
+        ssl_protocol_settings:
+          min_version: "tls1-2"
+          max_version: "tls1-3"
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_inbound_result
+      tags:
+        - dev-test
+
+    - name: Debug inbound inspection creation result
+      debug:
+        var: create_inbound_result
+        verbosity: 1
+
+    - name: Verify SSL Inbound Inspection profile creation
+      ansible.builtin.assert:
+        that:
+          - create_inbound_result is changed
+          - create_inbound_result.decryption_profile is defined
+        fail_msg: "Failed to create SSL Inbound Inspection decryption profile"
+        success_msg: "Successfully created SSL Inbound Inspection decryption profile"
+      tags:
+        - dev-cicd
+
+    - name: Create a decryption profile with SSL No Proxy enabled
+      cdot65.scm.decryption_profile:
+        provider: "{{ provider }}"
+        name: "Test_Decryption_NoProxy"
+        description: "A decryption profile with SSL No Proxy enabled"
+        ssl_no_proxy:
+          enabled: true
+          block_session_expired_cert: true
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_noproxy_result
+      tags:
+        - dev-test
+
+    - name: Debug no proxy creation result
+      debug:
+        var: create_noproxy_result
+        verbosity: 1
+
+    - name: Verify SSL No Proxy profile creation
+      ansible.builtin.assert:
+        that:
+          - create_noproxy_result is changed
+          - create_noproxy_result.decryption_profile is defined
+        fail_msg: "Failed to create SSL No Proxy decryption profile"
+        success_msg: "Successfully created SSL No Proxy decryption profile"
+      tags:
+        - dev-automation
+
+    # Set profile names to fixed variables after creation
+    - name: Set profile names to existing names
+      ansible.builtin.set_fact:
+        fwdproxy_name: "{{ create_fwdproxy_result.decryption_profile.name }}"
+        inbound_name: "{{ create_inbound_result.decryption_profile.name }}"
+        noproxy_name: "{{ create_noproxy_result.decryption_profile.name }}"
+
+    # ==========================================
+    # READ operation tests
+    # ==========================================
+    - name: Get information about a specific decryption profile
+      cdot65.scm.decryption_profile_info:
+        provider: "{{ provider }}"
+        name: "{{ fwdproxy_name }}"
+        folder: "{{ test_folder }}"
+      register: info_result
+      tags:
+        - dev-test
+
+    - name: Debug info result
+      debug:
+        var: info_result
+        verbosity: 1
+
+    - name: Verify decryption profile info retrieval
+      ansible.builtin.assert:
+        that:
+          - info_result is succeeded
+          - info_result.profile is defined
+          - info_result.profile.name == fwdproxy_name
+        fail_msg: "Failed to retrieve decryption profile information"
+        success_msg: "Successfully retrieved decryption profile information"
+      tags:
+        - dev-ansible
+
+    - name: List all decryption profiles in the test folder
+      cdot65.scm.decryption_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+      register: list_result
+      tags:
+        - dev-test
+
+    - name: Debug list result
+      debug:
+        var: list_result
+        verbosity: 1
+
+    - name: Verify decryption profiles listing
+      ansible.builtin.assert:
+        that:
+          - list_result is succeeded
+          - list_result.profiles is defined
+          - list_result.profiles | length >= 3
+        fail_msg: "Failed to list decryption profiles"
+        success_msg: "Successfully listed decryption profiles"
+      tags:
+        - dev-ansible
+
+    # ==========================================
+    # Test idempotency
+    # ==========================================
+    #- name: Test idempotency with the forward proxy profile (re-run same create)
+    #  cdot65.scm.decryption_profile:
+    #    provider: "{{ provider }}"
+    #    name: "{{ fwdproxy_name }}"
+    #    description: "A decryption profile with SSL Forward Proxy enabled"
+    #    ssl_forward_proxy:
+    #      enabled: true
+    #      block_expired_cert: true
+    #      block_untrusted_issuer: true
+    #    ssl_protocol_settings:
+    #      min_version: "tls1-2"
+    #      max_version: "tls1-3"
+    #      keyxchg_algorithm: ["ecdhe"]
+    #      encrypt_algorithm: ["aes-128-gcm", "aes-256-gcm"]
+    #      auth_algorithm: ["sha256", "sha384"]
+    #    folder: "{{ test_folder }}"
+    #    state: "present"
+    # register: idempotency_result
+    # tags:
+    #   - dev-test
+
+        #- name: Verify idempotency behavior
+        #ansible.builtin.assert:
+        #that:
+        #  - idempotency_result is not changed
+        #fail_msg: "Decryption profile module failed idempotency test"
+        #success_msg: "Decryption profile module passed idempotency test"
+        #tags:
+        #- dev-cicd
+
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    - name: Update the forward proxy decryption profile
+      cdot65.scm.decryption_profile:
+        provider: "{{ provider }}"
+        name: "{{ fwdproxy_name }}"
+        description: "Updated forward proxy decryption profile"
+        ssl_forward_proxy:
+          enabled: true
+          block_expired_cert: true
+          block_untrusted_issuer: true
+          block_unknown_cert: true
+        ssl_protocol_settings:
+          min_version: "tls1-2"
+          max_version: "tls1-3"
+          keyxchg_algorithm: ["ecdhe"]
+          encrypt_algorithm: ["aes-128-gcm", "aes-256-gcm"]
+          auth_algorithm: ["sha256", "sha384"]
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: update_result
+      tags:
+        - dev-test
+
+    - name: Debug update result
+      debug:
+        var: update_result
+        verbosity: 1
+
+    - name: Verify decryption profile update
+      ansible.builtin.assert:
+        that:
+          - update_result is changed
+          - update_result.decryption_profile is defined
+        fail_msg: "Failed to update decryption profile"
+        success_msg: "Successfully updated decryption profile"
+      tags:
+        - dev-automation
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Delete the decryption profiles
+      cdot65.scm.decryption_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      loop:
+        - "{{ fwdproxy_name }}"
+        - "{{ inbound_name }}"
+        - "{{ noproxy_name }}"
+      register: delete_result
+      tags:
+        - dev-test
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+        verbosity: 1
+
+    - name: Verify decryption profiles were deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is succeeded
+        fail_msg: "Failed to delete some decryption profiles"
+        success_msg: "Successfully deleted all decryption profiles"
+      tags:
+        - dev-cicd

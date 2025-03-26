@@ -1,0 +1,208 @@
+---
+# Test playbook for region_info module
+# Usage: poetry run ansible-playbook tests/test_region_info.yaml --vault-password-file=tests/.vault_password
+
+- name: Test region_info module
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars_files:
+    - vault.yaml
+
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    # Use a randomized prefix for test objects to avoid conflicts
+    region_prefix: "ansible_test_{{ lookup('password', '/dev/null chars=ascii_lowercase length=8') }}"
+    region_name: "{{ region_prefix }}_region"
+    west_region_name: "{{ region_prefix }}_west"
+    east_region_name: "{{ region_prefix }}_east"
+
+  tasks:
+    # Create test regions for testing info module
+    - name: Create west test region
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.region:
+        provider: "{{ provider }}"
+        name: "{{ west_region_name }}"
+        geo_location:
+          latitude: 37.7749
+          longitude: -122.4194
+        address:
+          - "10.0.0.0/8"
+          - "192.168.1.0/24"
+        folder: "Global"
+        state: "present"
+      register: west_create_result
+
+    - name: Create east test region
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.region:
+        provider: "{{ provider }}"
+        name: "{{ east_region_name }}"
+        geo_location:
+          latitude: 40.7128
+          longitude: -74.0060
+        address:
+          - "172.16.0.0/16"
+          - "192.168.2.0/24"
+        folder: "Global"
+        state: "present"
+      register: east_create_result
+
+    - name: Debug create results
+      tags:
+        - dev-test
+      debug:
+        msg: "Created test regions: {{ west_region_name }} and {{ east_region_name }}"
+        verbosity: 1
+
+    # Test listing all regions
+    - name: List all regions in Global folder
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.region_info:
+        provider: "{{ provider }}"
+        folder: "Global"
+      register: list_all_result
+
+    - name: Debug list all result
+      tags:
+        - dev-test
+      debug:
+        var: list_all_result
+        verbosity: 1
+
+    - name: Verify list all result
+      tags:
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - list_all_result.regions is defined
+          - list_all_result.regions | length > 0
+          - list_all_result.regions | selectattr('name', 'equalto', west_region_name) | list | length == 1
+          - list_all_result.regions | selectattr('name', 'equalto', east_region_name) | list | length == 1
+
+    # Test fetching a specific region by name
+    - name: Get a specific region by name
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.region_info:
+        provider: "{{ provider }}"
+        name: "{{ west_region_name }}"
+        folder: "Global"
+      register: specific_region_result
+
+    - name: Debug specific region result
+      tags:
+        - dev-test
+      debug:
+        var: specific_region_result
+        verbosity: 1
+
+    - name: Verify specific region result
+      tags:
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - specific_region_result.region is defined
+          - specific_region_result.region.name == west_region_name
+          - specific_region_result.region.geo_location.latitude | float == 37.7749
+          - specific_region_result.region.geo_location.longitude | float == -122.4194
+          - specific_region_result.region.address | length == 2
+          - "'10.0.0.0/8' in specific_region_result.region.address"
+
+    # Test filtering by geographic location (west coast)
+    - name: Filter regions by geographic location (west coast)
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.region_info:
+        provider: "{{ provider }}"
+        folder: "Global"
+        geo_location:
+          latitude:
+            min: 30
+            max: 40
+          longitude:
+            min: -130
+            max: -120
+      register: geo_filter_result
+
+    - name: Debug geo filter result
+      tags:
+        - dev-test
+      debug:
+        var: geo_filter_result
+        verbosity: 1
+
+    - name: Verify geo filter result
+      tags:
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - geo_filter_result.regions is defined
+          - geo_filter_result.regions | selectattr('name', 'equalto', west_region_name) | list | length == 1
+          - geo_filter_result.regions | selectattr('name', 'equalto', east_region_name) | list | length == 0
+
+    # Test filtering by addresses
+    - name: Filter regions by address
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.region_info:
+        provider: "{{ provider }}"
+        folder: "Global"
+        addresses: ["172.16.0.0/16"]
+      register: address_filter_result
+
+    - name: Debug address filter result
+      tags:
+        - dev-test
+      debug:
+        var: address_filter_result
+        verbosity: 1
+
+    - name: Verify address filter result
+      tags:
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - address_filter_result.regions is defined
+          - address_filter_result.regions | selectattr('name', 'equalto', east_region_name) | list | length == 1
+          - address_filter_result.regions | selectattr('name', 'equalto', west_region_name) | list | length == 0
+
+    # Clean up test regions
+    - name: Delete west test region
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.region:
+        provider: "{{ provider }}"
+        name: "{{ west_region_name }}"
+        folder: "Global"
+        state: "absent"
+
+    - name: Delete east test region
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.region:
+        provider: "{{ provider }}"
+        name: "{{ east_region_name }}"
+        folder: "Global"
+        state: "absent"

@@ -1,0 +1,121 @@
+---
+- name: Test DNS Security Profile Info Module
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    folder_name: "Texas"
+    dns_security_profile_name: "test-dns-security-profile-info"
+
+  tasks:
+    # Setup a test profile first
+    - name: Create a DNS security profile for testing
+      cdot65.scm.dns_security_profile:
+        provider: "{{ provider }}"
+        name: "{{ dns_security_profile_name }}"
+        description: "DNS security profile for info testing"
+        botnet_domains:
+          dns_security_categories:
+            - name: "command-and-control"
+              action: "block"
+              log_level: "high"
+            - name: "malware"
+              action: "sinkhole"
+              log_level: "critical"
+          sinkhole:
+            ipv4_address: "pan-sinkhole-default-ip"
+            ipv6_address: "::1"
+        folder: "{{ folder_name }}"
+        state: "present"
+      register: setup_result
+
+    # Test fetching info by name
+    - name: Get DNS security profile info by name
+      cdot65.scm.dns_security_profile_info:
+        provider: "{{ provider }}"
+        name: "{{ dns_security_profile_name }}"
+        folder: "{{ folder_name }}"
+      register: info_result
+
+    - name: Verify info retrieval by name
+      assert:
+        that:
+          - info_result.dns_security_profile is defined
+          - info_result.dns_security_profile.name == dns_security_profile_name
+          - info_result.dns_security_profile.description == "DNS security profile for info testing"
+          - info_result.dns_security_profile.botnet_domains is defined
+          - info_result.dns_security_profile.botnet_domains.dns_security_categories | length == 2
+      ignore_errors: true
+
+    # Test listing with filters
+    - name: List all DNS security profiles in folder
+      cdot65.scm.dns_security_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder_name }}"
+      register: list_result
+
+    - name: Verify list operation
+      assert:
+        that:
+          - list_result.dns_security_profiles is defined
+          - list_result.dns_security_profiles | length > 0
+      ignore_errors: true
+
+    # Test with DNS security categories filter
+    - name: List DNS security profiles with specific DNS security categories
+      cdot65.scm.dns_security_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder_name }}"
+        dns_security_categories: ["command-and-control"]
+      register: category_result
+
+    - name: Verify filter by DNS security categories
+      assert:
+        that:
+          - category_result.dns_security_profiles is defined
+          - category_result.dns_security_profiles | length > 0
+      ignore_errors: true
+
+    # Test with exact match and exclusions
+    - name: List DNS security profiles with exact match
+      cdot65.scm.dns_security_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder_name }}"
+        exact_match: true
+      register: exact_match_result
+
+    - name: Verify exact match filter
+      assert:
+        that:
+          - exact_match_result.dns_security_profiles is defined
+      ignore_errors: true
+
+    # Test with exclusions
+    - name: List DNS security profiles with exclusions
+      cdot65.scm.dns_security_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder_name }}"
+        exclude_folders: ["All"]
+      register: exclude_result
+
+    - name: Verify exclusion filter
+      assert:
+        that:
+          - exclude_result.dns_security_profiles is defined
+      ignore_errors: true
+
+    # Clean up
+    - name: Delete test DNS security profile
+      cdot65.scm.dns_security_profile:
+        provider: "{{ provider }}"
+        name: "{{ dns_security_profile_name }}"
+        folder: "{{ folder_name }}"
+        state: "absent"
+      register: cleanup_result

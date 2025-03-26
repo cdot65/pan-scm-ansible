@@ -1,0 +1,201 @@
+---
+- name: Test Tag Module in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # First clean up any existing test tags if they exist
+    - name: Remove test tags if they exist
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Production"
+        - "Test"
+        - "Development"
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+      tags:
+        - dev-cleanup
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
+    - name: Create required tags for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        color: "{{ item.color }}"
+        comments: "Tag for {{ item.name }} environment"
+        folder: "Texas"
+        state: "present"
+      loop:
+        - { name: "dev-ansible", color: "Blue" }
+        - { name: "dev-automation", color: "Green" }
+        - { name: "dev-test", color: "Orange" }
+        - { name: "dev-cicd", color: "Red" }
+      register: create_dev_tags_result
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    - name: Verify dev tags creation
+      ansible.builtin.assert:
+        that:
+          - create_dev_tags_result is succeeded
+        fail_msg: "Failed to create dev tags"
+        success_msg: "Successfully created dev tags"
+
+    - name: Create a new production tag
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Production"
+        color: "Blue"
+        comments: "Production environment tag"
+        folder: "Texas"
+        state: "present"
+      register: create_prod_tag_result
+      tags:
+        - dev-test
+
+    - name: Verify production tag creation
+      ansible.builtin.assert:
+        that:
+          - create_prod_tag_result is changed
+          - create_prod_tag_result.tag is defined
+          - create_prod_tag_result.tag.name == "Production"
+          - create_prod_tag_result.tag.color == "Blue"
+        fail_msg: "Failed to create production tag"
+        success_msg: "Successfully created production tag"
+      tags:
+        - dev-cicd
+
+    - name: Create a test environment tag
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Test"
+        color: "Green"
+        comments: "Test environment tag"
+        folder: "Texas"
+        state: "present"
+      register: create_test_tag_result
+      tags:
+        - dev-automation
+
+    - name: Verify test tag creation
+      ansible.builtin.assert:
+        that:
+          - create_test_tag_result is changed
+          - create_test_tag_result.tag is defined
+          - create_test_tag_result.tag.name == "Test"
+          - create_test_tag_result.tag.color == "Green"
+        fail_msg: "Failed to create test tag"
+        success_msg: "Successfully created test tag"
+
+    # Test idempotency
+    - name: Test idempotency for tag (re-run same create)
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Production"
+        color: "Blue"
+        comments: "Production environment tag"
+        folder: "Texas"
+        state: "present"
+      register: idempotency_result
+
+    - name: Verify tag idempotency
+      ansible.builtin.assert:
+        that:
+          - idempotency_result is not changed
+        fail_msg: "Tag module failed idempotency test"
+        success_msg: "Tag module passed idempotency test"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    - name: Update production tag color
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Production"
+        color: "Red"
+        folder: "Texas"
+        state: "present"
+      register: update_result
+      tags:
+        - dev-ansible
+
+    - name: Verify tag update
+      ansible.builtin.assert:
+        that:
+          - update_result is changed
+          - update_result.tag is defined
+          - update_result.tag.color == "Red"
+        fail_msg: "Failed to update tag"
+        success_msg: "Successfully updated tag"
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Remove Production tag
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Production"
+        folder: "Texas"
+        state: "absent"
+      register: delete_prod_result
+      tags:
+        - dev-test
+
+    - name: Verify production tag deletion
+      ansible.builtin.assert:
+        that:
+          - delete_prod_result is changed
+        fail_msg: "Failed to delete production tag"
+        success_msg: "Successfully deleted production tag"
+
+    - name: Remove Test tag
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Test"
+        folder: "Texas"
+        state: "absent"
+      register: delete_test_result
+      tags:
+        - dev-test
+
+    - name: Verify test tag deletion
+      ansible.builtin.assert:
+        that:
+          - delete_test_result is changed
+        fail_msg: "Failed to delete test tag"
+        success_msg: "Successfully deleted test tag"
+
+    # Clean up test tags
+    - name: Remove dev tags created for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+      tags:
+        - dev-cleanup

@@ -1,0 +1,125 @@
+---
+# Test playbook for log_forwarding_profile_info module
+- name: Test log_forwarding_profile_info module
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars_files:
+    - vault.yaml
+
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    folder_name: "Texas"  # Use the folder referenced in examples
+    profile_prefix: "ansible_test_{{ lookup('password', '/dev/null chars=ascii_lowercase length=8') }}"
+
+  tasks:
+    # Create a test log forwarding profile for testing info module
+    - name: Create test log forwarding profile
+      cdot65.scm.log_forwarding_profile:
+        provider: "{{ provider }}"
+        name: "{{ profile_prefix }}_info_test"
+        description: "Test log forwarding profile for info module testing"
+        folder: "{{ folder_name }}"
+        filter:
+          - name: "critical-events"
+            filter: "severity eq critical"
+        match_list:
+          - name: "forward-critical-threats"
+            action: "forwarding"
+            send_http: ["test-http-profile"]
+            log_type: "threat"
+            filter: "critical-events"
+            send_to_panorama: true
+        state: "present"
+      register: create_result
+
+    - name: Debug create result
+      debug:
+        var: create_result
+        verbosity: 1
+
+    # Test fetching info for specific profile
+    - name: Get info for specific log forwarding profile
+      cdot65.scm.log_forwarding_profile_info:
+        provider: "{{ provider }}"
+        name: "{{ profile_prefix }}_info_test"
+        folder: "{{ folder_name }}"
+      register: specific_info_result
+
+    - name: Debug specific info result
+      debug:
+        var: specific_info_result
+        verbosity: 1
+
+    - name: Verify specific info result
+      assert:
+        that:
+          - specific_info_result.log_forwarding_profile is defined
+          - specific_info_result.log_forwarding_profile.name == profile_prefix + "_info_test"
+          - specific_info_result.log_forwarding_profile.description == "Test log forwarding profile for info module testing"
+          - specific_info_result.log_forwarding_profile.folder == folder_name
+
+    # Test listing all profiles in folder
+    - name: List all log forwarding profiles in folder
+      cdot65.scm.log_forwarding_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder_name }}"
+      register: list_result
+
+    - name: Debug list result
+      debug:
+        var: list_result
+        verbosity: 1
+
+    - name: Verify list result
+      assert:
+        that:
+          - list_result.log_forwarding_profiles is defined
+          - list_result.log_forwarding_profiles | length >= 1
+          - list_result.log_forwarding_profiles | selectattr('name', 'equalto', profile_prefix + '_info_test') | list | length == 1
+
+    # Test with exact_match filter
+    - name: List profiles with exact_match filter
+      cdot65.scm.log_forwarding_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder_name }}"
+        exact_match: true
+      register: exact_match_result
+
+    - name: Debug exact_match result
+      debug:
+        var: exact_match_result
+        verbosity: 1
+
+    # Test error handling for non-existent profile
+    - name: Try to get info for non-existent profile
+      cdot65.scm.log_forwarding_profile_info:
+        provider: "{{ provider }}"
+        name: "non_existent_profile_name"
+        folder: "{{ folder_name }}"
+      register: error_result
+      failed_when: false
+
+    - name: Debug error result
+      debug:
+        var: error_result
+        verbosity: 1
+
+    - name: Verify error handling
+      assert:
+        that:
+          - error_result.failed
+          - "'not found' in error_result.msg"
+
+    # Clean up test profile
+    - name: Delete test log forwarding profile
+      cdot65.scm.log_forwarding_profile:
+        provider: "{{ provider }}"
+        name: "{{ profile_prefix }}_info_test"
+        folder: "{{ folder_name }}"
+        state: "absent"

@@ -1,0 +1,196 @@
+---
+# Playbook for testing Strata Cloud Manager HIP Profile Info operations
+# Usage: ansible-playbook tests/test_hip_profile_info.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM HIP Profile Info Module Operations
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  collections:
+    - cdot65.scm
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_ts: "{{ lookup('pipe', 'date +%m%d%H%M') }}"
+    test_folder: "Shared"
+  tasks:
+    # First clean up any existing test HIP profile objects if they exist
+    - name: Remove test HIP profile objects if they exist
+      hip_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "hip-info-1-{{ test_ts }}"
+        - "hip-info-2-{{ test_ts }}"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # ==========================================
+    # CREATE test objects for info tests
+    # ==========================================
+    - name: Create test HIP profile 1
+      hip_profile:
+        provider: "{{ provider }}"
+        name: "hip-info-1-{{ test_ts }}"
+        description: "Windows devices basic profile"
+        match: '"is-win"'
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: profile1_result
+      tags:
+        - dev-test
+
+    - name: Create test HIP profile 2
+      hip_profile:
+        provider: "{{ provider }}"
+        name: "hip-info-2-{{ test_ts }}"
+        description: "Secure devices profile"
+        match: '"is-win" and "is-firewall-enabled"'
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: profile2_result
+      tags:
+        - dev-test
+
+    # Set profile names to fixed variables after creation
+    - name: Set profile names to existing names
+      ansible.builtin.set_fact:
+        basic_profile_name: "{{ profile1_result.hip_profile.name }}"
+        secure_profile_name: "{{ profile2_result.hip_profile.name }}"
+
+    # ==========================================
+    # LIST operation tests
+    # ==========================================
+    - name: Get all HIP profiles
+      hip_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+      register: list_result
+      tags:
+        - dev-test
+
+    - name: Debug list result
+      debug:
+        var: list_result
+        verbosity: 1
+
+    - name: Verify HIP profile list operation
+      ansible.builtin.assert:
+        that:
+          - list_result is succeeded
+          - list_result.hip_profiles is defined
+          - list_result.hip_profiles | length > 0
+        fail_msg: "Failed to list HIP profiles"
+        success_msg: "Successfully listed HIP profiles"
+
+    # ==========================================
+    # FETCH operation tests
+    # ==========================================
+    - name: Get specific HIP profile
+      hip_profile_info:
+        provider: "{{ provider }}"
+        name: "{{ secure_profile_name }}"
+        folder: "{{ test_folder }}"
+      register: fetch_result
+      tags:
+        - dev-test
+
+    - name: Debug fetch result
+      debug:
+        var: fetch_result
+        verbosity: 1
+
+    - name: Verify HIP profile fetch operation
+      ansible.builtin.assert:
+        that:
+          - fetch_result is succeeded
+          - fetch_result.hip_profile is defined
+          - fetch_result.hip_profile.name == secure_profile_name
+          - fetch_result.hip_profile.match == '"is-win" and "is-firewall-enabled"'
+        fail_msg: "Failed to fetch specific HIP profile"
+        success_msg: "Successfully fetched specific HIP profile"
+
+    # ==========================================
+    # FILTER operation tests
+    # ==========================================
+    - name: Get profiles with exact match
+      hip_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        exact_match: true
+      register: exact_match_result
+      tags:
+        - dev-test
+
+    - name: Debug exact match results
+      debug:
+        var: exact_match_result
+        verbosity: 1
+
+    - name: Verify exact match filter
+      ansible.builtin.assert:
+        that:
+          - exact_match_result is succeeded
+          - exact_match_result.hip_profiles is defined
+        fail_msg: "Failed to filter HIP profiles with exact match"
+        success_msg: "Successfully filtered HIP profiles with exact match"
+
+    - name: Get profiles with exclusions
+      hip_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        exclude_folders: ["System"]
+      register: exclude_result
+      tags:
+        - dev-test
+
+    - name: Debug exclude results
+      debug:
+        var: exclude_result
+        verbosity: 1
+
+    - name: Verify exclusion filter
+      ansible.builtin.assert:
+        that:
+          - exclude_result is succeeded
+          - exclude_result.hip_profiles is defined
+        fail_msg: "Failed to filter HIP profiles with exclusions"
+        success_msg: "Successfully filtered HIP profiles with exclusions"
+
+    # ==========================================
+    # DELETE operation tests (cleanup)
+    # ==========================================
+    - name: Delete the test HIP profiles
+      hip_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      loop:
+        - "{{ basic_profile_name }}"
+        - "{{ secure_profile_name }}"
+      register: delete_result
+      tags:
+        - dev-test
+        - dev-cleanup
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+        verbosity: 1
+
+    - name: Verify HIP profiles were deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is succeeded
+        fail_msg: "Failed to delete some HIP profiles"
+        success_msg: "Successfully deleted all HIP profiles"

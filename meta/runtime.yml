@@ -1,0 +1,36 @@
+---
+requires_ansible: ">=2.17.0"
+plugin_routing:
+  modules:
+    address:
+      redirect: cdot65.scm.address
+    address_group:
+      redirect: cdot65.scm.address_group
+    address_group_info:
+      redirect: cdot65.scm.address_group_info
+    address_info:
+      redirect: cdot65.scm.address_info
+    anti_spyware_profile:
+      redirect: cdot65.scm.anti_spyware_profile
+    anti_spyware_profile_info:
+      redirect: cdot65.scm.anti_spyware_profile_info
+    application:
+      redirect: cdot65.scm.application
+    application_group:
+      redirect: cdot65.scm.application_group
+    application_group_info:
+      redirect: cdot65.scm.application_group_info
+    application_info:
+      redirect: cdot65.scm.application_info
+    service:
+      redirect: cdot65.scm.service
+    service_group:
+      redirect: cdot65.scm.service_group
+    service_group_info:
+      redirect: cdot65.scm.service_group_info
+    service_info:
+      redirect: cdot65.scm.service_info
+    tag:
+      redirect: cdot65.scm.tag
+    tag_info:
+      redirect: cdot65.scm.tag_info

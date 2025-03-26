@@ -1,0 +1,333 @@
+---
+- name: Test Service Group Module in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # First clean up any existing test service groups and services if they exist
+    - name: Remove test service groups if they exist
+      cdot65.scm.service_group:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "web-services"
+        - "network-services"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    - name: Remove test services if they exist
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "web-service"
+        - "dns-service"
+        - "ssh-service"
+      tags:
+        - dev-cleanup
+
+    # Create required tags
+    - name: Create tags needed for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        color: "{{ item.color }}"
+        comments: "Test tag for service group module testing"
+        folder: "Texas"
+        state: "present"
+      ignore_errors: true
+      loop:
+        - { name: "dev-ansible", color: "Blue" }
+        - { name: "dev-automation", color: "Green" }
+        - { name: "dev-test", color: "Orange" }
+        - { name: "dev-cicd", color: "Red" }
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    # ==========================================
+    # CREATE test services for group testing
+    # ==========================================
+    - name: Create TCP service for web
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "web-service"
+        protocol:
+          tcp:
+            port: "80,443"
+            override:
+              timeout: 30
+              halfclose_timeout: 10
+              timewait_timeout: 2
+        description: "Web service ports"
+        folder: "Texas"
+        tag: ["dev-ansible", "dev-test"]
+        state: "present"
+      register: service_tcp_result
+      tags:
+        - dev-test
+
+    - name: Create UDP service for DNS
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "dns-service"
+        protocol:
+          udp:
+            port: "53"
+            override:
+              timeout: 30
+        description: "DNS service"
+        folder: "Texas"
+        tag: ["dev-automation", "dev-cicd"]
+        state: "present"
+      register: service_udp_result
+
+    - name: Create TCP service for SSH
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "ssh-service"
+        protocol:
+          tcp:
+            port: "22"
+            override:
+              timeout: 30
+              halfclose_timeout: 10
+              timewait_timeout: 2
+        description: "SSH service"
+        folder: "Texas"
+        tag: ["dev-cicd"]
+        state: "present"
+      register: service_ssh_result
+      tags:
+        - dev-cicd
+
+    # Verify service creation
+    - name: Verify services were created successfully
+      ansible.builtin.assert:
+        that:
+          - service_tcp_result is changed
+          - service_udp_result is changed
+          - service_ssh_result is changed
+        fail_msg: "Failed to create some test services"
+        success_msg: "Successfully created all test services"
+      tags:
+        - dev-automation
+
+    # ==========================================
+    # CREATE service group
+    # ==========================================
+    - name: Create a service group for web services
+      cdot65.scm.service_group:
+        provider: "{{ provider }}"
+        name: "web-services"
+        members:
+          - "web-service"
+          - "dns-service"
+        folder: "Texas"
+        tag:
+          - "dev-ansible"
+          - "dev-test"
+        state: "present"
+      register: create_result
+      tags:
+        - dev-test
+
+    - name: Debug service group response
+      debug:
+        var: create_result
+        verbosity: 1
+
+    - name: Verify service group created correctly
+      assert:
+        that:
+          - create_result.changed == true
+          - create_result.service_group.name == "web-services"
+          - create_result.service_group.members | length == 2
+          - '"web-service" in create_result.service_group.members'
+          - '"dns-service" in create_result.service_group.members'
+          - create_result.service_group.tag | length == 2
+          - '"dev-ansible" in create_result.service_group.tag'
+          - '"dev-test" in create_result.service_group.tag'
+        fail_msg: "Failed to create service group properly"
+        success_msg: "Successfully created service group"
+      tags:
+        - dev-cicd
+
+    # Create another service group
+    - name: Create a service group for network services
+      cdot65.scm.service_group:
+        provider: "{{ provider }}"
+        name: "network-services"
+        members:
+          - "dns-service"
+          - "ssh-service"
+        folder: "Texas"
+        tag:
+          - "dev-automation"
+          - "dev-cicd"
+        state: "present"
+      register: create_network_result
+      tags:
+        - dev-automation
+
+    - name: Verify network service group creation
+      assert:
+        that:
+          - create_network_result.changed == true
+          - create_network_result.service_group.name == "network-services"
+          - create_network_result.service_group.members | length == 2
+        fail_msg: "Failed to create network service group"
+        success_msg: "Successfully created network service group"
+
+    # Test idempotency
+    - name: Test idempotency for service group (re-run same create)
+      cdot65.scm.service_group:
+        provider: "{{ provider }}"
+        name: "web-services"
+        members:
+          - "web-service"
+          - "dns-service"
+        folder: "Texas"
+        tag:
+          - "dev-ansible"
+          - "dev-test"
+        state: "present"
+      register: idempotency_result
+
+    - name: Debug idempotency result
+      debug:
+        var: idempotency_result
+        verbosity: 1
+
+    - name: Verify service group idempotency
+      assert:
+        that:
+          - idempotency_result.changed == false
+        fail_msg: "Service group module failed idempotency test"
+        success_msg: "Service group module passed idempotency test"
+      tags:
+        - dev-ansible
+
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    - name: Update service group members and tags
+      cdot65.scm.service_group:
+        provider: "{{ provider }}"
+        name: "web-services"
+        members:
+          - "web-service"
+        folder: "Texas"
+        tag:
+          - "dev-ansible"
+          - "dev-cicd"
+        state: "present"
+      register: update_result
+      tags:
+        - dev-cicd
+
+    - name: Debug updated service group response
+      debug:
+        var: update_result
+        verbosity: 1
+
+    - name: Verify service group updated correctly
+      assert:
+        that:
+          - update_result.changed == true
+          - update_result.service_group.members | length == 1
+          - '"web-service" in update_result.service_group.members'
+          - '"dns-service" not in update_result.service_group.members'
+          - update_result.service_group.tag | length == 2
+          - '"dev-ansible" in update_result.service_group.tag'
+          - '"dev-cicd" in update_result.service_group.tag'
+          - '"dev-test" not in update_result.service_group.tag'
+        fail_msg: "Failed to update service group correctly"
+        success_msg: "Successfully updated service group"
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Remove service groups
+      cdot65.scm.service_group:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      loop:
+        - "web-services"
+        - "network-services"
+      register: delete_result
+      tags:
+        - dev-test
+
+    - name: Verify service groups deleted
+      assert:
+        that:
+          - delete_result.results[0].changed == true
+          - delete_result.results[1].changed == true
+        fail_msg: "Failed to delete service groups"
+        success_msg: "Successfully deleted service groups"
+      tags:
+        - dev-automation
+
+    # Test idempotency on deletion
+    - name: Verify service group is truly gone by trying to delete again
+      cdot65.scm.service_group:
+        provider: "{{ provider }}"
+        name: "web-services"
+        folder: "Texas"
+        state: "absent"
+      register: second_delete_result
+
+    - name: Verify second delete shows no change
+      assert:
+        that:
+          - second_delete_result.changed == false
+        fail_msg: "Service group deletion idempotency test failed"
+        success_msg: "Service group deletion idempotency test passed"
+
+    # Clean up test resources
+    - name: Remove services created for testing
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      loop:
+        - "web-service"
+        - "dns-service"
+        - "ssh-service"
+      register: service_cleanup_result
+      tags:
+        - dev-cleanup
+
+    # Clean up test tags
+    - name: Remove tags created for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+      tags:
+        - dev-cleanup

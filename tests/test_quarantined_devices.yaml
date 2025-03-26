@@ -1,0 +1,181 @@
+---
+# Test playbook for quarantined_devices module
+# Usage: poetry run ansible-playbook tests/test_quarantined_devices.yaml --vault-password-file=tests/.vault_password
+
+- name: Test quarantined_devices module CRUD operations
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  
+  vars_files:
+    - vault.yaml
+  
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    # Use a randomized prefix for test objects to avoid conflicts
+    device_prefix: "ansible_test_{{ lookup('password', '/dev/null chars=ascii_lowercase length=8') }}"
+    host_id: "{{ device_prefix }}_host"
+    serial_number: "PA-{{ device_prefix }}12345"
+  
+  tasks:
+    # ===============================
+    # INITIAL SETUP AND CLEANUP
+    # ===============================
+    - name: Clean up any test objects from previous runs
+      tags: 
+        - dev-cleanup
+        - dev-ansible
+      cdot65.scm.quarantined_devices:
+        provider: "{{ provider }}"
+        host_id: "{{ host_id }}"
+        state: "absent"
+      ignore_errors: true
+    
+    # ===============================
+    # CREATE
+    # ===============================
+    - name: CREATE - Quarantine a device with basic information
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.quarantined_devices:
+        provider: "{{ provider }}"
+        host_id: "{{ host_id }}"
+        serial_number: "{{ serial_number }}"
+        state: "present"
+      register: create_result
+    
+    - name: Print create result 
+      tags: 
+        - dev-test
+      debug:
+        var: create_result
+        verbosity: 1
+    
+    - name: Verify creation succeeded
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - create_result.changed
+          - create_result.quarantined_device is defined
+          - create_result.quarantined_device.host_id == host_id
+          - create_result.quarantined_device.serial_number == serial_number
+    
+    # ===============================
+    # CREATE IDEMPOTENCE
+    # ===============================
+    - name: CREATE IDEMPOTENCE - Try quarantining the same device again
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.quarantined_devices:
+        provider: "{{ provider }}"
+        host_id: "{{ host_id }}"
+        serial_number: "{{ serial_number }}"
+        state: "present"
+      register: idempotence_result
+    
+    - name: Print idempotence result
+      tags: 
+        - dev-test
+      debug:
+        var: idempotence_result
+        verbosity: 1
+    
+    - name: Verify idempotence
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - not idempotence_result.changed
+          - idempotence_result.quarantined_device is defined
+          - idempotence_result.quarantined_device.host_id == host_id
+    
+    # ===============================
+    # READ
+    # ===============================
+    - name: READ - Get quarantined device info
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.quarantined_devices_info:
+        provider: "{{ provider }}"
+        host_id: "{{ host_id }}"
+      register: info_result
+    
+    - name: Print info result
+      tags: 
+        - dev-test
+      debug:
+        var: info_result
+        verbosity: 1
+    
+    - name: Verify info result
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - info_result.quarantined_devices is defined
+          - info_result.quarantined_devices | length == 1
+          - info_result.quarantined_devices[0].host_id == host_id
+          - info_result.quarantined_devices[0].serial_number == serial_number
+    
+    # ===============================
+    # DELETE
+    # ===============================
+    - name: DELETE - Remove device from quarantine
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.quarantined_devices:
+        provider: "{{ provider }}"
+        host_id: "{{ host_id }}"
+        state: "absent"
+      register: delete_result
+    
+    - name: Print delete result
+      tags: 
+        - dev-test
+      debug:
+        var: delete_result
+        verbosity: 1
+    
+    - name: Verify deletion succeeded
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - delete_result.changed
+    
+    # ===============================
+    # VERIFY DELETION
+    # ===============================
+    - name: VERIFY DELETION - Check if device exists after deletion
+      tags: 
+        - dev-ansible
+        - dev-test
+      cdot65.scm.quarantined_devices_info:
+        provider: "{{ provider }}"
+        host_id: "{{ host_id }}"
+      register: verify_deletion_result
+    
+    - name: Verify device no longer exists
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - verify_deletion_result.quarantined_devices | length == 0

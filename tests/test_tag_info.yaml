@@ -1,0 +1,260 @@
+---
+- name: Test Tag Info Module in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+  tasks:
+    # First clean up any existing test tags if they exist
+    - name: Remove test tags if they exist
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Production"
+        - "Development"
+        - "Testing"
+        - "Staging"
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+      tags:
+        - dev-cleanup
+
+    # ==========================================
+    # CREATE tags for information gathering
+    # ==========================================
+    - name: Create required tags for testing
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        color: "{{ item.color }}"
+        comments: "Tag for {{ item.name }} environment"
+        folder: "Texas"
+        state: "present"
+      loop:
+        - { name: "dev-ansible", color: "Blue" }
+        - { name: "dev-automation", color: "Green" }
+        - { name: "dev-test", color: "Orange" }
+        - { name: "dev-cicd", color: "Red" }
+      register: create_dev_tags_result
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    - name: Create a production tag
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Production"
+        color: "Red"
+        comments: "Production environment tag"
+        folder: "Texas"
+        state: "present"
+      register: create_prod_tag_result
+      tags:
+        - dev-test
+
+    - name: Create a development tag
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Development"
+        color: "Blue"
+        comments: "Development environment tag"
+        folder: "Texas"
+        state: "present"
+      register: create_dev_tag_result
+
+    - name: Create a testing tag
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Testing"
+        color: "Green"
+        comments: "Testing environment tag"
+        folder: "Texas"
+        state: "present"
+      register: create_test_tag_result
+      tags:
+        - dev-automation
+
+    - name: Create a staging tag
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "Staging"
+        color: "Orange"
+        comments: "Staging environment tag"
+        folder: "Texas"
+        state: "present"
+      register: create_staging_tag_result
+      tags:
+        - dev-cicd
+
+    # Verify all tags were created successfully
+    - name: Verify tag creation
+      assert:
+        that:
+          - create_dev_tags_result is succeeded
+          - create_prod_tag_result is succeeded
+          - create_dev_tag_result is succeeded
+          - create_test_tag_result is succeeded
+          - create_staging_tag_result is succeeded
+        fail_msg: "Failed to create some test tags"
+        success_msg: "Successfully created all test tags"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # INFO queries
+    # ==========================================
+    # Get info about a specific tag
+    - name: Get information about a specific tag
+      cdot65.scm.tag_info:
+        provider: "{{ provider }}"
+        name: "Production"
+        folder: "Texas"
+      register: tag_info
+      tags:
+        - dev-test
+
+    - name: Display specific tag information
+      debug:
+        var: tag_info
+        verbosity: 1
+
+    - name: Verify specific tag query
+      assert:
+        that:
+          - tag_info.tag is defined
+          - tag_info.tag.name == "Production"
+          - tag_info.tag.color == "Red"
+        fail_msg: "Failed to retrieve specific tag information"
+        success_msg: "Successfully retrieved specific tag information"
+      tags:
+        - dev-ansible
+
+    # Get all tags in folder
+    - name: List all tag objects in a folder
+      cdot65.scm.tag_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_tags
+      tags:
+        - dev-automation
+
+    - name: Display all tags
+      debug:
+        var: all_tags
+        verbosity: 1
+
+    - name: Verify all tags listing
+      assert:
+        that:
+          - all_tags.tags is defined
+          - all_tags.tags | length >= 8  # All our test tags plus any existing ones
+          - '"Production" in (all_tags.tags | map(attribute="name") | list)'
+          - '"Development" in (all_tags.tags | map(attribute="name") | list)'
+          - '"Testing" in (all_tags.tags | map(attribute="name") | list)'
+          - '"Staging" in (all_tags.tags | map(attribute="name") | list)'
+          - '"dev-ansible" in (all_tags.tags | map(attribute="name") | list)'
+        fail_msg: "Failed to retrieve all tags"
+        success_msg: "Successfully retrieved all tags"
+
+    # List tags with color filters
+    - name: List only tags with specific colors
+      cdot65.scm.tag_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        colors: ["Red", "Blue"]
+      register: colored_tags
+      tags:
+        - dev-cicd
+
+    - name: Display colored tags
+      debug:
+        var: colored_tags
+        verbosity: 1
+
+    - name: Verify color-filtered tag query
+      assert:
+        that:
+          - colored_tags.tags | length >= 3  # Production, Development, dev-ansible plus any existing ones
+          - colored_tags.tags | selectattr('name', 'equalto', 'Production') | list | length == 1
+          - colored_tags.tags | selectattr('name', 'equalto', 'Development') | list | length == 1
+          - colored_tags.tags | selectattr('name', 'equalto', 'Testing') | list | length == 0
+        fail_msg: "Failed to filter tags by color"
+        success_msg: "Successfully filtered tags by color"
+      tags:
+        - dev-test
+
+    # Since we can't filter by prefix, just get all tags and filter manually
+    - name: Get all tags for dev- filtering
+      cdot65.scm.tag_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_tags_for_filtering
+      tags:
+        - dev-automation
+
+    - name: Filter tags for dev- prefix in memory
+      set_fact:
+        dev_tags:
+          tags: "{{ all_tags_for_filtering.tags | selectattr('name', 'match', '^dev-.*') | list }}"
+
+    - name: Display dev tags
+      debug:
+        var: dev_tags
+        verbosity: 1
+
+    - name: Verify dev tags query
+      assert:
+        that:
+          - dev_tags.tags | length >= 4  # Our 4 dev- tags
+          - dev_tags.tags | selectattr('name', 'equalto', 'dev-ansible') | list | length == 1
+          - dev_tags.tags | selectattr('name', 'equalto', 'dev-automation') | list | length == 1
+          - dev_tags.tags | selectattr('name', 'equalto', 'Production') | list | length == 0
+        fail_msg: "Failed to filter tags by prefix"
+        success_msg: "Successfully filtered tags by prefix"
+
+    # ==========================================
+    # CLEANUP
+    # ==========================================
+    # Clean up test tags
+    - name: Remove all test tags
+      cdot65.scm.tag:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Production"
+        - "Development"
+        - "Testing"
+        - "Staging"
+        - "dev-ansible"
+        - "dev-automation"
+        - "dev-test"
+        - "dev-cicd"
+      register: tag_cleanup_result
+      tags:
+        - dev-cleanup
+
+    # Note: We expect dev-* tags to fail deletion since they're in use
+    - name: Verify tag cleanup (partial)
+      assert:
+        that:
+          - tag_cleanup_result.results | selectattr('item', 'equalto', 'Production') | map(attribute='changed') | list | first
+          - tag_cleanup_result.results | selectattr('item', 'equalto', 'Development') | map(attribute='changed') | list | first
+          - tag_cleanup_result.results | selectattr('item', 'equalto', 'Testing') | map(attribute='changed') | list | first
+          - tag_cleanup_result.results | selectattr('item', 'equalto', 'Staging') | map(attribute='changed') | list | first
+        fail_msg: "Failed to clean up regular test tags"
+        success_msg: "Successfully cleaned up regular test tags (dev-* tags are still in use as expected)"

@@ -1,0 +1,159 @@
+---
+# Test playbook for quarantined_devices_info module
+# Usage: poetry run ansible-playbook tests/test_quarantined_devices_info.yaml --vault-password-file=tests/.vault_password
+
+- name: Test quarantined_devices_info module
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars_files:
+    - vault.yaml
+
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    # Use a randomized prefix for test objects to avoid conflicts
+    device_prefix: "ansible_test_{{ lookup('password', '/dev/null chars=ascii_lowercase length=8') }}"
+    host_id: "{{ device_prefix }}_host"
+    serial_number: "PA-{{ device_prefix }}12345"
+
+  tasks:
+    # Create a test quarantined device for testing info module
+    - name: Create test quarantined device
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.quarantined_devices:
+        provider: "{{ provider }}"
+        host_id: "{{ host_id }}"
+        serial_number: "{{ serial_number }}"
+        state: "present"
+      register: create_result
+
+    - name: Debug create result
+      tags:
+        - dev-test
+      debug:
+        var: create_result
+        verbosity: 1
+
+    # Test listing all devices
+    - name: List all quarantined devices
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.quarantined_devices_info:
+        provider: "{{ provider }}"
+      register: list_all_result
+
+    - name: Debug list all result
+      tags:
+        - dev-test
+      debug:
+        var: list_all_result
+        verbosity: 1
+
+    - name: Verify list all result
+      tags:
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - list_all_result.quarantined_devices is defined
+          - list_all_result.quarantined_devices | length > 0
+
+    # Test filtering by host ID
+    - name: List quarantined devices with host_id filter
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.quarantined_devices_info:
+        provider: "{{ provider }}"
+        host_id: "{{ host_id }}"
+      register: host_filter_result
+
+    - name: Debug host filter result
+      tags:
+        - dev-test
+      debug:
+        var: host_filter_result
+        verbosity: 1
+
+    - name: Verify host filter result
+      tags:
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - host_filter_result.quarantined_devices is defined
+          - host_filter_result.quarantined_devices | length == 1
+          - host_filter_result.quarantined_devices[0].host_id == host_id
+          - host_filter_result.quarantined_devices[0].serial_number == serial_number
+
+    # Test filtering by serial number
+    - name: List quarantined devices with serial_number filter
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.quarantined_devices_info:
+        provider: "{{ provider }}"
+        serial_number: "{{ serial_number }}"
+      register: serial_filter_result
+
+    - name: Debug serial filter result
+      tags:
+        - dev-test
+      debug:
+        var: serial_filter_result
+        verbosity: 1
+
+    - name: Verify serial filter result
+      tags:
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - serial_filter_result.quarantined_devices is defined
+          - serial_filter_result.quarantined_devices | length == 1
+          - serial_filter_result.quarantined_devices[0].host_id == host_id
+          - serial_filter_result.quarantined_devices[0].serial_number == serial_number
+
+    # Test when no devices match filter
+    - name: List quarantined devices with non-existent host_id
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.quarantined_devices_info:
+        provider: "{{ provider }}"
+        host_id: "non_existent_host_id"
+      register: no_match_result
+
+    - name: Debug no match result
+      tags:
+        - dev-test
+      debug:
+        var: no_match_result
+        verbosity: 1
+
+    - name: Verify no match result
+      tags:
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - no_match_result.quarantined_devices is defined
+          - no_match_result.quarantined_devices | length == 0
+
+    # Clean up test device
+    - name: Delete test quarantined device
+      tags:
+        - dev-ansible
+        - dev-test
+      cdot65.scm.quarantined_devices:
+        provider: "{{ provider }}"
+        host_id: "{{ host_id }}"
+        state: "absent"

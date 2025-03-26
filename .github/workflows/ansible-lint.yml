@@ -1,0 +1,17 @@
+name: Ansible Lint
+
+on:
+  push:
+    branches: [ main, rebrand ]
+  pull_request:
+    branches: [ main, rebrand ]
+
+jobs:
+  ansible_lint:
+    name: Verify Ansible Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ansible/ansible-lint@v25.1.3
+        with:
+          args: "--exclude .github/"

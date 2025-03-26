@@ -1,0 +1,249 @@
+---
+# Test playbook for syslog_server_profiles module
+# Usage: poetry run ansible-playbook tests/test_syslog_server_profiles.yaml --vault-password-file=tests/.vault_password
+
+- name: Test syslog_server_profiles module CRUD operations
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  
+  vars_files:
+    - vault.yaml
+  
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    # Use a fixed test profile name for consistent testing
+    profile_name: "ansible_test_syslog_profile"
+    # Set the folder name to use for testing
+    folder_name: "Texas"
+  
+  tasks:
+    # ===============================
+    # INITIAL SETUP AND CLEANUP
+    # ===============================
+    - name: Clean up any test objects from previous runs
+      tags: 
+        - dev-cleanup
+        - dev-ansible
+      cdot65.scm.syslog_server_profiles:
+        provider: "{{ provider }}"
+        name: "{{ profile_name }}"
+        folder: "{{ folder_name }}"
+        state: "absent"
+      ignore_errors: true
+    
+    # ===============================
+    # CREATE
+    # ===============================
+    - name: CREATE - Create a syslog server profile with UDP server
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.syslog_server_profiles:
+        provider: "{{ provider }}"
+        name: "{{ profile_name }}"
+        servers:
+          server1:
+            name: "server1"
+            server: "192.168.1.100"
+            transport: "UDP"
+            port: 514
+            format: "BSD"
+            facility: "LOG_USER"
+        folder: "{{ folder_name }}"
+        state: "present"
+      register: create_result
+    
+    - name: Print create result 
+      tags: 
+        - dev-test
+      debug:
+        var: create_result
+        verbosity: 1
+    
+    - name: Verify creation succeeded
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - create_result.changed
+          - create_result.syslog_server_profile is defined
+          - create_result.syslog_server_profile.name == profile_name
+          - create_result.syslog_server_profile.servers.server1.transport == "UDP"
+          - create_result.syslog_server_profile.servers.server1.port == 514
+          - create_result.syslog_server_profile.servers.server1.format == "BSD"
+          - create_result.syslog_server_profile.folder == folder_name
+    
+    # ===============================
+    # CREATE IDEMPOTENCE
+    # ===============================
+    - name: CREATE IDEMPOTENCE - Try creating the same profile again
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.syslog_server_profiles:
+        provider: "{{ provider }}"
+        name: "{{ profile_name }}"
+        servers:
+          server1:
+            name: "server1"
+            server: "192.168.1.100"
+            transport: "UDP"
+            port: 514
+            format: "BSD"
+            facility: "LOG_USER"
+        folder: "{{ folder_name }}"
+        state: "present"
+      register: idempotence_result
+    
+    - name: Print idempotence result
+      tags: 
+        - dev-test
+      debug:
+        var: idempotence_result
+        verbosity: 1
+    
+    - name: Verify idempotence
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - not idempotence_result.changed
+          - idempotence_result.syslog_server_profile is defined
+          - idempotence_result.syslog_server_profile.name == profile_name
+    
+    # ===============================
+    # UPDATE
+    # ===============================
+    - name: UPDATE - Update the profile with new server address and format
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.syslog_server_profiles:
+        provider: "{{ provider }}"
+        name: "{{ profile_name }}"
+        servers:
+          server1:
+            name: "server1"
+            server: "192.168.1.200"  # Changed server address
+            transport: "UDP"
+            port: 514
+            format: "BSD"
+            facility: "LOG_USER"
+        format:  # Add format settings
+          traffic: "hostname,$time,$src,$dst,$proto,$sport,$dport"
+          system: "hostname,$time,$severity,$result"
+        folder: "{{ folder_name }}"
+        state: "present"
+      register: update_result
+    
+    - name: Print update result
+      tags: 
+        - dev-test
+      debug:
+        var: update_result
+        verbosity: 1
+    
+    - name: Verify update succeeded
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - update_result.changed
+          - update_result.syslog_server_profile is defined
+          - update_result.syslog_server_profile.name == profile_name
+          - update_result.syslog_server_profile.servers.server1.server == "192.168.1.200"
+          - update_result.syslog_server_profile.format is defined
+          - update_result.syslog_server_profile.format.traffic is defined
+    
+    # ===============================
+    # READ
+    # ===============================
+    - name: READ - Get syslog server profile info
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.syslog_server_profiles_info:
+        provider: "{{ provider }}"
+        name: "{{ profile_name }}"
+        folder: "{{ folder_name }}"
+      register: info_result
+    
+    - name: Print info result
+      tags: 
+        - dev-test
+      debug:
+        var: info_result
+        verbosity: 1
+    
+    - name: Verify info result
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - info_result.syslog_server_profile is defined
+          - info_result.syslog_server_profile.name == profile_name
+          - info_result.syslog_server_profile.servers.server1.server == "192.168.1.200"
+          - info_result.syslog_server_profile.format.traffic is defined
+    
+    # ===============================
+    # DELETE
+    # ===============================
+    - name: DELETE - Remove syslog server profile
+      tags: 
+        - dev-ansible
+        - dev-automation
+        - dev-test
+      cdot65.scm.syslog_server_profiles:
+        provider: "{{ provider }}"
+        name: "{{ profile_name }}"
+        folder: "{{ folder_name }}"
+        state: "absent"
+      register: delete_result
+    
+    - name: Print delete result
+      tags: 
+        - dev-test
+      debug:
+        var: delete_result
+        verbosity: 1
+    
+    - name: Verify deletion succeeded
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - delete_result.changed
+    
+    # ===============================
+    # VERIFY DELETION
+    # ===============================
+    - name: VERIFY DELETION - Check if profile exists after deletion
+      tags: 
+        - dev-ansible
+        - dev-test
+      cdot65.scm.syslog_server_profiles_info:
+        provider: "{{ provider }}"
+        folder: "{{ folder_name }}"
+      register: verify_deletion_result
+    
+    - name: Verify profile no longer exists
+      tags: 
+        - dev-ansible
+        - dev-test
+      assert:
+        that:
+          - verify_deletion_result.syslog_server_profiles | default([]) | selectattr('name', 'equalto', profile_name) | list | length == 0

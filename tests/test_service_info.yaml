@@ -1,0 +1,323 @@
+---
+- name: Test Service Info Module in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+  tasks:
+    # First clean up any existing test services if they exist
+    - name: Set fact for service objects
+      set_fact:
+        web_service_name: "web-service-{{ timestamp }}"
+        dns_service_name: "dns-service-{{ timestamp }}"
+        ssh_service_name: "ssh-service-{{ timestamp }}"
+        smtp_service_name: "smtp-service-{{ timestamp }}"
+        dev_service_names:
+          - "dev-ansible-{{ timestamp }}"
+          - "dev-automation-{{ timestamp }}"
+          - "dev-test-{{ timestamp }}"
+          - "dev-cicd-{{ timestamp }}"
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Remove test services if they exist
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "{{ web_service_name }}"
+        - "{{ dns_service_name }}"
+        - "{{ ssh_service_name }}"
+        - "{{ smtp_service_name }}"
+        - "{{ dev_service_names[0] }}"
+        - "{{ dev_service_names[1] }}"
+        - "{{ dev_service_names[2] }}"
+        - "{{ dev_service_names[3] }}"
+      tags:
+        - dev-cleanup
+
+    # ==========================================
+    # CREATE services for information gathering
+    # ==========================================
+    - name: Create dev-* services for testing
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        protocol:
+          tcp:
+            port: "{{ item.port }}"
+        description: "{{ item.description }}"
+        folder: "Texas"
+        tag: ["dev-tag"]
+        state: "present"
+      loop:
+        - { name: "{{ dev_service_names[0] }}", port: "8080", description: "Ansible service" }
+        - { name: "{{ dev_service_names[1] }}", port: "8081", description: "Automation service" }
+        - { name: "{{ dev_service_names[2] }}", port: "8082", description: "Test service" }
+        - { name: "{{ dev_service_names[3] }}", port: "8083", description: "CI/CD service" }
+      register: create_dev_services_result
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    - name: Create a TCP web service
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "{{ web_service_name }}"
+        protocol:
+          tcp:
+            port: "80,443"
+            override:
+              timeout: 30
+              halfclose_timeout: 15
+        description: "Web service ports"
+        folder: "Texas"
+        tag: ["Web", "Production"]
+        state: "present"
+      register: create_web_service_result
+      tags:
+        - dev-test
+
+    - name: Create a UDP DNS service
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "{{ dns_service_name }}"
+        protocol:
+          udp:
+            port: "53"
+            override:
+              timeout: 60
+        description: "DNS service"
+        folder: "Texas"
+        tag: ["DNS", "Network"]
+        state: "present"
+      register: create_dns_service_result
+
+    - name: Create a TCP SSH service
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "{{ ssh_service_name }}"
+        protocol:
+          tcp:
+            port: "22"
+            override:
+              timeout: 3600
+              halfclose_timeout: 120
+              timewait_timeout: 15
+        description: "SSH service"
+        folder: "Texas"
+        tag: ["SSH", "Management"]
+        state: "present"
+      register: create_ssh_service_result
+      tags:
+        - dev-automation
+
+    - name: Create a TCP SMTP service
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "{{ smtp_service_name }}"
+        protocol:
+          tcp:
+            port: "25,587"
+        description: "SMTP service"
+        folder: "Texas"
+        tag: ["SMTP", "Email"]
+        state: "present"
+      register: create_smtp_service_result
+      tags:
+        - dev-cicd
+
+    # Verify all services were created successfully
+    - name: Verify service creation
+      assert:
+        that:
+          - create_dev_services_result is succeeded
+          - create_web_service_result is succeeded
+          - create_dns_service_result is succeeded
+          - create_ssh_service_result is succeeded
+          - create_smtp_service_result is succeeded
+        fail_msg: "Failed to create some test services"
+        success_msg: "Successfully created all test services"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # INFO queries
+    # ==========================================
+    # Get info about a specific service
+    - name: Get information about a specific service
+      cdot65.scm.service_info:
+        provider: "{{ provider }}"
+        name: "{{ web_service_name }}"
+        folder: "Texas"
+      register: service_info
+      tags:
+        - dev-test
+
+    - name: Display specific service information
+      debug:
+        var: service_info
+        verbosity: 1
+
+    - name: Verify specific service query
+      assert:
+        that:
+          - service_info.service is defined
+          - service_info.service.name == web_service_name
+          - service_info.service.description == "Web service ports"
+          - service_info.service.protocol.tcp.port == "80,443"
+        fail_msg: "Failed to retrieve specific service information"
+        success_msg: "Successfully retrieved specific service information"
+      tags:
+        - dev-ansible
+
+    # Get all services in folder
+    - name: List all service objects in a folder
+      cdot65.scm.service_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_services
+      tags:
+        - dev-automation
+
+    - name: Display all services
+      debug:
+        var: all_services
+        verbosity: 1
+
+    - name: Verify all services listing
+      assert:
+        that:
+          - all_services.services is defined
+          - all_services.services | length >= 8  # All our test services plus any existing ones
+          - (web_service_name) in (all_services.services | map(attribute="name") | list)
+          - (dns_service_name) in (all_services.services | map(attribute="name") | list)
+          - (ssh_service_name) in (all_services.services | map(attribute="name") | list)
+          - (smtp_service_name) in (all_services.services | map(attribute="name") | list)
+          - (dev_service_names[0]) in (all_services.services | map(attribute="name") | list)
+        fail_msg: "Failed to retrieve all services"
+        success_msg: "Successfully retrieved all services"
+
+    # List services with protocol type filters
+    - name: List only TCP services
+      cdot65.scm.service_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        protocol_types: ["tcp"]
+      register: tcp_services
+      tags:
+        - dev-cicd
+
+    - name: Display TCP services
+      debug:
+        var: tcp_services
+        verbosity: 1
+
+    - name: Verify protocol-filtered service query
+      assert:
+        that:
+          - tcp_services.services | length >= 7  # All TCP services (web, ssh, smtp, dev-*)
+          - (web_service_name) in (tcp_services.services | map(attribute="name") | list)
+          - (dns_service_name) not in (tcp_services.services | map(attribute="name") | list)
+        fail_msg: "Failed to filter services by protocol"
+        success_msg: "Successfully filtered services by protocol"
+      tags:
+        - dev-test
+
+    # List services with tag filters
+    - name: List services with Web tag
+      cdot65.scm.service_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        tags: ["Web"]
+      register: web_tagged_services
+      tags:
+        - dev-automation
+
+    - name: Display Web-tagged services
+      debug:
+        var: web_tagged_services
+        verbosity: 1
+
+    - name: Verify tag-filtered service query
+      assert:
+        that:
+          - web_tagged_services.services | selectattr('name', 'equalto', web_service_name) | list | length == 1
+          - web_tagged_services.services | selectattr('name', 'equalto', dns_service_name) | list | length == 0
+        fail_msg: "Failed to filter services by tag"
+        success_msg: "Successfully filtered services by tag"
+
+    # Since we can't filter by prefix, just get all services and filter manually for dev-*
+    - name: Get all services for dev- filtering
+      cdot65.scm.service_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: all_services_for_filtering
+      tags:
+        - dev-automation
+
+    - name: Filter services for dev- prefix in memory
+      set_fact:
+        dev_services:
+          services: "{{ all_services_for_filtering.services | selectattr('name', 'match', 'dev-.*') | list }}"
+
+    - name: Display dev services
+      debug:
+        var: dev_services
+        verbosity: 1
+
+    - name: Verify dev services query
+      assert:
+        that:
+          - dev_services.services | selectattr('name', 'equalto', dev_service_names[0]) | list | length == 1
+          - dev_services.services | selectattr('name', 'equalto', dev_service_names[1]) | list | length == 1
+          - dev_services.services | selectattr('name', 'equalto', web_service_name) | list | length == 0
+        fail_msg: "Failed to filter services by prefix"
+        success_msg: "Successfully filtered services by prefix"
+
+    # ==========================================
+    # CLEANUP
+    # ==========================================
+    # Clean up test services
+    - name: Remove all test services
+      cdot65.scm.service:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "{{ web_service_name }}"
+        - "{{ dns_service_name }}"
+        - "{{ ssh_service_name }}"
+        - "{{ smtp_service_name }}"
+        - "{{ dev_service_names[0] }}"
+        - "{{ dev_service_names[1] }}"
+        - "{{ dev_service_names[2] }}"
+        - "{{ dev_service_names[3] }}"
+      register: service_cleanup_result
+      tags:
+        - dev-cleanup
+
+    - name: Verify service cleanup
+      assert:
+        that:
+          - service_cleanup_result.results | selectattr('item', 'equalto', web_service_name) | map(attribute='changed') | list | first
+          - service_cleanup_result.results | selectattr('item', 'equalto', dns_service_name) | map(attribute='changed') | list | first
+          - service_cleanup_result.results | selectattr('item', 'equalto', ssh_service_name) | map(attribute='changed') | list | first
+          - service_cleanup_result.results | selectattr('item', 'equalto', smtp_service_name) | map(attribute='changed') | list | first
+        fail_msg: "Failed to clean up test services"
+        success_msg: "Successfully cleaned up test services"

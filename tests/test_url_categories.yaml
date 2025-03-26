@@ -1,0 +1,306 @@
+---
+# Playbook for testing Strata Cloud Manager URL Categories operations
+# Usage: poetry run ansible-playbook tests/test_url_categories.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM URL Categories Module CRUD Operations
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%y%m%d') }}"
+    test_folder: "Texas"
+  tasks:
+    # First clean up any existing test URL category objects if they exist
+    - name: Remove test URL category objects if they exist
+      cdot65.scm.url_categories:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "URL_List_{{ test_timestamp }}"
+        - "Cat_Match_{{ test_timestamp }}"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # Skip tag creation since we're not using tags for the URL categories
+    - name: Set task tags
+      ansible.builtin.set_fact:
+        dev_ansible_tag: "dev-ansible"
+        dev_automation_tag: "dev-automation"
+        dev_test_tag: "dev-test"
+        dev_cicd_tag: "dev-cicd"
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
+    - name: Create a URL category with URL List type
+      cdot65.scm.url_categories:
+        provider: "{{ provider }}"
+        name: "URL_List_{{ test_timestamp }}"
+        description: "Test URL category with URL List type"
+        type: "URL List"
+        list: ["test1.example.com", "test2.example.com"]
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_url_list_result
+      tags:
+        - dev-test
+
+    - name: Debug URL List creation result
+      debug:
+        var: create_url_list_result
+        verbosity: 1
+
+    - name: Verify URL List category creation
+      ansible.builtin.assert:
+        that:
+          - create_url_list_result is changed
+          - create_url_list_result.url_category is defined
+          - create_url_list_result.url_category.description == "Test URL category with URL List type"
+          - create_url_list_result.url_category.type == "URL List"
+          - create_url_list_result.url_category.list | length == 2
+        fail_msg: "Failed to create URL List category"
+        success_msg: "Successfully created URL List category"
+      tags:
+        - dev-cicd
+
+    - name: Create a URL category with Category Match type
+      cdot65.scm.url_categories:
+        provider: "{{ provider }}"
+        name: "Cat_Match_{{ test_timestamp }}"
+        description: "Test URL category with Category Match type"
+        type: "Category Match"
+        list: ["social-networking"]
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_category_match_result
+      tags:
+        - dev-test
+
+    - name: Debug Category Match creation result
+      debug:
+        var: create_category_match_result
+        verbosity: 1
+
+    - name: Verify Category Match creation
+      ansible.builtin.assert:
+        that:
+          - create_category_match_result is changed
+          - create_category_match_result.url_category is defined
+          - create_category_match_result.url_category.description == "Test URL category with Category Match type"
+          - create_category_match_result.url_category.type == "Category Match"
+          - create_category_match_result.url_category.list | length == 1
+        fail_msg: "Failed to create Category Match category"
+        success_msg: "Successfully created Category Match category"
+      tags:
+        - dev-cicd
+
+    # Test idempotency for create operation
+    - name: Test idempotency on URL List creation (re-run creation)
+      cdot65.scm.url_categories:
+        provider: "{{ provider }}"
+        name: "URL_List_{{ test_timestamp }}"
+        description: "Test URL category with URL List type"
+        type: "URL List"
+        list: ["test1.example.com", "test2.example.com"]
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: idempotency_create_result
+      tags:
+        - dev-test
+        - dev-cicd
+
+    - name: Verify create idempotency behavior
+      ansible.builtin.assert:
+        that:
+          - idempotency_create_result is not changed
+        fail_msg: "URL Categories module failed create idempotency test"
+        success_msg: "URL Categories module passed create idempotency test"
+      tags:
+        - dev-cicd
+
+    # Set names to fixed variables after creation
+    - name: Set URL category names to existing names
+      ansible.builtin.set_fact:
+        url_list_name: "{{ create_url_list_result.url_category.name }}"
+        category_match_name: "{{ create_category_match_result.url_category.name }}"
+
+    # ==========================================
+    # READ operation tests
+    # ==========================================
+    - name: Get URL List category information
+      cdot65.scm.url_categories_info:
+        provider: "{{ provider }}"
+        name: "{{ url_list_name }}"
+        folder: "{{ test_folder }}"
+      register: read_url_list_result
+      tags:
+        - dev-test
+
+    - name: Debug read URL List result
+      debug:
+        var: read_url_list_result
+        verbosity: 1
+
+    - name: Verify URL List read operation
+      ansible.builtin.assert:
+        that:
+          - read_url_list_result.url_category is defined
+          - read_url_list_result.url_category.name == url_list_name
+          - read_url_list_result.url_category.type == "URL List"
+        fail_msg: "Failed to read URL List category information"
+        success_msg: "Successfully read URL List category information"
+      tags:
+        - dev-cicd
+
+    - name: Get Category Match information
+      cdot65.scm.url_categories_info:
+        provider: "{{ provider }}"
+        name: "{{ category_match_name }}"
+        folder: "{{ test_folder }}"
+      register: read_category_match_result
+      tags:
+        - dev-test
+
+    - name: Debug read Category Match result
+      debug:
+        var: read_category_match_result
+        verbosity: 1
+
+    - name: Verify Category Match read operation
+      ansible.builtin.assert:
+        that:
+          - read_category_match_result.url_category is defined
+          - read_category_match_result.url_category.name == category_match_name
+          - read_category_match_result.url_category.type == "Category Match"
+        fail_msg: "Failed to read Category Match information"
+        success_msg: "Successfully read Category Match information"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    - name: Update URL List category
+      cdot65.scm.url_categories:
+        provider: "{{ provider }}"
+        name: "{{ url_list_name }}"
+        description: "Updated description for URL List"
+        type: "URL List"
+        list: ["test1.example.com", "test2.example.com", "test3.example.com"]
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: update_url_list_result
+      tags:
+        - dev-test
+
+    - name: Debug update URL List result
+      debug:
+        var: update_url_list_result
+        verbosity: 1
+
+    - name: Verify URL List update operation
+      ansible.builtin.assert:
+        that:
+          - update_url_list_result is changed
+          - update_url_list_result.url_category is defined
+          - update_url_list_result.url_category.description == "Updated description for URL List"
+          - update_url_list_result.url_category.list | length == 3
+        fail_msg: "Failed to update URL List category"
+        success_msg: "Successfully updated URL List category"
+      tags:
+        - dev-cicd
+
+    # Test idempotency for update operation
+    - name: Test idempotency on URL List update (re-run update)
+      cdot65.scm.url_categories:
+        provider: "{{ provider }}"
+        name: "{{ url_list_name }}"
+        description: "Updated description for URL List"
+        type: "URL List"
+        list: ["test1.example.com", "test2.example.com", "test3.example.com"]
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: idempotency_update_result
+      tags:
+        - dev-test
+        - dev-cicd
+
+    - name: Verify update idempotency behavior
+      ansible.builtin.assert:
+        that:
+          - idempotency_update_result is not changed
+        fail_msg: "URL Categories module failed update idempotency test"
+        success_msg: "URL Categories module passed update idempotency test"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Delete URL categories
+      cdot65.scm.url_categories:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      loop:
+        - "{{ url_list_name }}"
+        - "{{ category_match_name }}"
+      register: delete_result
+      tags:
+        - dev-test
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+        verbosity: 1
+
+    - name: Verify URL categories were deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is succeeded
+        fail_msg: "Failed to delete URL categories"
+        success_msg: "Successfully deleted all URL categories"
+      tags:
+        - dev-cicd
+
+    # Verify objects are gone
+    - name: Check if URL List still exists
+      cdot65.scm.url_categories_info:
+        provider: "{{ provider }}"
+        name: "{{ url_list_name }}"
+        folder: "{{ test_folder }}"
+      register: check_url_list_exists
+      ignore_errors: true
+      tags:
+        - dev-test
+
+    - name: Verify URL List is gone
+      ansible.builtin.assert:
+        that:
+          - check_url_list_exists is failed
+        fail_msg: "URL List still exists after deletion"
+        success_msg: "Confirmed URL List was properly deleted"
+      ignore_errors: true
+      tags:
+        - dev-cicd
+
+    # No tags to clean up
+    - name: Cleanup completed
+      ansible.builtin.debug:
+        msg: "Test cleanup completed"
+      tags:
+        - dev-cleanup

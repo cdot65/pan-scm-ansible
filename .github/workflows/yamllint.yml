@@ -1,0 +1,22 @@
+name: YAML Lint
+
+on:
+  push:
+    branches: [ main, rebrand ]
+  pull_request:
+    branches: [ main, rebrand ]
+
+jobs:
+  yamllint:
+    name: Verify yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Run yaml-lint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .
+          config_file: .yamllint
