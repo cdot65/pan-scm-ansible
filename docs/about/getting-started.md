@@ -1,6 +1,8 @@
 # Getting Started with pan-scm-ansible
 
-Welcome to the `cdot65.scm` Ansible Collection! This guide will walk you through the initial setup and basic usage of the collection to automate Palo Alto Networks Strata Cloud Manager configurations.
+Welcome to the `cdot65.scm` Ansible Collection! This guide will walk you through the initial setup
+and basic usage of the collection to automate Palo Alto Networks Strata Cloud Manager
+configurations.
 
 ## Installation
 
@@ -26,7 +28,9 @@ Process completed successfully
 
 ## Authentication
 
-Before using the collection, you need to set up authentication with Strata Cloud Manager using OAuth2 client credentials. The recommended approach is to store credentials securely using Ansible Vault:
+Before using the collection, you need to set up authentication with Strata Cloud Manager using
+OAuth2 client credentials. The recommended approach is to store credentials securely using Ansible
+Vault:
 
 1. **Create a vault-encrypted variables file**:
 
@@ -86,7 +90,8 @@ tsg_id: "your-tenant-service-group-id"
 
 ## Basic Usage
 
-The collection provides modules for managing various SCM configuration objects. Here are some common examples:
+The collection provides modules for managing various SCM configuration objects. Here are some common
+examples:
 
 ### Managing Address Objects
 
@@ -310,7 +315,8 @@ Always implement proper error handling in your playbooks:
 
 ## Using Check Mode
 
-All modules support Ansible's check mode, allowing you to see what changes would be made without actually making them:
+All modules support Ansible's check mode, allowing you to see what changes would be made without
+actually making them:
 
 <div class="termy">
 
@@ -322,6 +328,7 @@ $ ansible-playbook --check my_playbook.yml
 
 ## Next Steps
 
-- Explore the [Collection Documentation](../collection/index.md) for detailed information on all available modules, roles, and plugins
+- Explore the [Collection Documentation](../collection/index.md) for detailed information on all
+  available modules, roles, and plugins
 - Check out the [User Guide](../guide/using-modules.md) for more advanced usage examples
 - Refer to the [Playbook Examples](../guide/playbook-examples.md) for complete playbook examples

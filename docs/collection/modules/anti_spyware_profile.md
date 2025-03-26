@@ -1,15 +1,15 @@
-# Anti Spyware Profile Module
+# Anti Spyware Profile Configuration Object
 
 ## Overview
 
-The `anti_spyware_profile` module enables management of Anti-Spyware profiles in Palo Alto Networks Strata Cloud
-Manager (SCM). Anti-Spyware profiles are security components that detect and block spyware and other malicious software
-on the network.
+The `anti_spyware_profile` module enables management of Anti-Spyware profiles in Palo Alto Networks
+Strata Cloud Manager (SCM). Anti-Spyware profiles are security components that detect and block
+spyware and other malicious software on the network.
 
 ## Core Methods
 
 | Method   | Description                                                 |
-|----------|-------------------------------------------------------------|
+| -------- | ----------------------------------------------------------- |
 | `create` | Creates a new Anti-Spyware profile in SCM                   |
 | `update` | Modifies an existing Anti-Spyware profile                   |
 | `delete` | Removes an Anti-Spyware profile from SCM                    |
@@ -19,7 +19,7 @@ on the network.
 ## Model Attributes
 
 | Attribute           | Type    | Description                      | Required |
-|---------------------|---------|----------------------------------|----------|
+| ------------------- | ------- | -------------------------------- | -------- |
 | `name`              | String  | Name of the Anti-Spyware profile | Yes      |
 | `description`       | String  | Description of the profile       | No       |
 | `threat_exceptions` | List    | List of threat exceptions        | No       |

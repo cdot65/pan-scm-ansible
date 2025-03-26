@@ -5,6 +5,7 @@
 Initial release of the Palo Alto Networks SCM Ansible Collection.
 
 ### Added
+
 - Core modules for SCM object management:
   - Address and Address Group modules
   - Application and Application Group modules
@@ -20,6 +21,7 @@ Initial release of the Palo Alto Networks SCM Ansible Collection.
 - Lookup plugins for SCM data
 
 ### Known Issues
+
 - Integration with Terraform HCP SCM provider not yet implemented
 - Limited support for advanced security policy features
 - BGP routing module supports basic configurations only
@@ -29,11 +31,13 @@ Initial release of the Palo Alto Networks SCM Ansible Collection.
 Beta release for testing and feedback.
 
 ### Added
+
 - Initial implementation of core modules
 - Basic documentation
 - Test framework
 
 ### Known Issues
+
 - Role documentation incomplete
 - Some error handling needs improvement
 - Performance optimizations pending for large deployments
@@ -43,6 +47,7 @@ Beta release for testing and feedback.
 Alpha release for initial testing.
 
 ### Added
+
 - Prototype modules for basic SCM objects
 - Framework for authentication and API interaction
 - Initial CI/CD pipeline

@@ -1,15 +1,15 @@
-# IPSec Crypto Profile Module
+# Ipsec Crypto Profile Configuration Object
 
 ## Overview
 
-The `ipsec_crypto_profile` module enables management of IPSec Crypto Profiles in Palo Alto Networks Strata Cloud
-Manager (SCM). IPSec Crypto Profiles define the encryption and authentication algorithms to be used during the IPSec
-Phase-2 negotiation when establishing a secure VPN tunnel.
+The `ipsec_crypto_profile` module enables management of IPSec Crypto Profiles in Palo Alto Networks
+Strata Cloud Manager (SCM). IPSec Crypto Profiles define the encryption and authentication
+algorithms to be used during the IPSec Phase-2 negotiation when establishing a secure VPN tunnel.
 
 ## Core Methods
 
 | Method   | Description                                                 |
-|----------|-------------------------------------------------------------|
+| -------- | ----------------------------------------------------------- |
 | `create` | Creates a new IPSec Crypto Profile in SCM                   |
 | `update` | Modifies an existing IPSec Crypto Profile                   |
 | `delete` | Removes an IPSec Crypto Profile from SCM                    |
@@ -19,7 +19,7 @@ Phase-2 negotiation when establishing a secure VPN tunnel.
 ## Model Attributes
 
 | Attribute            | Type   | Description                                      | Required |
-|----------------------|--------|--------------------------------------------------|----------|
+| -------------------- | ------ | ------------------------------------------------ | -------- |
 | `name`               | String | Name of the IPSec Crypto Profile                 | Yes      |
 | `description`        | String | Description of the profile                       | No       |
 | `esp_encryption`     | List   | List of ESP encryption algorithms                | Yes      |
@@ -132,4 +132,5 @@ The module will fail with proper error messages if:
 - [IKE Gateway](ike_gateway.md) - Used alongside IPSec Crypto profiles for VPN tunnels
 - [IKE Crypto Profile](ike_crypto_profile.md) - Used for Phase-1 negotiation of VPN tunnels
 - [IPSec Tunnel](ipsec_tunnel.md) - VPN tunnel configurations that utilize IPSec Crypto profiles
-- [Remote Networks](remote_networks.md) - References IPSec Crypto profiles for site-to-cloud connections
+- [Remote Networks](remote_networks.md) - References IPSec Crypto profiles for site-to-cloud
+  connections

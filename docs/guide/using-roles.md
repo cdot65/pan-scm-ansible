@@ -1,13 +1,14 @@
 # Using Roles
 
-This guide covers how to effectively use the pre-built roles included in the Palo Alto Networks SCM Ansible Collection.
+This guide covers how to effectively use the pre-built roles included in the Palo Alto Networks SCM
+Ansible Collection.
 
 ## Available Roles
 
 The collection includes these roles:
 
 | Role            | Description                              |
-|-----------------|------------------------------------------|
+| --------------- | ---------------------------------------- |
 | `bootstrap`     | Initialize SCM with base configuration   |
 | `deploy_config` | Deploy configurations to managed devices |
 
@@ -26,7 +27,7 @@ Using these roles provides several advantages:
 All roles accept these common variables:
 
 | Variable       | Description          | Required | Default              |
-|----------------|----------------------|----------|----------------------|
+| -------------- | -------------------- | -------- | -------------------- |
 | `scm_username` | SCM username         | No       | Environment variable |
 | `scm_password` | SCM password         | No       | Environment variable |
 | `scm_tenant`   | SCM tenant ID        | No       | Environment variable |
@@ -65,7 +66,7 @@ The `bootstrap` role initializes a new SCM environment with baseline configurati
 ### Bootstrap Role Variables
 
 | Variable                    | Description             | Required | Default |
-|-----------------------------|-------------------------|----------|---------|
+| --------------------------- | ----------------------- | -------- | ------- |
 | `bootstrap_folder`          | Main folder to create   | Yes      | -       |
 | `bootstrap_tags`            | List of tags to create  | No       | `[]`    |
 | `bootstrap_address_objects` | List of address objects | No       | `[]`    |
@@ -97,7 +98,7 @@ The `deploy_config` role handles committing and pushing configurations to manage
 ### Deploy Config Role Variables
 
 | Variable                | Description               | Required | Default               |
-|-------------------------|---------------------------|----------|-----------------------|
+| ----------------------- | ------------------------- | -------- | --------------------- |
 | `deploy_commit_message` | Message for commit        | No       | "Deployed by Ansible" |
 | `deploy_folders`        | List of folders to deploy | No       | `["Shared"]`          |
 | `deploy_device_groups`  | List of device groups     | No       | `[]`                  |
@@ -108,8 +109,8 @@ The `deploy_config` role handles committing and pushing configurations to manage
 
 ## Role Dependencies
 
-These roles don't have external dependencies, but they rely on modules from this collection. Ensure the collection is
-properly installed before using the roles.
+These roles don't have external dependencies, but they rely on modules from this collection. Ensure
+the collection is properly installed before using the roles.
 
 ## Customizing Roles
 

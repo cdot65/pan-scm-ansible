@@ -1,6 +1,7 @@
 # Advanced Topics
 
-This guide covers advanced topics and techniques for using the Palo Alto Networks SCM Ansible Collection in more complex scenarios.
+This guide covers advanced topics and techniques for using the Palo Alto Networks SCM Ansible
+Collection in more complex scenarios.
 
 ## Dynamic Inventory Integration
 
@@ -662,4 +663,5 @@ Manage security across multiple clouds:
         sg_services: {}  # Mapping of SG to services
 ```
 
-These advanced examples demonstrate the depth and flexibility of the SCM Ansible Collection for complex enterprise environments and automation workflows.
+These advanced examples demonstrate the depth and flexibility of the SCM Ansible Collection for
+complex enterprise environments and automation workflows.

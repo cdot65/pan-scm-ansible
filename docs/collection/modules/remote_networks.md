@@ -2,14 +2,15 @@
 
 ## 1. Overview
 
-The Remote Networks module allows you to manage remote network connections within Strata Cloud Manager (SCM). Remote
-networks enable secure connectivity between your SCM-managed infrastructure and external networks, typically through
-IPsec VPN tunnels. This module helps you create, configure, and manage these connections.
+The Remote Networks module allows you to manage remote network connections within Strata Cloud
+Manager (SCM). Remote networks enable secure connectivity between your SCM-managed infrastructure
+and external networks, typically through IPsec VPN tunnels. This module helps you create, configure,
+and manage these connections.
 
 ## 2. Core Methods
 
 | Method     | Description                  | Parameters                | Return Type           |
-|------------|------------------------------|---------------------------|-----------------------|
+| ---------- | ---------------------------- | ------------------------- | --------------------- |
 | `create()` | Creates a new remote network | `data: Dict[str, Any]`    | `ResponseModel`       |
 | `get()`    | Retrieves network by name    | `name: str`               | `ResponseModel`       |
 | `update()` | Updates an existing network  | `network: Model`          | `ResponseModel`       |
@@ -19,7 +20,7 @@ IPsec VPN tunnels. This module helps you create, configure, and manage these con
 ## 3. Model Attributes
 
 | Attribute              | Type      | Required | Description                               |
-|------------------------|-----------|----------|-------------------------------------------|
+| ---------------------- | --------- | -------- | ----------------------------------------- |
 | `name`                 | str       | Yes      | Name of the remote network                |
 | `description`          | str       | No       | Description of the remote network         |
 | `status`               | str       | No       | Status of the remote network (read-only)  |
@@ -37,9 +38,7 @@ IPsec VPN tunnels. This module helps you create, configure, and manage these con
 
 ## 4. Basic Configuration
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Create a remote network
@@ -60,15 +59,12 @@ IPsec VPN tunnels. This module helps you create, configure, and manage these con
     state: "present"
 ```
 
-</div>
 
 ## 5. Usage Examples
 
 ### Creating a Basic Remote Network
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Create a basic remote network
@@ -88,13 +84,10 @@ IPsec VPN tunnels. This module helps you create, configure, and manage these con
     state: "present"
 ```
 
-</div>
 
 ### Creating a Remote Network with BGP
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Create a remote network with BGP peering
@@ -118,13 +111,10 @@ IPsec VPN tunnels. This module helps you create, configure, and manage these con
     state: "present"
 ```
 
-</div>
 
 ### Updating a Remote Network
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Update a remote network
@@ -145,13 +135,10 @@ IPsec VPN tunnels. This module helps you create, configure, and manage these con
     state: "present"
 ```
 
-</div>
 
 ### Deleting a Remote Network
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Delete a remote network
@@ -164,13 +151,10 @@ IPsec VPN tunnels. This module helps you create, configure, and manage these con
     state: "absent"
 ```
 
-</div>
 
 ### Listing Remote Networks
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: List all remote networks
@@ -187,13 +171,10 @@ IPsec VPN tunnels. This module helps you create, configure, and manage these con
   loop: "{{ networks.remote_networks }}"
 ```
 
-</div>
 
 ## 6. Error Handling
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Create remote network with error handling
@@ -213,39 +194,43 @@ IPsec VPN tunnels. This module helps you create, configure, and manage these con
         msg: "Failed to create remote network. Check if all referenced objects exist."
 ```
 
-</div>
 
 ## 7. Best Practices
 
 1. **Planning and Design**
-    - Plan IP addressing to avoid overlaps between remote networks
-    - Design BGP peering relationships carefully
-    - Choose appropriate regions based on geographic proximity
-    - Document network topology and VPN configuration details
+
+   - Plan IP addressing to avoid overlaps between remote networks
+   - Design BGP peering relationships carefully
+   - Choose appropriate regions based on geographic proximity
+   - Document network topology and VPN configuration details
 
 2. **Security Configuration**
-    - Use strong IPsec crypto profiles
-    - Configure appropriate security rules for remote network traffic
-    - Implement principle of least privilege for remote network access
-    - Regularly review and audit remote network connections
+
+   - Use strong IPsec crypto profiles
+   - Configure appropriate security rules for remote network traffic
+   - Implement principle of least privilege for remote network access
+   - Regularly review and audit remote network connections
 
 3. **High Availability**
-    - Consider redundant tunnels for critical connections
-    - Implement secondary WAN configurations where needed
-    - Monitor tunnel status and connectivity
-    - Create backup plans for connection failures
+
+   - Consider redundant tunnels for critical connections
+   - Implement secondary WAN configurations where needed
+   - Monitor tunnel status and connectivity
+   - Create backup plans for connection failures
 
 4. **BGP Configuration**
-    - Use private AS numbers for BGP peering
-    - Configure route filters to control route advertisements
-    - Consider BGP authentication mechanisms
-    - Test BGP routing changes before implementation
+
+   - Use private AS numbers for BGP peering
+   - Configure route filters to control route advertisements
+   - Consider BGP authentication mechanisms
+   - Test BGP routing changes before implementation
 
 5. **Maintenance**
-    - Schedule maintenance windows for configuration changes
-    - Test changes in a staging environment when possible
-    - Keep IKE and IPsec settings in sync with remote endpoints
-    - Maintain documentation of remote network configurations
+
+   - Schedule maintenance windows for configuration changes
+   - Test changes in a staging environment when possible
+   - Keep IKE and IPsec settings in sync with remote endpoints
+   - Maintain documentation of remote network configurations
 
 ## 8. Related Models
 

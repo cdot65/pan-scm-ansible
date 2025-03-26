@@ -1,15 +1,15 @@
-# Service Connections Module
+# Service Connections Configuration Object
 
 ## Overview
 
-The `service_connections` module enables management of Service Connections in Palo Alto Networks Strata Cloud Manager (
-SCM). Service Connections allow you to securely connect your network to various cloud services and third-party providers
-through the Strata Cloud Manager.
+The `service_connections` module enables management of Service Connections in Palo Alto Networks
+Strata Cloud Manager ( SCM). Service Connections allow you to securely connect your network to
+various cloud services and third-party providers through the Strata Cloud Manager.
 
 ## Core Methods
 
 | Method   | Description                                               |
-|----------|-----------------------------------------------------------|
+| -------- | --------------------------------------------------------- |
 | `create` | Creates a new Service Connection in SCM                   |
 | `update` | Modifies an existing Service Connection                   |
 | `delete` | Removes a Service Connection from SCM                     |
@@ -19,7 +19,7 @@ through the Strata Cloud Manager.
 ## Model Attributes
 
 | Attribute           | Type   | Description                                            | Required |
-|---------------------|--------|--------------------------------------------------------|----------|
+| ------------------- | ------ | ------------------------------------------------------ | -------- |
 | `name`              | String | Name of the Service Connection                         | Yes      |
 | `description`       | String | Description of the Service Connection                  | No       |
 | `service_type`      | String | Type of service (aws, azure, gcp, o365, etc.)          | Yes      |
@@ -177,6 +177,6 @@ The module will fail with proper error messages if:
 
 ## Related Models
 
-- [Network Locations](network_locations.md) - Referenced by Service Connections to determine which locations can use
-  them
+- [Network Locations](network_locations.md) - Referenced by Service Connections to determine which
+  locations can use them
 - [Security Rules](security_rule.md) - Can reference Service Connections as destinations

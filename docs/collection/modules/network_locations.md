@@ -2,15 +2,15 @@
 
 ## 1. Overview
 
-The Network Locations module allows you to manage network location objects within Strata Cloud Manager (SCM). Network
-locations represent geographic regions and are used for routing decisions, service connectivity, and resource
-allocation. This module primarily provides read capabilities and limited management functions, as network locations are
-often system-defined.
+The Network Locations module allows you to manage network location objects within Strata Cloud
+Manager (SCM). Network locations represent geographic regions and are used for routing decisions,
+service connectivity, and resource allocation. This module primarily provides read capabilities and
+limited management functions, as network locations are often system-defined.
 
 ## 2. Core Methods
 
 | Method    | Description                       | Parameters                | Return Type           |
-|-----------|-----------------------------------|---------------------------|-----------------------|
+| --------- | --------------------------------- | ------------------------- | --------------------- |
 | `list()`  | Lists available network locations | `filters: Dict[str, Any]` | `List[ResponseModel]` |
 | `get()`   | Retrieves location by ID          | `location_id: str`        | `ResponseModel`       |
 | `fetch()` | Retrieves location by value       | `value: str`              | `ResponseModel`       |
@@ -18,7 +18,7 @@ often system-defined.
 ## 3. Model Attributes
 
 | Attribute   | Type  | Description                                    |
-|-------------|-------|------------------------------------------------|
+| ----------- | ----- | ---------------------------------------------- |
 | `id`        | str   | Unique identifier for the network location     |
 | `value`     | str   | Location value/code (e.g., "us-east-1")        |
 | `display`   | str   | Display name of the location (e.g., "US East") |
@@ -34,9 +34,7 @@ often system-defined.
 
 ## 4. Basic Usage
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Get network locations
@@ -52,15 +50,12 @@ often system-defined.
     var: locations.network_locations
 ```
 
-</div>
 
 ## 5. Usage Examples
 
 ### Listing All Network Locations
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: List all network locations
@@ -77,13 +72,10 @@ often system-defined.
   loop: "{{ all_locations.network_locations }}"
 ```
 
-</div>
 
 ### Filtering Network Locations by Continent
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Get European network locations
@@ -100,13 +92,10 @@ often system-defined.
     msg: "{{ europe_locations.network_locations | map(attribute='display') | list }}"
 ```
 
-</div>
 
 ### Finding a Specific Location
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Find specific network location
@@ -124,13 +113,10 @@ often system-defined.
   when: location_info.network_locations | length > 0
 ```
 
-</div>
 
 ### Using Location Information in Other Resources
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Get available network locations
@@ -157,13 +143,10 @@ often system-defined.
     state: "present"
 ```
 
-</div>
 
 ## 6. Error Handling
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Get network location with error handling
@@ -190,37 +173,42 @@ often system-defined.
         location_value: "us-east-1"
 ```
 
-</div>
 
 ## 7. Best Practices
 
 1. **Location Selection**
-    - Choose network locations based on geographic proximity to your users and resources
-    - Consider latency requirements when selecting locations
-    - Use locations with tier 1 for critical workloads for better performance
+
+   - Choose network locations based on geographic proximity to your users and resources
+   - Consider latency requirements when selecting locations
+   - Use locations with tier 1 for critical workloads for better performance
 
 2. **Redundancy Planning**
-    - Select multiple locations for redundancy
-    - Choose locations in different geographic regions for disaster recovery
-    - Understand the capabilities and limitations of each location
+
+   - Select multiple locations for redundancy
+   - Choose locations in different geographic regions for disaster recovery
+   - Understand the capabilities and limitations of each location
 
 3. **Integration with Other Resources**
-    - Use location information when configuring remote networks
-    - Reference location values correctly in other resources
-    - Validate location values before using them in configurations
+
+   - Use location information when configuring remote networks
+   - Reference location values correctly in other resources
+   - Validate location values before using them in configurations
 
 4. **Automation**
-    - Use variables or facts to store location information
-    - Create a centralized location selection strategy
-    - Document which locations are used and why
+
+   - Use variables or facts to store location information
+   - Create a centralized location selection strategy
+   - Document which locations are used and why
 
 5. **Monitoring**
-    - Regularly check the status of network locations
-    - Have a plan for location unavailability
-    - Automate failover to alternative locations when needed
+
+   - Regularly check the status of network locations
+   - Have a plan for location unavailability
+   - Automate failover to alternative locations when needed
 
 ## 8. Related Models
 
 - [Remote Networks](remote_networks.md) - Configure remote networks in specific locations
 - [BGP Routing](bgp_routing.md) - Configure routing preferences that may be location-dependent
-- [Service Connections](service_connections.md) - Configure service connections in specific locations
+- [Service Connections](service_connections.md) - Configure service connections in specific
+  locations

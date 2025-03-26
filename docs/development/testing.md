@@ -1,17 +1,20 @@
 # Testing the SCM Ansible Collection
 
-This guide covers how to test the Palo Alto Networks Strata Cloud Manager Ansible Collection during development.
+This guide covers how to test the Palo Alto Networks Strata Cloud Manager Ansible Collection during
+development.
 
 ## Testing Framework
 
 The collection uses the following testing mechanisms:
 
 1. **Linting and Style Checking**:
+
    - Ruff for Python linting and formatting
    - isort for import sorting
    - ansible-lint for Ansible-specific linting
 
 2. **Functional Testing**:
+
    - Ansible playbooks for module testing
    - Integration tests against SCM API
 
@@ -76,6 +79,7 @@ tsg_id: "your_tsg_id"
 ```
 
 3. Encrypt the file:
+
 ```bash
 ansible-vault encrypt tests/vault.yaml
 ```
@@ -148,22 +152,27 @@ Example test playbook structure:
 ## Test Best Practices
 
 1. **Test All Module Functions**:
+
    - Create, update, delete operations
    - Parameter validation
    - Error handling
 
 2. **Verify Idempotence**:
+
    - Run the same task twice and ensure the second run reports no changes
 
 3. **Clean Up After Tests**:
+
    - Remove all test resources after testing
    - Use `always` blocks to ensure cleanup happens even if tests fail
 
 4. **Use Descriptive Names**:
+
    - Name test resources with a prefix to identify them as test objects
    - Use descriptive task names to document what's being tested
 
 5. **Register and Verify Results**:
+
    - Use `register` to capture task results
    - Use `assert` tasks to verify expected behavior
 
@@ -181,4 +190,5 @@ Example test playbook structure:
 - Set provider log_level to "DEBUG" for detailed API logs
 - Use the `debug` module to inspect variables during playbook execution
 
-For additional help, please open an issue on the [GitHub repository](https://github.com/cdot65/pan-scm-ansible/issues).
+For additional help, please open an issue on the
+[GitHub repository](https://github.com/cdot65/pan-scm-ansible/issues).

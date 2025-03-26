@@ -1,14 +1,20 @@
 # Introduction
 
-The Palo Alto Networks Strata Cloud Manager (SCM) Ansible Collection provides a comprehensive set of Ansible modules, roles, and plugins designed to automate the configuration and management of Palo Alto Networks SCM.
+The Palo Alto Networks Strata Cloud Manager (SCM) Ansible Collection provides a comprehensive set of
+Ansible modules, roles, and plugins designed to automate the configuration and management of Palo
+Alto Networks SCM.
 
 ## What is Strata Cloud Manager?
 
-Strata Cloud Manager (SCM) is Palo Alto Networks' cloud-delivered service for centralized management of network security. It provides a unified management plane for Palo Alto Networks security services and products, enabling organizations to simplify operations and improve security posture.
+Strata Cloud Manager (SCM) is Palo Alto Networks' cloud-delivered service for centralized management
+of network security. It provides a unified management plane for Palo Alto Networks security services
+and products, enabling organizations to simplify operations and improve security posture.
 
 ## About This Collection
 
-This collection leverages the `pan-scm-sdk` Python SDK to interact with the SCM API, providing Ansible users with reliable and consistent automation capabilities. The collection is designed with the following goals in mind:
+This collection leverages the `pan-scm-sdk` Python SDK to interact with the SCM API, providing
+Ansible users with reliable and consistent automation capabilities. The collection is designed with
+the following goals in mind:
 
 - **Simplify Automation**: Reduce complex SCM API interactions into easy-to-use Ansible modules
 - **Ensure Idempotency**: Safe to run repeatedly with consistent results
@@ -34,4 +40,5 @@ The SCM Ansible Collection can be used for various network security automation s
 
 ## License
 
-This collection is released under the MIT License, allowing for broad use in both commercial and non-commercial applications.
+This collection is released under the MIT License, allowing for broad use in both commercial and
+non-commercial applications.

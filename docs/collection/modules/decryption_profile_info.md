@@ -1,4 +1,4 @@
-# Decryption Profile Info Module
+# Decryption Profile Information Object
 
 ## Synopsis
 
@@ -6,22 +6,22 @@ Gather information about decryption profile objects within Strata Cloud Manager 
 
 ## Parameters
 
-| Parameter | Type | Required | Default | Choices | Description |
-|-----------|------|----------|---------|---------|-------------|
-| `name` | `str` | no | | | The name of a specific decryption profile to retrieve. |
-| `gather_subset` | `list` | no | `["config"]` | `"all"`, `"config"` | Determines which information to gather about decryption profiles. `all` gathers everything. `config` is the default which retrieves basic configuration. |
-| `folder` | `str` | no | | | Filter decryption profiles by folder container. |
-| `snippet` | `str` | no | | | Filter decryption profiles by snippet container. |
-| `device` | `str` | no | | | Filter decryption profiles by device container. |
-| `exact_match` | `bool` | no | `false` | | When True, only return objects defined exactly in the specified container. |
-| `exclude_folders` | `list` | no | | | List of folder names to exclude from results. |
-| `exclude_snippets` | `list` | no | | | List of snippet values to exclude from results. |
-| `exclude_devices` | `list` | no | | | List of device values to exclude from results. |
-| `provider` | `dict` | yes | | | Authentication credentials. |
-| `provider.client_id` | `str` | yes | | | Client ID for authentication. |
-| `provider.client_secret` | `str` | yes | | | Client secret for authentication. |
-| `provider.tsg_id` | `str` | yes | | | Tenant Service Group ID. |
-| `provider.log_level` | `str` | no | `"INFO"` | | Log level for the SDK. |
+| Parameter                | Type   | Required | Default      | Choices             | Description                                                                                                                                              |
+| ------------------------ | ------ | -------- | ------------ | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                   | `str`  | no       |              |                     | The name of a specific decryption profile to retrieve.                                                                                                   |
+| `gather_subset`          | `list` | no       | `["config"]` | `"all"`, `"config"` | Determines which information to gather about decryption profiles. `all` gathers everything. `config` is the default which retrieves basic configuration. |
+| `folder`                 | `str`  | no       |              |                     | Filter decryption profiles by folder container.                                                                                                          |
+| `snippet`                | `str`  | no       |              |                     | Filter decryption profiles by snippet container.                                                                                                         |
+| `device`                 | `str`  | no       |              |                     | Filter decryption profiles by device container.                                                                                                          |
+| `exact_match`            | `bool` | no       | `false`      |                     | When True, only return objects defined exactly in the specified container.                                                                               |
+| `exclude_folders`        | `list` | no       |              |                     | List of folder names to exclude from results.                                                                                                            |
+| `exclude_snippets`       | `list` | no       |              |                     | List of snippet values to exclude from results.                                                                                                          |
+| `exclude_devices`        | `list` | no       |              |                     | List of device values to exclude from results.                                                                                                           |
+| `provider`               | `dict` | yes      |              |                     | Authentication credentials.                                                                                                                              |
+| `provider.client_id`     | `str`  | yes      |              |                     | Client ID for authentication.                                                                                                                            |
+| `provider.client_secret` | `str`  | yes      |              |                     | Client secret for authentication.                                                                                                                        |
+| `provider.tsg_id`        | `str`  | yes      |              |                     | Tenant Service Group ID.                                                                                                                                 |
+| `provider.log_level`     | `str`  | no       | `"INFO"`     |                     | Log level for the SDK.                                                                                                                                   |
 
 ## Requirements
 

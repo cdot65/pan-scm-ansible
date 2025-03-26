@@ -1,6 +1,8 @@
 # Getting Started with SCM Ansible Collection
 
-This guide provides a comprehensive introduction to using the Palo Alto Networks Strata Cloud Manager (SCM) Ansible Collection. It walks through the initial setup, authentication, and basic operations.
+This guide provides a comprehensive introduction to using the Palo Alto Networks Strata Cloud
+Manager (SCM) Ansible Collection. It walks through the initial setup, authentication, and basic
+operations.
 
 ## Prerequisites
 

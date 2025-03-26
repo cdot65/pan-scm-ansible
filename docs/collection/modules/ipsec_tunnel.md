@@ -1,15 +1,15 @@
-# IPSec Tunnel Module
+# Ipsec Tunnel Configuration Object
 
 ## Overview
 
-The `ipsec_tunnel` module enables management of IPSec tunnels in Palo Alto Networks Strata Cloud Manager (SCM). IPSec
-tunnels define secure connections between networks and leverage IKE Gateway and Crypto Profile configurations to
-establish encrypted communications.
+The `ipsec_tunnel` module enables management of IPSec tunnels in Palo Alto Networks Strata Cloud
+Manager (SCM). IPSec tunnels define secure connections between networks and leverage IKE Gateway and
+Crypto Profile configurations to establish encrypted communications.
 
 ## Core Methods
 
 | Method   | Description                                         |
-|----------|-----------------------------------------------------|
+| -------- | --------------------------------------------------- |
 | `create` | Creates a new IPSec tunnel in SCM                   |
 | `update` | Modifies an existing IPSec tunnel                   |
 | `delete` | Removes an IPSec tunnel from SCM                    |
@@ -19,7 +19,7 @@ establish encrypted communications.
 ## Model Attributes
 
 | Attribute                  | Type    | Description                                      | Required |
-|----------------------------|---------|--------------------------------------------------|----------|
+| -------------------------- | ------- | ------------------------------------------------ | -------- |
 | `name`                     | String  | Name of the IPSec tunnel                         | Yes      |
 | `tunnel_interface`         | String  | Tunnel interface to use                          | Yes      |
 | `ike_gateway`              | String  | Name of the IKE Gateway to use                   | Yes      |
@@ -137,5 +137,6 @@ The module will fail with proper error messages if:
 
 - [IKE Gateway](ike_gateway.md) - Referenced by IPSec tunnels for peer information
 - [IKE Crypto Profile](ike_crypto_profile.md) - Used by IKE Gateway for Phase-1 negotiation
-- [IPSec Crypto Profile](ipsec_crypto_profile.md) - Referenced by IPSec tunnels for Phase-2 negotiation
+- [IPSec Crypto Profile](ipsec_crypto_profile.md) - Referenced by IPSec tunnels for Phase-2
+  negotiation
 - [Remote Networks](remote_networks.md) - Often use IPSec tunnels for site-to-cloud connectivity

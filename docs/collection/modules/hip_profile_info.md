@@ -1,4 +1,4 @@
-# HIP Profile Information
+# Hip Profile Information Object
 
 ## Table of Contents
 
@@ -8,57 +8,59 @@
 4. [Exceptions](#exceptions)
 5. [Basic Configuration](#basic-configuration)
 6. [Usage Examples](#usage-examples)
-    - [Getting Information about a Specific HIP Profile](#getting-information-about-a-specific-hip-profile)
-    - [Listing All HIP Profiles in a Folder](#listing-all-hip-profiles-in-a-folder)
-    - [Using Advanced Filtering Options](#using-advanced-filtering-options)
+   - [Getting Information about a Specific HIP Profile](#getting-information-about-a-specific-hip-profile)
+   - [Listing All HIP Profiles in a Folder](#listing-all-hip-profiles-in-a-folder)
+   - [Using Advanced Filtering Options](#using-advanced-filtering-options)
 7. [Error Handling](#error-handling)
 8. [Best Practices](#best-practices)
 9. [Related Modules](#related-modules)
 
 ## Overview
 
-The `hip_profile_info` Ansible module provides functionality to gather information about Host Information Profile (HIP) profiles in Palo Alto Networks' Strata Cloud Manager (SCM). This is an info module that allows fetching details about specific HIP profiles or listing profiles with various filtering options.
+The `hip_profile_info` Ansible module provides functionality to gather information about Host
+Information Profile (HIP) profiles in Palo Alto Networks' Strata Cloud Manager (SCM). This is an
+info module that allows fetching details about specific HIP profiles or listing profiles with
+various filtering options.
 
 ## Core Methods
 
-| Method      | Description                                      | Parameters                             | Returned                    |
-|-------------|--------------------------------------------------|----------------------------------------|-----------------------------|
-| `fetch`     | Gets a specific HIP profile by name              | Name and container parameters          | Single HIP profile details  |
-| `list`      | Lists HIP profiles with filtering options        | Container and filter parameters        | List of HIP profiles        |
+| Method  | Description                               | Parameters                      | Returned                   |
+| ------- | ----------------------------------------- | ------------------------------- | -------------------------- |
+| `fetch` | Gets a specific HIP profile by name       | Name and container parameters   | Single HIP profile details |
+| `list`  | Lists HIP profiles with filtering options | Container and filter parameters | List of HIP profiles       |
 
 ## HIP Profile Info Parameters
 
-| Parameter          | Type          | Required           | Description                                                                      |
-|--------------------|---------------|-------------------|----------------------------------------------------------------------------------|
-| `name`             | str           | No                | Name of a specific HIP profile to retrieve                                        |
-| `gather_subset`    | list          | No                | Determines which information to gather (default: config)                          |
-| `folder`           | str           | No*               | Filter HIP profiles by folder container                                           |
-| `snippet`          | str           | No*               | Filter HIP profiles by snippet container                                          |
-| `device`           | str           | No*               | Filter HIP profiles by device container                                           |
-| `exact_match`      | bool          | No                | When True, only return objects defined exactly in the specified container         |
-| `exclude_folders`  | list          | No                | List of folder names to exclude from results                                      |
-| `exclude_snippets` | list          | No                | List of snippet values to exclude from results                                    |
-| `exclude_devices`  | list          | No                | List of device values to exclude from results                                     |
+| Parameter          | Type | Required | Description                                                               |
+| ------------------ | ---- | -------- | ------------------------------------------------------------------------- |
+| `name`             | str  | No       | Name of a specific HIP profile to retrieve                                |
+| `gather_subset`    | list | No       | Determines which information to gather (default: config)                  |
+| `folder`           | str  | No\*     | Filter HIP profiles by folder container                                   |
+| `snippet`          | str  | No\*     | Filter HIP profiles by snippet container                                  |
+| `device`           | str  | No\*     | Filter HIP profiles by device container                                   |
+| `exact_match`      | bool | No       | When True, only return objects defined exactly in the specified container |
+| `exclude_folders`  | list | No       | List of folder names to exclude from results                              |
+| `exclude_snippets` | list | No       | List of snippet values to exclude from results                            |
+| `exclude_devices`  | list | No       | List of device values to exclude from results                             |
 
-*One container parameter is required when `name` is not specified.
+\*One container parameter is required when `name` is not specified.
 
 ## Exceptions
 
-| Exception                  | Description                                         |
-|----------------------------|-----------------------------------------------------|
-| `InvalidObjectError`       | Invalid request data or format                      |
-| `MissingQueryParameterError`| Missing required parameters                        |
-| `ObjectNotPresentError`    | HIP profile not found                               |
-| `AuthenticationError`      | Authentication failed                               |
-| `ServerError`              | Internal server error                               |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid request data or format |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `ObjectNotPresentError`      | HIP profile not found          |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The HIP Profile Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The HIP Profile Info module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Basic HIP Profile Info Module Configuration
@@ -82,7 +84,6 @@ The HIP Profile Info module requires proper authentication credentials to access
         var: hip_profiles_result
 ```
 
-</div>
 
 ## Usage Examples
 
@@ -90,9 +91,7 @@ The HIP Profile Info module requires proper authentication credentials to access
 
 Retrieve details about a specific HIP profile by name and container.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Get information about a specific HIP profile
@@ -107,15 +106,12 @@ Retrieve details about a specific HIP profile by name and container.
     var: hip_profile_info.hip_profile
 ```
 
-</div>
 
 ### Listing All HIP Profiles in a Folder
 
 List all HIP profiles in a specific folder.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: List all HIP profiles in a folder
@@ -133,15 +129,12 @@ List all HIP profiles in a specific folder.
     msg: "Found {{ all_hip_profiles.hip_profiles | length }} HIP profiles"
 ```
 
-</div>
 
 ### Using Advanced Filtering Options
 
 Use advanced filtering options to refine your query results.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: List HIP profiles with exact match and exclusions
@@ -159,15 +152,12 @@ Use advanced filtering options to refine your query results.
   loop: "{{ filtered_hip_profiles.hip_profiles }}"
 ```
 
-</div>
 
 ## Error Handling
 
 It's important to handle potential errors when retrieving information about HIP profiles.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Get information about HIP profiles with error handling
@@ -189,31 +179,35 @@ It's important to handle potential errors when retrieving information about HIP 
         msg: "Failed to retrieve HIP profile information: {{ ansible_failed_result.msg }}"
 ```
 
-</div>
 
 ## Best Practices
 
 1. **Efficient Querying**
+
    - Use specific filters to reduce API load and improve performance
    - When looking for a specific HIP profile, use the `name` parameter instead of filtering results
    - Use container parameters consistently across queries
 
 2. **Result Processing**
+
    - Always register the module output to a variable for later use
    - Check if the expected data is present before processing it
    - Use appropriate looping constructs for processing multiple results
 
 3. **Filter Usage**
+
    - Use `exact_match` when you only want HIP profiles defined directly in the specified container
    - Use exclusion filters to refine results without overcomplicating queries
    - Combine multiple filters for more precise results
 
 4. **Error Handling**
+
    - Implement try/except blocks to handle potential errors
    - Verify that the HIP profiles exist before attempting operations on them
    - Provide meaningful error messages for troubleshooting
 
 5. **Integration with Other Modules**
+
    - Use the info module to check for existing profiles before creating new ones
    - Combine with the hip_profile module for complete profile management
    - Use the retrieved information to make decisions in your playbooks

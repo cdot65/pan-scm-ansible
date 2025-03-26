@@ -1,7 +1,8 @@
 # Plugins Overview
 
-This collection includes several Ansible plugins that extend functionality beyond what the modules provide. These
-plugins enable you to integrate SCM data into your automation workflows in various ways.
+This collection includes several Ansible plugins that extend functionality beyond what the modules
+provide. These plugins enable you to integrate SCM data into your automation workflows in various
+ways.
 
 ### Key Features
 
@@ -61,9 +62,11 @@ groups:
       debug:
         msg: "{{ lookup('cdot65.scm.address', 'web-server', folder='Texas') }}"
 
-    - name: Get all service objects in a folder
-      debug:
-        msg: "{{ lookup('cdot65.scm.service', folder='Texas') }}"</span>
+```
+- name: Get all service objects in a folder
+  debug:
+    msg: "{{ lookup('cdot65.scm.service', folder='Texas') }}"</span>
+```
 
 </div>
 
@@ -97,5 +100,6 @@ The real power of these plugins comes from using them together:
 
 ## Plugin Development
 
-If you're interested in contributing plugins to this collection, see
-the [contributing guidelines](../../development/contributing.md) for development instructions and best practices.
+If you're interested in contributing plugins to this collection, see the
+[contributing guidelines](../../development/contributing.md) for development instructions and best
+practices.

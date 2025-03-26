@@ -1,6 +1,7 @@
 # Release Process
 
-This document outlines the process for releasing new versions of the Palo Alto Networks Strata Cloud Manager Ansible Collection.
+This document outlines the process for releasing new versions of the Palo Alto Networks Strata Cloud
+Manager Ansible Collection.
 
 ## Version Numbering
 
@@ -24,16 +25,19 @@ The collection follows [Semantic Versioning](https://semver.org/) (SemVer):
 ### 2. Quality Assurance
 
 - Run all linting checks:
+
   ```bash
   make lint
   ```
 
 - Run all tests:
+
   ```bash
   make test
   ```
 
 - Build and check documentation:
+
   ```bash
   make docs
   ```
@@ -106,6 +110,7 @@ Update version numbers to the next development version:
 For critical bugs that need immediate fixing:
 
 1. Create a hotfix branch from the release tag:
+
    ```bash
    git checkout -b hotfix/v0.1.1 v0.1.0
    ```

@@ -1,7 +1,10 @@
----
+______________________________________________________________________
+
 hide:
-  - navigation
----
+
+- navigation
+
+______________________________________________________________________
 
 <style>
 .md-content .md-typeset h1 { display: none; }
@@ -31,15 +34,19 @@ hide:
 </a>
 </p>
 
----
+______________________________________________________________________
 
-**Documentation**: <a href="https://cdot65.github.io/pan-scm-ansible/" target="_blank">https://cdot65.github.io/pan-scm-ansible/</a>
+**Documentation**:
+<a href="https://cdot65.github.io/pan-scm-ansible/" target="_blank">https://cdot65.github.io/pan-scm-ansible/</a>
 
-**Source Code**: <a href="https://github.com/cdot65/pan-scm-ansible" target="_blank">https://github.com/cdot65/pan-scm-ansible</a>
+**Source Code**:
+<a href="https://github.com/cdot65/pan-scm-ansible" target="_blank">https://github.com/cdot65/pan-scm-ansible</a>
 
----
+______________________________________________________________________
 
-This Ansible Collection provides modules, roles, and plugins for managing Palo Alto Networks Strata Cloud Manager (SCM) configurations. It leverages the `pan-scm-sdk` Python SDK to provide reliable and consistent interactions with the SCM API.
+This Ansible Collection provides modules, roles, and plugins for managing Palo Alto Networks Strata
+Cloud Manager (SCM) configurations. It leverages the `pan-scm-sdk` Python SDK to provide reliable
+and consistent interactions with the SCM API.
 
 ## Installation
 
@@ -125,9 +132,10 @@ Process completed successfully
 
 </div>
 
-For more detailed usage instructions and examples, refer to the [User Guide](guide/getting-started.md).
+For more detailed usage instructions and examples, refer to the
+[User Guide](guide/getting-started.md).
 
----
+______________________________________________________________________
 
 ## Key Features
 
@@ -144,9 +152,10 @@ For more detailed usage instructions and examples, refer to the [User Guide](gui
 
 ## Contributing
 
-Contributions are welcome and greatly appreciated. Visit the [Contributing](development/contributing.md) page for guidelines
-on how to contribute.
+Contributions are welcome and greatly appreciated. Visit the
+[Contributing](development/contributing.md) page for guidelines on how to contribute.
 
 ## License
 
-This project is licensed under the MIT License - see the [License](about/license.md) page for details.
+This project is licensed under the MIT License - see the [License](about/license.md) page for
+details.

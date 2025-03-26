@@ -1,30 +1,34 @@
 # Contributing
 
-We welcome contributions to the Palo Alto Networks SCM Ansible Collection! This guide outlines the process for
-contributing and developing the collection.
+We welcome contributions to the Palo Alto Networks SCM Ansible Collection! This guide outlines the
+process for contributing and developing the collection.
 
 ## Code of Conduct
 
-All contributors are expected to adhere to our project's code of conduct. Please be respectful and constructive in your
-communications and contributions.
+All contributors are expected to adhere to our project's code of conduct. Please be respectful and
+constructive in your communications and contributions.
 
 ## Getting Started
 
-1. **Fork the Repository**: Create a fork of the [repository](https://github.com/cdot65/pan-scm-ansible) on GitHub.
+1. **Fork the Repository**: Create a fork of the
+   [repository](https://github.com/cdot65/pan-scm-ansible) on GitHub.
 
 2. **Clone Your Fork**:
+
    ```bash
    git clone https://github.com/YOUR-USERNAME/pan-scm-ansible.git
    cd pan-scm-ansible
    ```
 
 3. **Set Up Development Environment**:
+
    ```bash
    pip install -r requirements-dev.txt
    pre-commit install
    ```
 
 4. **Create a Branch**:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -36,7 +40,8 @@ communications and contributions.
 This project follows standard Ansible development practices:
 
 - Use YAML for module definitions
-- Follow [Ansible module guidelines](https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html)
+- Follow
+  [Ansible module guidelines](https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html)
 - PEP 8 for Python code
 - Use meaningful variable names and include docstrings
 
@@ -53,16 +58,19 @@ pre-commit run --all-files
 All contributions should include appropriate tests:
 
 1. **Sanity Tests**:
+
    ```bash
    ansible-test sanity --docker
    ```
 
 2. **Unit Tests**:
+
    ```bash
    ansible-test units --docker
    ```
 
 3. **Integration Tests** (requires SCM credentials):
+
    ```bash
    ansible-test integration --docker
    ```
@@ -78,6 +86,7 @@ Update documentation to reflect your changes:
 ## Submitting Changes
 
 1. **Commit Your Changes**:
+
    ```bash
    git add .
    git commit -m "feat: add support for X"
@@ -86,6 +95,7 @@ Update documentation to reflect your changes:
    We follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages.
 
 2. **Push to Your Fork**:
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -101,6 +111,7 @@ Update documentation to reflect your changes:
 When adding a new module:
 
 1. Use the module template:
+
    ```bash
    ./scripts/create_module.py --name your_module_name
    ```
@@ -115,7 +126,8 @@ When adding a new module:
 
 ## Reporting Bugs
 
-If you find a bug, please [open an issue](https://github.com/cdot65/pan-scm-ansible/issues/new) with:
+If you find a bug, please [open an issue](https://github.com/cdot65/pan-scm-ansible/issues/new)
+with:
 
 - A clear description of the issue
 - Steps to reproduce
@@ -125,7 +137,8 @@ If you find a bug, please [open an issue](https://github.com/cdot65/pan-scm-ansi
 
 ## Feature Requests
 
-For feature requests, [open an issue](https://github.com/cdot65/pan-scm-ansible/issues/new) describing:
+For feature requests, [open an issue](https://github.com/cdot65/pan-scm-ansible/issues/new)
+describing:
 
 - The feature you'd like to see
 - Use cases for the feature
@@ -133,6 +146,7 @@ For feature requests, [open an issue](https://github.com/cdot65/pan-scm-ansible/
 
 ## Questions?
 
-If you have questions about contributing, please open a discussion on GitHub or contact the maintainers.
+If you have questions about contributing, please open a discussion on GitHub or contact the
+maintainers.
 
 Thank you for contributing to the SCM Ansible Collection!
