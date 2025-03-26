@@ -20,55 +20,59 @@
 
 ## Overview
 
-The `security_zone` Ansible module provides functionality to manage security zone objects in Palo Alto Networks' Strata Cloud Manager (SCM). Security zones are logical boundaries that segment the network and provide security policy enforcement points. By defining zones, you can create security rules that control traffic between different network segments.
+The `security_zone` Ansible module provides functionality to manage security zone objects in Palo
+Alto Networks' Strata Cloud Manager (SCM). Security zones are logical boundaries that segment the
+network and provide security policy enforcement points. By defining zones, you can create security
+rules that control traffic between different network segments.
 
 ## Core Methods
 
-| Method     | Description                    | Parameters                    | Return Type                 |
-| ---------- | ------------------------------ | ----------------------------- | --------------------------- |
-| `create()` | Creates a new security zone    | `data: Dict[str, Any]`        | `SecurityZoneResponseModel` |
-| `update()` | Updates an existing zone       | `zone: SecurityZoneUpdateModel` | `SecurityZoneResponseModel` |
-| `delete()` | Removes a zone                 | `object_id: str`              | `None`                      |
-| `fetch()`  | Gets a zone by name            | `name: str`, `container: str` | `SecurityZoneResponseModel` |
-| `list()`   | Lists zones with filtering     | `folder: str`, `**filters`    | `List[SecurityZoneResponseModel]` |
+| Method     | Description                 | Parameters                      | Return Type                       |
+| ---------- | --------------------------- | ------------------------------- | --------------------------------- |
+| `create()` | Creates a new security zone | `data: Dict[str, Any]`          | `SecurityZoneResponseModel`       |
+| `update()` | Updates an existing zone    | `zone: SecurityZoneUpdateModel` | `SecurityZoneResponseModel`       |
+| `delete()` | Removes a zone              | `object_id: str`                | `None`                            |
+| `fetch()`  | Gets a zone by name         | `name: str`, `container: str`   | `SecurityZoneResponseModel`       |
+| `list()`   | Lists zones with filtering  | `folder: str`, `**filters`      | `List[SecurityZoneResponseModel]` |
 
 ## Security Zone Model Attributes
 
-| Attribute          | Type      | Required      | Description                                                  |
-| ------------------ | --------- | ------------- | ------------------------------------------------------------ |
-| `name`             | str       | Yes           | The name of the security zone                                |
-| `description`      | str       | No            | Description of the security zone                             |
-| `tag`              | List[str] | No            | List of tags associated with the zone                        |
-| `user_id_mappings` | Dict      | No            | User ID mapping settings                                     |
-| `log_setting`      | str       | No            | Log forwarding profile                                       |
-| `enable_user_id`   | bool      | No            | Enable User-ID for this zone                                 |
-| `exclude_ip`       | List[str] | No            | List of IP addresses to exclude from User-ID                 |
-| `include_ip`       | List[str] | No            | List of IP addresses to include for User-ID                  |
-| `folder`           | str       | One container | The folder in which the zone is defined (max 64 chars)       |
-| `snippet`          | str       | One container | The snippet in which the zone is defined (max 64 chars)      |
-| `device`           | str       | One container | The device in which the zone is defined (max 64 chars)       |
+| Attribute          | Type      | Required      | Description                                             |
+| ------------------ | --------- | ------------- | ------------------------------------------------------- |
+| `name`             | str       | Yes           | The name of the security zone                           |
+| `description`      | str       | No            | Description of the security zone                        |
+| `tag`              | List[str] | No            | List of tags associated with the zone                   |
+| `user_id_mappings` | Dict      | No            | User ID mapping settings                                |
+| `log_setting`      | str       | No            | Log forwarding profile                                  |
+| `enable_user_id`   | bool      | No            | Enable User-ID for this zone                            |
+| `exclude_ip`       | List[str] | No            | List of IP addresses to exclude from User-ID            |
+| `include_ip`       | List[str] | No            | List of IP addresses to include for User-ID             |
+| `folder`           | str       | One container | The folder in which the zone is defined (max 64 chars)  |
+| `snippet`          | str       | One container | The snippet in which the zone is defined (max 64 chars) |
+| `device`           | str       | One container | The device in which the zone is defined (max 64 chars)  |
 
 ### User-ID Mapping Attributes
 
-| Attribute  | Type | Required | Description                                    |
-| ---------- | ---- | -------- | ---------------------------------------------- |
-| `primary`  | Dict | No       | Primary User-ID mapping configuration          |
-| `secondary`| Dict | No       | Secondary User-ID mapping configuration        |
+| Attribute   | Type | Required | Description                             |
+| ----------- | ---- | -------- | --------------------------------------- |
+| `primary`   | Dict | No       | Primary User-ID mapping configuration   |
+| `secondary` | Dict | No       | Secondary User-ID mapping configuration |
 
 ## Exceptions
 
-| Exception                    | Description                           |
-| ---------------------------- | ------------------------------------- |
-| `InvalidObjectError`         | Invalid security zone data or format  |
-| `NameNotUniqueError`         | Security zone name already exists     |
-| `ObjectNotPresentError`      | Security zone not found               |
-| `MissingQueryParameterError` | Missing required parameters           |
-| `AuthenticationError`        | Authentication failed                 |
-| `ServerError`                | Internal server error                 |
+| Exception                    | Description                          |
+| ---------------------------- | ------------------------------------ |
+| `InvalidObjectError`         | Invalid security zone data or format |
+| `NameNotUniqueError`         | Security zone name already exists    |
+| `ObjectNotPresentError`      | Security zone not found              |
+| `MissingQueryParameterError` | Missing required parameters          |
+| `AuthenticationError`        | Authentication failed                |
+| `ServerError`                | Internal server error                |
 
 ## Basic Configuration
 
-The Security Zone module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Security Zone module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Security Zone Configuration
@@ -94,7 +98,8 @@ The Security Zone module requires proper authentication credentials to access th
 
 ### Creating Security Zones
 
-Security zones form the fundamental building blocks for network segmentation and security policy enforcement.
+Security zones form the fundamental building blocks for network segmentation and security policy
+enforcement.
 
 ### Creating Basic Security Zones
 
@@ -116,7 +121,8 @@ This example creates standard security zones commonly used in network configurat
 
 ### Creating Zone with User-ID Features
 
-This example creates a security zone with User-ID features enabled for user identification and mapping.
+This example creates a security zone with User-ID features enabled for user identification and
+mapping.
 
 ```yaml
 - name: Create security zone with User-ID
@@ -256,5 +262,6 @@ It's important to handle potential errors when working with security zones.
 - [security_rule](security_rule.md) - Configure security policies between zones
 - [address](address.md) - Define network objects within zones
 - [tag](tag.md) - Apply tags to zones for organization
-- [log_forwarding_profile](log_forwarding_profile.md) - Create log forwarding profiles for zone logging
+- [log_forwarding_profile](log_forwarding_profile.md) - Create log forwarding profiles for zone
+  logging
 - [security_rule_info](security_rule_info.md) - Retrieve information about security rules

@@ -20,48 +20,49 @@
 
 ## Overview
 
-The `decryption_profile_info` Ansible module provides functionality to retrieve information about decryption 
-profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can retrieve 
-detailed information about a specific decryption profile by name, or list multiple decryption profiles with 
-various filtering options. It enables administrators to audit and analyze SSL/TLS decryption settings across 
-their environment.
+The `decryption_profile_info` Ansible module provides functionality to retrieve information about
+decryption profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only
+module that can retrieve detailed information about a specific decryption profile by name, or list
+multiple decryption profiles with various filtering options. It enables administrators to audit and
+analyze SSL/TLS decryption settings across their environment.
 
 ## Core Methods
 
-| Method     | Description                              | Parameters                           | Return Type                      |
-| ---------- | ---------------------------------------- | ------------------------------------ | -------------------------------- |
-| `get()`    | Gets a specific decryption profile       | `name: str`, `container: str`        | `DecryptionProfileResponseModel` |
-| `list()`   | Lists decryption profiles with filtering | `folder: str`, `**filters`           | `List[DecryptionProfileResponseModel]` |
+| Method     | Description                              | Parameters                              | Return Type                            |
+| ---------- | ---------------------------------------- | --------------------------------------- | -------------------------------------- |
+| `get()`    | Gets a specific decryption profile       | `name: str`, `container: str`           | `DecryptionProfileResponseModel`       |
+| `list()`   | Lists decryption profiles with filtering | `folder: str`, `**filters`              | `List[DecryptionProfileResponseModel]` |
 | `filter()` | Applies filters to the results           | `profiles: List`, `filter_params: Dict` | `List[DecryptionProfileResponseModel]` |
 
 ## Decryption Profile Info Model Attributes
 
-| Attribute          | Type | Required      | Description                                                      |
-| ------------------ | ---- | ------------- | ---------------------------------------------------------------- |
-| `name`             | str  | No            | The name of a specific decryption profile to retrieve            |
-| `gather_subset`    | list | No            | Determines which information to gather (default: ['config'])     |
-| `folder`           | str  | One container | Filter profiles by folder (max 64 chars)                         |
-| `snippet`          | str  | One container | Filter profiles by snippet (max 64 chars)                        |
-| `device`           | str  | One container | Filter profiles by device (max 64 chars)                         |
-| `exact_match`      | bool | No            | When True, only return objects in the specified container        |
-| `exclude_folders`  | list | No            | List of folder names to exclude from results                     |
-| `exclude_snippets` | list | No            | List of snippet values to exclude from results                   |
-| `exclude_devices`  | list | No            | List of device values to exclude from results                    |
+| Attribute          | Type | Required      | Description                                                  |
+| ------------------ | ---- | ------------- | ------------------------------------------------------------ |
+| `name`             | str  | No            | The name of a specific decryption profile to retrieve        |
+| `gather_subset`    | list | No            | Determines which information to gather (default: ['config']) |
+| `folder`           | str  | One container | Filter profiles by folder (max 64 chars)                     |
+| `snippet`          | str  | One container | Filter profiles by snippet (max 64 chars)                    |
+| `device`           | str  | One container | Filter profiles by device (max 64 chars)                     |
+| `exact_match`      | bool | No            | When True, only return objects in the specified container    |
+| `exclude_folders`  | list | No            | List of folder names to exclude from results                 |
+| `exclude_snippets` | list | No            | List of snippet values to exclude from results               |
+| `exclude_devices`  | list | No            | List of device values to exclude from results                |
 
 ## Exceptions
 
-| Exception                    | Description                     |
-| ---------------------------- | ------------------------------- |
-| `ObjectNotPresentError`      | Profile not found               |
-| `MissingQueryParameterError` | Missing required parameters     |
-| `InvalidFilterError`         | Invalid filter parameters       |
-| `AuthenticationError`        | Authentication failed           |
-| `ServerError`                | Internal server error           |
+| Exception                    | Description                      |
+| ---------------------------- | -------------------------------- |
+| `ObjectNotPresentError`      | Profile not found                |
+| `MissingQueryParameterError` | Missing required parameters      |
+| `InvalidFilterError`         | Invalid filter parameters        |
+| `AuthenticationError`        | Authentication failed            |
+| `ServerError`                | Internal server error            |
 | `MultipleMatchesError`       | Multiple profiles match criteria |
 
 ## Basic Configuration
 
-The Decryption Profile Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Decryption Profile Info module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic Decryption Profile Info Configuration
@@ -89,7 +90,8 @@ The Decryption Profile Info module requires proper authentication credentials to
 
 ### Retrieving Decryption Profile Information
 
-The module provides several ways to retrieve decryption profile information based on your specific needs.
+The module provides several ways to retrieve decryption profile information based on your specific
+needs.
 
 ### Getting a Specific Decryption Profile
 
@@ -168,7 +170,7 @@ This example retrieves decryption profiles and analyzes their configuration.
 
 ## Processing Retrieved Information
 
-After retrieving decryption profile information, you can process the data for security auditing, 
+After retrieving decryption profile information, you can process the data for security auditing,
 compliance reporting, or operational analysis.
 
 ```yaml
@@ -280,6 +282,8 @@ It's important to handle potential errors when retrieving decryption profile inf
 ## Related Modules
 
 - [decryption_profile](decryption_profile.md) - Manage decryption profile objects
-- [security_rule_info](security_rule_info.md) - Retrieve information about security rules using decryption
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules using
+  decryption
 - [security_rule](security_rule.md) - Configure security policies that use decryption profiles
-- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that can include decryption settings
+- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that can
+  include decryption settings

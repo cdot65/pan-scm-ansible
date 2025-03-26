@@ -20,47 +20,48 @@
 
 ## Overview
 
-The `application_group_info` Ansible module provides functionality to retrieve information about application
-group objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can
-retrieve detailed information about a specific application group by name, or list multiple
-application groups with various filtering options. It supports advanced filtering capabilities
-including container-based filtering and exclusion filters.
+The `application_group_info` Ansible module provides functionality to retrieve information about
+application group objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only
+module that can retrieve detailed information about a specific application group by name, or list
+multiple application groups with various filtering options. It supports advanced filtering
+capabilities including container-based filtering and exclusion filters.
 
 ## Core Methods
 
-| Method     | Description                            | Parameters                                | Return Type                         |
-| ---------- | -------------------------------------- | ----------------------------------------- | ----------------------------------- |
-| `get()`    | Gets a specific application group      | `name: str`, `container: str`             | `ApplicationGroupResponseModel`     |
-| `list()`   | Lists application groups with filtering| `folder: str`, `**filters`                | `List[ApplicationGroupResponseModel]`|
-| `filter()` | Applies filters to the results         | `groups: List`, `filter_params: Dict`     | `List[ApplicationGroupResponseModel]`|
+| Method     | Description                             | Parameters                            | Return Type                           |
+| ---------- | --------------------------------------- | ------------------------------------- | ------------------------------------- |
+| `get()`    | Gets a specific application group       | `name: str`, `container: str`         | `ApplicationGroupResponseModel`       |
+| `list()`   | Lists application groups with filtering | `folder: str`, `**filters`            | `List[ApplicationGroupResponseModel]` |
+| `filter()` | Applies filters to the results          | `groups: List`, `filter_params: Dict` | `List[ApplicationGroupResponseModel]` |
 
 ## Application Group Info Model Attributes
 
-| Attribute          | Type | Required      | Description                                                      |
-| ------------------ | ---- | ------------- | ---------------------------------------------------------------- |
-| `name`             | str  | No            | The name of a specific application group to retrieve             |
-| `gather_subset`    | list | No            | Determines which information to gather (default: ['config'])     |
-| `folder`           | str  | One container | Filter application groups by folder (max 64 chars)              |
-| `snippet`          | str  | One container | Filter application groups by snippet (max 64 chars)             |
-| `device`           | str  | One container | Filter application groups by device (max 64 chars)              |
-| `exact_match`      | bool | No            | When True, only return objects in the specified container        |
-| `exclude_folders`  | list | No            | List of folder names to exclude from results                     |
-| `exclude_snippets` | list | No            | List of snippet values to exclude from results                   |
+| Attribute          | Type | Required      | Description                                                  |
+| ------------------ | ---- | ------------- | ------------------------------------------------------------ |
+| `name`             | str  | No            | The name of a specific application group to retrieve         |
+| `gather_subset`    | list | No            | Determines which information to gather (default: ['config']) |
+| `folder`           | str  | One container | Filter application groups by folder (max 64 chars)           |
+| `snippet`          | str  | One container | Filter application groups by snippet (max 64 chars)          |
+| `device`           | str  | One container | Filter application groups by device (max 64 chars)           |
+| `exact_match`      | bool | No            | When True, only return objects in the specified container    |
+| `exclude_folders`  | list | No            | List of folder names to exclude from results                 |
+| `exclude_snippets` | list | No            | List of snippet values to exclude from results               |
 
 ## Exceptions
 
-| Exception                    | Description                         |
-| ---------------------------- | ----------------------------------- |
-| `ObjectNotPresentError`      | Application group not found         |
-| `MissingQueryParameterError` | Missing required parameters         |
-| `InvalidFilterError`         | Invalid filter parameters           |
-| `AuthenticationError`        | Authentication failed               |
-| `ServerError`                | Internal server error               |
-| `MultipleMatchesError`       | Multiple groups match criteria      |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `ObjectNotPresentError`      | Application group not found    |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `InvalidFilterError`         | Invalid filter parameters      |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
+| `MultipleMatchesError`       | Multiple groups match criteria |
 
 ## Basic Configuration
 
-The Application Group Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Application Group Info module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic Application Group Info Configuration
@@ -88,7 +89,8 @@ The Application Group Info module requires proper authentication credentials to 
 
 ### Retrieving Application Group Information
 
-The module provides several ways to retrieve application group information based on your specific needs.
+The module provides several ways to retrieve application group information based on your specific
+needs.
 
 ### Getting a Specific Application Group
 
@@ -171,8 +173,8 @@ These examples illustrate more advanced filtering options including exact match 
 
 ## Processing Retrieved Information
 
-After retrieving application group information, you can process the data for various purposes such as 
-policy analysis, inventory management, or security auditing.
+After retrieving application group information, you can process the data for various purposes such
+as policy analysis, inventory management, or security auditing.
 
 ```yaml
 - name: Create an application group analysis report
@@ -290,8 +292,10 @@ It's important to handle potential errors when retrieving application group info
 
 ## Related Modules
 
-- [application_group](application_group.md) - Manage application group objects (create, update, delete)
+- [application_group](application_group.md) - Manage application group objects (create, update,
+  delete)
 - [application](application.md) - Manage application objects
 - [application_info](application_info.md) - Retrieve information about application objects
 - [security_rule](security_rule.md) - Configure security policies that reference application groups
-- [security_rule_info](security_rule_info.md) - Retrieve information about security rules using application groups
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules using
+  application groups

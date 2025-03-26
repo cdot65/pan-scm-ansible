@@ -21,40 +21,49 @@
 
 ## Overview
 
-The `tag` module provides functionality to manage tag objects in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and delete tag objects that can be used to categorize and organize various resources within SCM. Tags are metadata labels that can be attached to objects for filtering, policy application, and organization. They play a crucial role in dynamic address groups and policy enforcement, enabling more flexible and maintainable security configurations.
+The `tag` module provides functionality to manage tag objects in Palo Alto Networks' Strata Cloud
+Manager (SCM). This module allows you to create, update, and delete tag objects that can be used to
+categorize and organize various resources within SCM. Tags are metadata labels that can be attached
+to objects for filtering, policy application, and organization. They play a crucial role in dynamic
+address groups and policy enforcement, enabling more flexible and maintainable security
+configurations.
 
 ## Core Methods
 
-| Method     | Description                | Parameters                    | Return Type            |
-| ---------- | -------------------------- | ----------------------------- | ---------------------- |
-| `create()` | Creates a new tag          | `data: Dict[str, Any]`        | `TagResponseModel`     |
-| `update()` | Updates an existing tag    | `tag: TagUpdateModel`         | `TagResponseModel`     |
-| `delete()` | Removes a tag              | `object_id: str`              | `None`                 |
-| `fetch()`  | Gets a tag by name         | `name: str`, `container: str` | `TagResponseModel`     |
-| `list()`   | Lists tags with filtering  | `folder: str`, `**filters`    | `List[TagResponseModel]` |
+| Method     | Description               | Parameters                    | Return Type              |
+| ---------- | ------------------------- | ----------------------------- | ------------------------ |
+| `create()` | Creates a new tag         | `data: Dict[str, Any]`        | `TagResponseModel`       |
+| `update()` | Updates an existing tag   | `tag: TagUpdateModel`         | `TagResponseModel`       |
+| `delete()` | Removes a tag             | `object_id: str`              | `None`                   |
+| `fetch()`  | Gets a tag by name        | `name: str`, `container: str` | `TagResponseModel`       |
+| `list()`   | Lists tags with filtering | `folder: str`, `**filters`    | `List[TagResponseModel]` |
 
 ## Tag Model Attributes
 
-| Attribute    | Type | Required      | Description                                         |
-| ------------ | ---- | ------------- | --------------------------------------------------- |
-| `name`       | str  | Yes           | Tag name (max 63 chars). Must match pattern: ^[a-zA-Z0-9.\_-]+$ |
-| `color`      | str  | Yes           | Color associated with the tag from predefined list  |
-| `comments`   | str  | No            | Comments for the tag (max 1023 chars)               |
-| `folder`     | str  | One container* | The folder where the tag is stored (max 64 chars)   |
-| `snippet`    | str  | One container* | The configuration snippet for the tag (max 64 chars) |
-| `device`     | str  | One container* | The device where the tag is configured (max 64 chars) |
-| `state`      | str  | Yes           | Desired state of the tag object ("present" or "absent") |
+| Attribute  | Type | Required        | Description                                                     |
+| ---------- | ---- | --------------- | --------------------------------------------------------------- |
+| `name`     | str  | Yes             | Tag name (max 63 chars). Must match pattern: ^[a-zA-Z0-9.\_-]+$ |
+| `color`    | str  | Yes             | Color associated with the tag from predefined list              |
+| `comments` | str  | No              | Comments for the tag (max 1023 chars)                           |
+| `folder`   | str  | One container\* | The folder where the tag is stored (max 64 chars)               |
+| `snippet`  | str  | One container\* | The configuration snippet for the tag (max 64 chars)            |
+| `device`   | str  | One container\* | The device where the tag is configured (max 64 chars)           |
+| `state`    | str  | Yes             | Desired state of the tag object ("present" or "absent")         |
 
-*Exactly one container parameter must be provided.
+\*Exactly one container parameter must be provided.
 
 ### Available Tag Colors
 
-Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, Burnt Sienna, Cerulean Blue, Chestnut, Cobalt Blue, Copper, Cyan, Forest Green, Gold, Gray, Green, Lavender, Light Gray, Light Green, Lime, Magenta, Mahogany, Maroon, Medium Blue, Medium Rose, Medium Violet, Midnight Blue, Olive, Orange, Orchid, Peach, Purple, Red, Red Violet, Red-Orange, Salmon, Thistle, Turquoise Blue, Violet Blue, Yellow, Yellow-Orange
+Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, Burnt Sienna, Cerulean Blue, Chestnut,
+Cobalt Blue, Copper, Cyan, Forest Green, Gold, Gray, Green, Lavender, Light Gray, Light Green, Lime,
+Magenta, Mahogany, Maroon, Medium Blue, Medium Rose, Medium Violet, Midnight Blue, Olive, Orange,
+Orchid, Peach, Purple, Red, Red Violet, Red-Orange, Salmon, Thistle, Turquoise Blue, Violet Blue,
+Yellow, Yellow-Orange
 
 ### Provider Dictionary
 
-| Parameter       | Type | Required | Description                            |
-| --------------- | ---- | -------- | -------------------------------------- |
+| Parameter       | Type | Required | Description                             |
+| --------------- | ---- | -------- | --------------------------------------- |
 | `client_id`     | str  | Yes      | Client ID for SCM authentication        |
 | `client_secret` | str  | Yes      | Client secret for SCM authentication    |
 | `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
@@ -62,14 +71,14 @@ Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, Burnt Sienna, Cerulean B
 
 ## Exceptions
 
-| Exception                    | Description                |
-| ---------------------------- | -------------------------- |
-| `InvalidObjectError`         | Invalid tag data or format |
-| `NameNotUniqueError`         | Tag name already exists    |
-| `ObjectNotPresentError`      | Tag not found              |
-| `MissingQueryParameterError` | Missing required parameters|
-| `AuthenticationError`        | Authentication failed      |
-| `ServerError`                | Internal server error      |
+| Exception                    | Description                 |
+| ---------------------------- | --------------------------- |
+| `InvalidObjectError`         | Invalid tag data or format  |
+| `NameNotUniqueError`         | Tag name already exists     |
+| `ObjectNotPresentError`      | Tag not found               |
+| `MissingQueryParameterError` | Missing required parameters |
+| `AuthenticationError`        | Authentication failed       |
+| `ServerError`                | Internal server error       |
 
 ## Basic Configuration
 
@@ -100,7 +109,8 @@ The Tag module requires proper authentication credentials to access the Strata C
 
 ### Creating Tags
 
-Tags can be created with various colors and comments to visually identify and organize objects in the Strata Cloud Manager.
+Tags can be created with various colors and comments to visually identify and organize objects in
+the Strata Cloud Manager.
 
 ### Basic Tag Creation
 

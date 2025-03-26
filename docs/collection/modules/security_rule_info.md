@@ -20,66 +20,71 @@
 
 ## Overview
 
-The `security_rule_info` Ansible module provides functionality to gather information about security rule objects in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to retrieve detailed information about a specific security rule by name or list multiple security rules with various filtering options. As an info module, it only retrieves information and does not modify any configuration.
+The `security_rule_info` Ansible module provides functionality to gather information about security
+rule objects in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to retrieve
+detailed information about a specific security rule by name or list multiple security rules with
+various filtering options. As an info module, it only retrieves information and does not modify any
+configuration.
 
 ## Core Methods
 
-| Method    | Description                      | Parameters                                   | Return Type                     |
-| --------- | -------------------------------- | -------------------------------------------- | ------------------------------- |
-| `fetch()` | Gets a specific rule by name     | `name: str`, `container: str`, `rulebase: str` | `SecurityRuleResponseModel`     |
-| `list()`  | Lists rules with filtering       | `folder: str`, `rulebase: str`, `**filters`    | `List[SecurityRuleResponseModel]` |
+| Method    | Description                  | Parameters                                     | Return Type                       |
+| --------- | ---------------------------- | ---------------------------------------------- | --------------------------------- |
+| `fetch()` | Gets a specific rule by name | `name: str`, `container: str`, `rulebase: str` | `SecurityRuleResponseModel`       |
+| `list()`  | Lists rules with filtering   | `folder: str`, `rulebase: str`, `**filters`    | `List[SecurityRuleResponseModel]` |
 
 ## Security Rule Info Parameters
 
-| Parameter          | Type   | Required      | Description                                                               |
-| ------------------ | ------ | ------------- | ------------------------------------------------------------------------- |
-| `name`             | str    | No            | The name of a specific security rule to retrieve                          |
-| `gather_subset`    | list   | No            | Determines which information to gather (default: ['config'])              |
-| `folder`           | str    | One container* | Filter security rules by folder container                                 |
-| `snippet`          | str    | One container* | Filter security rules by snippet container                                |
-| `device`           | str    | One container* | Filter security rules by device container                                 |
-| `rulebase`         | str    | No            | Which rulebase to query (pre or post) (default: "pre")                    |
-| `exact_match`      | bool   | No            | When True, only return objects defined exactly in the specified container |
-| `exclude_folders`  | list   | No            | List of folder names to exclude from results                              |
-| `exclude_snippets` | list   | No            | List of snippet values to exclude from results                            |
-| `exclude_devices`  | list   | No            | List of device values to exclude from results                             |
-| `action`           | list   | No            | Filter by action ("allow", "deny", "drop", etc.)                          |
-| `category`         | list   | No            | Filter by URL categories                                                  |
-| `service`          | list   | No            | Filter by services                                                        |
-| `application`      | list   | No            | Filter by applications                                                    |
-| `destination`      | list   | No            | Filter by destinations                                                    |
-| `to_`              | list   | No            | Filter by to zones                                                        |
-| `source`           | list   | No            | Filter by sources                                                         |
-| `from_`            | list   | No            | Filter by from zones                                                      |
-| `tag`              | list   | No            | Filter by tags                                                            |
-| `disabled`         | bool   | No            | Filter by disabled status                                                 |
-| `profile_setting`  | dict   | No            | Filter by profile setting groups                                          |
-| `log_setting`      | str    | No            | Filter by log setting                                                     |
+| Parameter          | Type | Required        | Description                                                               |
+| ------------------ | ---- | --------------- | ------------------------------------------------------------------------- |
+| `name`             | str  | No              | The name of a specific security rule to retrieve                          |
+| `gather_subset`    | list | No              | Determines which information to gather (default: ['config'])              |
+| `folder`           | str  | One container\* | Filter security rules by folder container                                 |
+| `snippet`          | str  | One container\* | Filter security rules by snippet container                                |
+| `device`           | str  | One container\* | Filter security rules by device container                                 |
+| `rulebase`         | str  | No              | Which rulebase to query (pre or post) (default: "pre")                    |
+| `exact_match`      | bool | No              | When True, only return objects defined exactly in the specified container |
+| `exclude_folders`  | list | No              | List of folder names to exclude from results                              |
+| `exclude_snippets` | list | No              | List of snippet values to exclude from results                            |
+| `exclude_devices`  | list | No              | List of device values to exclude from results                             |
+| `action`           | list | No              | Filter by action ("allow", "deny", "drop", etc.)                          |
+| `category`         | list | No              | Filter by URL categories                                                  |
+| `service`          | list | No              | Filter by services                                                        |
+| `application`      | list | No              | Filter by applications                                                    |
+| `destination`      | list | No              | Filter by destinations                                                    |
+| `to_`              | list | No              | Filter by to zones                                                        |
+| `source`           | list | No              | Filter by sources                                                         |
+| `from_`            | list | No              | Filter by from zones                                                      |
+| `tag`              | list | No              | Filter by tags                                                            |
+| `disabled`         | bool | No              | Filter by disabled status                                                 |
+| `profile_setting`  | dict | No              | Filter by profile setting groups                                          |
+| `log_setting`      | str  | No              | Filter by log setting                                                     |
 
-*One container parameter is required when `name` is not specified.
+\*One container parameter is required when `name` is not specified.
 
 ### Provider Dictionary
 
 | Parameter       | Type | Required | Description                             |
 | --------------- | ---- | -------- | --------------------------------------- |
-| `client_id`     | str  | Yes      | Client ID for SCM authentication         |
-| `client_secret` | str  | Yes      | Client secret for SCM authentication     |
-| `tsg_id`        | str  | Yes      | Tenant Service Group ID                  |
-| `log_level`     | str  | No       | Log level for the SDK (default: "INFO")  |
+| `client_id`     | str  | Yes      | Client ID for SCM authentication        |
+| `client_secret` | str  | Yes      | Client secret for SCM authentication    |
+| `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
+| `log_level`     | str  | No       | Log level for the SDK (default: "INFO") |
 
 ## Exceptions
 
-| Exception                    | Description                      |
-| ---------------------------- | -------------------------------- |
-| `InvalidObjectError`         | Invalid request data or format   |
-| `MissingQueryParameterError` | Missing required parameters      |
-| `ObjectNotPresentError`      | Security rule not found          |
-| `AuthenticationError`        | Authentication failed            |
-| `ServerError`                | Internal server error            |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid request data or format |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `ObjectNotPresentError`      | Security rule not found        |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The Security Rule Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Security Rule Info module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Security Rule Info Configuration
@@ -156,7 +161,8 @@ This example lists all security rules in a specific folder and rulebase.
 
 ### Filtering by Rule Properties
 
-This example demonstrates filtering security rules by various properties like action, tags, and zones.
+This example demonstrates filtering security rules by various properties like action, tags, and
+zones.
 
 ```yaml
 - name: List only allow action security rules
@@ -217,7 +223,8 @@ This example shows how to use advanced filtering options to refine query results
 
 ## Managing Configuration Changes
 
-As an info module, `security_rule_info` does not make any configuration changes. However, you can use the information it retrieves to make decisions about other configuration operations.
+As an info module, `security_rule_info` does not make any configuration changes. However, you can
+use the information it retrieves to make decisions about other configuration operations.
 
 ```yaml
 - name: Use security rule information to create address groups

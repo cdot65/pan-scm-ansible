@@ -21,50 +21,51 @@
 
 ## Overview
 
-The `application_info` Ansible module provides functionality to retrieve information about application 
-objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can retrieve 
-detailed information about a specific application object by name, or list multiple application objects 
-with various filtering options including container-based filtering, category filtering, technology 
-filtering, risk level filtering, and exclusion filters.
+The `application_info` Ansible module provides functionality to retrieve information about
+application objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module
+that can retrieve detailed information about a specific application object by name, or list multiple
+application objects with various filtering options including container-based filtering, category
+filtering, technology filtering, risk level filtering, and exclusion filters.
 
 ## Core Methods
 
-| Method     | Description                         | Parameters                                | Return Type                    |
-| ---------- | ----------------------------------- | ----------------------------------------- | ------------------------------ |
-| `get()`    | Gets a specific application by name | `name: str`, `container: str`             | `ApplicationResponseModel`     |
-| `list()`   | Lists applications with filtering   | `folder: str`, `**filters`                | `List[ApplicationResponseModel]`|
-| `filter()` | Applies filters to the results      | `applications: List`, `filter_params: Dict`| `List[ApplicationResponseModel]`|
+| Method     | Description                         | Parameters                                  | Return Type                      |
+| ---------- | ----------------------------------- | ------------------------------------------- | -------------------------------- |
+| `get()`    | Gets a specific application by name | `name: str`, `container: str`               | `ApplicationResponseModel`       |
+| `list()`   | Lists applications with filtering   | `folder: str`, `**filters`                  | `List[ApplicationResponseModel]` |
+| `filter()` | Applies filters to the results      | `applications: List`, `filter_params: Dict` | `List[ApplicationResponseModel]` |
 
 ## Application Info Model Attributes
 
-| Attribute          | Type | Required      | Description                                                      |
-| ------------------ | ---- | ------------- | ---------------------------------------------------------------- |
-| `name`             | str  | No            | The name of a specific application to retrieve                   |
-| `gather_subset`    | list | No            | Determines which information to gather (default: ['config'])     |
-| `folder`           | str  | One container | Filter applications by folder (max 64 chars)                     |
-| `snippet`          | str  | One container | Filter applications by snippet (max 64 chars)                    |
-| `exact_match`      | bool | No            | When True, only return objects in the specified container        |
-| `exclude_folders`  | list | No            | List of folder names to exclude from results                     |
-| `exclude_snippets` | list | No            | List of snippet values to exclude from results                   |
-| `category`         | list | No            | Filter by application category                                   |
-| `subcategory`      | list | No            | Filter by application subcategory                                |
-| `technology`       | list | No            | Filter by application technology                                 |
-| `risk`             | list | No            | Filter by application risk level (1-5)                           |
+| Attribute          | Type | Required      | Description                                                  |
+| ------------------ | ---- | ------------- | ------------------------------------------------------------ |
+| `name`             | str  | No            | The name of a specific application to retrieve               |
+| `gather_subset`    | list | No            | Determines which information to gather (default: ['config']) |
+| `folder`           | str  | One container | Filter applications by folder (max 64 chars)                 |
+| `snippet`          | str  | One container | Filter applications by snippet (max 64 chars)                |
+| `exact_match`      | bool | No            | When True, only return objects in the specified container    |
+| `exclude_folders`  | list | No            | List of folder names to exclude from results                 |
+| `exclude_snippets` | list | No            | List of snippet values to exclude from results               |
+| `category`         | list | No            | Filter by application category                               |
+| `subcategory`      | list | No            | Filter by application subcategory                            |
+| `technology`       | list | No            | Filter by application technology                             |
+| `risk`             | list | No            | Filter by application risk level (1-5)                       |
 
 ## Exceptions
 
-| Exception                    | Description                         |
-| ---------------------------- | ----------------------------------- |
-| `ObjectNotPresentError`      | Application not found               |
-| `MissingQueryParameterError` | Missing required parameters         |
-| `InvalidFilterError`         | Invalid filter parameters           |
-| `AuthenticationError`        | Authentication failed               |
-| `ServerError`                | Internal server error               |
-| `MultipleMatchesError`       | Multiple applications match criteria|
+| Exception                    | Description                          |
+| ---------------------------- | ------------------------------------ |
+| `ObjectNotPresentError`      | Application not found                |
+| `MissingQueryParameterError` | Missing required parameters          |
+| `InvalidFilterError`         | Invalid filter parameters            |
+| `AuthenticationError`        | Authentication failed                |
+| `ServerError`                | Internal server error                |
+| `MultipleMatchesError`       | Multiple applications match criteria |
 
 ## Basic Configuration
 
-The Application Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Application Info module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Application Info Configuration
@@ -165,7 +166,8 @@ This example shows how to filter applications by their risk level.
 
 ### Using Advanced Filtering Options
 
-These examples illustrate more advanced filtering options including exact match, exclusions, and combined filters.
+These examples illustrate more advanced filtering options including exact match, exclusions, and
+combined filters.
 
 ```yaml
 - name: List applications with exact match and exclusions
@@ -189,7 +191,7 @@ These examples illustrate more advanced filtering options including exact match,
 
 ## Processing Retrieved Information
 
-After retrieving application information, you can process the data for various purposes such as 
+After retrieving application information, you can process the data for various purposes such as
 security analysis, inventory management, or integration with other systems.
 
 ```yaml
@@ -309,6 +311,8 @@ It's important to handle potential errors when retrieving application informatio
 
 - [application](application.md) - Manage application objects (create, update, delete)
 - [application_group](application_group.md) - Manage application group objects
-- [application_group_info](application_group_info.md) - Retrieve information about application groups
+- [application_group_info](application_group_info.md) - Retrieve information about application
+  groups
 - [security_rule](security_rule.md) - Configure security policies that reference applications
-- [security_rule_info](security_rule_info.md) - Retrieve information about security rules using applications
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules using
+  applications

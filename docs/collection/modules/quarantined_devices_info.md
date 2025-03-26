@@ -19,43 +19,47 @@
 
 ## Overview
 
-The `quarantined_devices_info` Ansible module provides functionality to retrieve information about quarantined devices in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to list all quarantined devices or filter the results by host ID or serial number. As an info module, it only retrieves information and does not modify any configuration.
+The `quarantined_devices_info` Ansible module provides functionality to retrieve information about
+quarantined devices in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to
+list all quarantined devices or filter the results by host ID or serial number. As an info module,
+it only retrieves information and does not modify any configuration.
 
 ## Core Methods
 
-| Method    | Description                           | Parameters                | Return Type                            |
-| --------- | ------------------------------------- | ------------------------- | -------------------------------------- |
-| `list()`  | Lists all quarantined devices         | `filters: Dict[str, Any]` | `List[QuarantinedDeviceResponseModel]` |
+| Method   | Description                   | Parameters                | Return Type                            |
+| -------- | ----------------------------- | ------------------------- | -------------------------------------- |
+| `list()` | Lists all quarantined devices | `filters: Dict[str, Any]` | `List[QuarantinedDeviceResponseModel]` |
 
 ## Quarantined Devices Info Parameters
 
-| Parameter       | Type   | Required | Description                                                  |
-| --------------- | ------ | -------- | ------------------------------------------------------------ |
-| `host_id`       | str    | No       | Filter quarantined devices by host ID                        |
-| `serial_number` | str    | No       | Filter quarantined devices by serial number                  |
-| `gather_subset` | list   | No       | Determines which information to gather (default: ['config']) |
+| Parameter       | Type | Required | Description                                                  |
+| --------------- | ---- | -------- | ------------------------------------------------------------ |
+| `host_id`       | str  | No       | Filter quarantined devices by host ID                        |
+| `serial_number` | str  | No       | Filter quarantined devices by serial number                  |
+| `gather_subset` | list | No       | Determines which information to gather (default: ['config']) |
 
 ### Provider Dictionary
 
 | Parameter       | Type | Required | Description                             |
 | --------------- | ---- | -------- | --------------------------------------- |
-| `client_id`     | str  | Yes      | Client ID for SCM authentication         |
-| `client_secret` | str  | Yes      | Client secret for SCM authentication     |
-| `tsg_id`        | str  | Yes      | Tenant Service Group ID                  |
-| `log_level`     | str  | No       | Log level for the SDK (default: "INFO")  |
+| `client_id`     | str  | Yes      | Client ID for SCM authentication        |
+| `client_secret` | str  | Yes      | Client secret for SCM authentication    |
+| `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
+| `log_level`     | str  | No       | Log level for the SDK (default: "INFO") |
 
 ## Exceptions
 
-| Exception                    | Description                     |
-| ---------------------------- | ------------------------------- |
-| `InvalidObjectError`         | Invalid request data or format  |
-| `MissingQueryParameterError` | Missing required parameters     |
-| `AuthenticationError`        | Authentication failed           |
-| `ServerError`                | Internal server error           |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid request data or format |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The Quarantined Devices Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Quarantined Devices Info module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic Quarantined Devices Info Configuration
@@ -105,7 +109,8 @@ This example retrieves a list of all quarantined devices in the SCM environment.
 
 ### Filtering by Host ID
 
-This example demonstrates how to retrieve information about a specific quarantined device by its host ID.
+This example demonstrates how to retrieve information about a specific quarantined device by its
+host ID.
 
 ```yaml
 - name: List quarantined devices by host ID
@@ -148,7 +153,8 @@ This example shows how to filter quarantined devices by serial number.
 
 ## Managing Configuration Changes
 
-As an info module, `quarantined_devices_info` does not make any configuration changes. However, you can use the information it retrieves to make decisions about other configuration operations.
+As an info module, `quarantined_devices_info` does not make any configuration changes. However, you
+can use the information it retrieves to make decisions about other configuration operations.
 
 ```yaml
 - name: Make decisions based on quarantined device information
@@ -240,5 +246,7 @@ It's important to handle potential errors when retrieving quarantined device inf
 
 - [quarantined_devices](quarantined_devices.md) - Manage quarantined devices
 - [address_info](address_info.md) - Retrieve information about address objects
-- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that may affect quarantined devices
-- [tag_info](tag_info.md) - Retrieve information about tags that may be applied to quarantined devices
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that may
+  affect quarantined devices
+- [tag_info](tag_info.md) - Retrieve information about tags that may be applied to quarantined
+  devices

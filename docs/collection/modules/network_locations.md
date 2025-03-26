@@ -19,15 +19,19 @@
 
 ## Overview
 
-The `network_locations` Ansible module provides functionality to manage network location objects within Palo Alto Networks' Strata Cloud Manager (SCM). Network locations represent geographic regions and are used for routing decisions, service connectivity, and resource allocation. This module primarily provides read capabilities and limited management functions, as network locations are often system-defined.
+The `network_locations` Ansible module provides functionality to manage network location objects
+within Palo Alto Networks' Strata Cloud Manager (SCM). Network locations represent geographic
+regions and are used for routing decisions, service connectivity, and resource allocation. This
+module primarily provides read capabilities and limited management functions, as network locations
+are often system-defined.
 
 ## Core Methods
 
-| Method    | Description                       | Parameters                | Return Type                    |
-| --------- | --------------------------------- | ------------------------- | ------------------------------ |
-| `list()`  | Lists available network locations | `filters: Dict[str, Any]` | `List[NetworkLocationModel]`   |
-| `get()`   | Retrieves location by ID          | `location_id: str`        | `NetworkLocationModel`         |
-| `fetch()` | Retrieves location by value       | `value: str`              | `NetworkLocationModel`         |
+| Method    | Description                       | Parameters                | Return Type                  |
+| --------- | --------------------------------- | ------------------------- | ---------------------------- |
+| `list()`  | Lists available network locations | `filters: Dict[str, Any]` | `List[NetworkLocationModel]` |
+| `get()`   | Retrieves location by ID          | `location_id: str`        | `NetworkLocationModel`       |
+| `fetch()` | Retrieves location by value       | `value: str`              | `NetworkLocationModel`       |
 
 ## Network Locations Model Attributes
 
@@ -48,18 +52,18 @@ The `network_locations` Ansible module provides functionality to manage network 
 
 ## Exceptions
 
-| Exception                    | Description                      |
-| ---------------------------- | -------------------------------- |
-| `InvalidObjectError`         | Invalid request data or format   |
-| `MissingQueryParameterError` | Missing required parameters      |
-| `ObjectNotPresentError`      | Network location not found       |
-| `AuthenticationError`        | Authentication failed            |
-| `ServerError`                | Internal server error            |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid request data or format |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `ObjectNotPresentError`      | Network location not found     |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The Network Locations module requires proper authentication credentials to access the
-Strata Cloud Manager API.
+The Network Locations module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Network Locations Configuration
@@ -158,7 +162,9 @@ This example demonstrates how to use network location information to configure o
 
 ## Managing Configuration Changes
 
-For information modules like `network_locations_info`, no commit is needed since these modules only retrieve information and do not modify the configuration. However, you may need to commit changes if you use the retrieved information to make configuration changes with other modules.
+For information modules like `network_locations_info`, no commit is needed since these modules only
+retrieve information and do not modify the configuration. However, you may need to commit changes if
+you use the retrieved information to make configuration changes with other modules.
 
 ```yaml
 - name: Use network location information and configure remote networks
@@ -260,6 +266,7 @@ It's important to handle potential errors when working with network locations.
 
 - [remote_networks](remote_networks.md) - Configure remote networks in specific locations
 - [bgp_routing](bgp_routing.md) - Configure routing preferences that may be location-dependent
-- [service_connections](service_connections.md) - Configure service connections in specific locations
+- [service_connections](service_connections.md) - Configure service connections in specific
+  locations
 - [region](region.md) - Configure regions that may include multiple network locations
 - [region_info](region_info.md) - Retrieve information about configured regions

@@ -1,47 +1,50 @@
 # Hip Object Information Object
 
-## 01. Table of Contents
+## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [HIP Object Info Model Attributes](#hip-object-info-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
-   - [Getting Information about a Specific HIP Object](#getting-information-about-a-specific-hip-object)
-   - [Listing All HIP Objects in a Folder](#listing-all-hip-objects-in-a-folder)
-   - [Filtering HIP Objects by Criteria Type](#filtering-hip-objects-by-criteria-type)
-   - [Using Advanced Filtering Options](#using-advanced-filtering-options)
-7. [Processing Retrieved Information](#processing-retrieved-information)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [HIP Object Info Model Attributes](#hip-object-info-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Getting Information about a Specific HIP Object](#getting-information-about-a-specific-hip-object)
+    - [Listing All HIP Objects in a Folder](#listing-all-hip-objects-in-a-folder)
+    - [Filtering HIP Objects by Criteria Type](#filtering-hip-objects-by-criteria-type)
+    - [Using Advanced Filtering Options](#using-advanced-filtering-options)
+07. [Processing Retrieved Information](#processing-retrieved-information)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
-## 02. Overview
+## Overview
 
-The `hip_object_info` Ansible module provides functionality to gather information about Host Information Profile (HIP) objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an info module that allows fetching details about specific HIP objects or listing objects with various filtering options, including by criteria type (host_info, patch_management, etc.).
+The `hip_object_info` Ansible module provides functionality to gather information about Host
+Information Profile (HIP) objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an info
+module that allows fetching details about specific HIP objects or listing objects with various
+filtering options, including by criteria type (host_info, patch_management, etc.).
 
-## 03. Core Methods
+## Core Methods
 
-| Method    | Description                       | Parameters                    | Return Type                    |
-| --------- | --------------------------------- | ----------------------------- | ------------------------------ |
+| Method    | Description                        | Parameters                    | Return Type                    |
+| --------- | ---------------------------------- | ----------------------------- | ------------------------------ |
 | `fetch()` | Gets a specific HIP object by name | `name: str`, `container: str` | `HipObjectResponseModel`       |
 | `list()`  | Lists HIP objects with filtering   | `folder: str`, `**filters`    | `List[HipObjectResponseModel]` |
 
-## 04. HIP Object Info Model Attributes
+## HIP Object Info Model Attributes
 
-| Parameter          | Type   | Required | Description                                                 |
-| ------------------ | ------ | -------- | ----------------------------------------------------------- |
-| `name`             | str    | No       | Name of a specific HIP object to retrieve                   |
-| `gather_subset`    | list   | No       | Determines which information to gather (default: config)    |
-| `folder`           | str    | No\*     | Filter HIP objects by folder container                      |
-| `snippet`          | str    | No\*     | Filter HIP objects by snippet container                     |
-| `device`           | str    | No\*     | Filter HIP objects by device container                      |
-| `exact_match`      | bool   | No       | When True, only return objects defined exactly in container |
-| `exclude_folders`  | list   | No       | List of folder names to exclude from results                |
-| `exclude_snippets` | list   | No       | List of snippet values to exclude from results              |
-| `exclude_devices`  | list   | No       | List of device values to exclude from results               |
-| `criteria_type`    | list   | No       | Filter by criteria types in the HIP object                  |
+| Parameter          | Type | Required | Description                                                 |
+| ------------------ | ---- | -------- | ----------------------------------------------------------- |
+| `name`             | str  | No       | Name of a specific HIP object to retrieve                   |
+| `gather_subset`    | list | No       | Determines which information to gather (default: config)    |
+| `folder`           | str  | No\*     | Filter HIP objects by folder container                      |
+| `snippet`          | str  | No\*     | Filter HIP objects by snippet container                     |
+| `device`           | str  | No\*     | Filter HIP objects by device container                      |
+| `exact_match`      | bool | No       | When True, only return objects defined exactly in container |
+| `exclude_folders`  | list | No       | List of folder names to exclude from results                |
+| `exclude_snippets` | list | No       | List of snippet values to exclude from results              |
+| `exclude_devices`  | list | No       | List of device values to exclude from results               |
+| `criteria_type`    | list | No       | Filter by criteria types in the HIP object                  |
 
 \*One container parameter is required when `name` is not specified.
 
@@ -54,7 +57,7 @@ The `hip_object_info` Ansible module provides functionality to gather informatio
 | `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
 | `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
 
-## 05. Exceptions
+## Exceptions
 
 | Exception                    | Description                    |
 | ---------------------------- | ------------------------------ |
@@ -64,10 +67,10 @@ The `hip_object_info` Ansible module provides functionality to gather informatio
 | `AuthenticationError`        | Authentication failed          |
 | `ServerError`                | Internal server error          |
 
-## 06. Basic Configuration
+## Basic Configuration
 
-The HIP Object Info module requires proper authentication credentials to access the
-Strata Cloud Manager API.
+The HIP Object Info module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic HIP Object Info Configuration
@@ -91,7 +94,7 @@ Strata Cloud Manager API.
         var: objects_result
 ```
 
-## 07. Usage Examples
+## Usage Examples
 
 ### Getting Information about a Specific HIP Object
 
@@ -184,7 +187,7 @@ Use advanced filtering options to refine your query results.
   register: filtered_objects
 ```
 
-## 08. Processing Retrieved Information
+## Processing Retrieved Information
 
 Example of processing and utilizing the retrieved HIP object information.
 
@@ -262,7 +265,7 @@ Example of processing and utilizing the retrieved HIP object information.
         msg: "Objects with multiple criteria types: {{ multi_criteria_objects | map(attribute='name') | list }}"
 ```
 
-## 09. Error Handling
+## Error Handling
 
 It's important to handle potential errors when retrieving information about HIP objects.
 
@@ -291,7 +294,7 @@ It's important to handle potential errors when retrieving information about HIP 
       when: "'not found' in ansible_failed_result.msg"
 ```
 
-## 10. Best Practices
+## Best Practices
 
 ### Efficient Querying
 
@@ -328,9 +331,11 @@ It's important to handle potential errors when retrieving information about HIP 
 - Use the retrieved information to make decisions in your playbooks
 - Integrate with hip_profile modules to understand how objects are used in profiles
 
-## 11. Related Modules
+## Related Modules
 
 - [hip_object](hip_object.md) - Create, update, and delete HIP objects
-- [hip_profile_info](hip_profile_info.md) - Retrieve information about HIP profiles that use HIP objects
+- [hip_profile_info](hip_profile_info.md) - Retrieve information about HIP profiles that use HIP
+  objects
 - [hip_profile](hip_profile.md) - Create, update, and delete HIP profiles
-- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that may use HIP profiles
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that may
+  use HIP profiles

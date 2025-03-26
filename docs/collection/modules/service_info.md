@@ -20,55 +20,60 @@
 
 ## Overview
 
-The `service_info` Ansible module provides functionality to gather information about service objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can retrieve detailed information about a specific service object by name, or list multiple service objects with various filtering options. It supports advanced filtering capabilities including container-based filtering, protocol type filtering, tag-based filtering, and exclusion filters.
+The `service_info` Ansible module provides functionality to gather information about service objects
+in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can retrieve
+detailed information about a specific service object by name, or list multiple service objects with
+various filtering options. It supports advanced filtering capabilities including container-based
+filtering, protocol type filtering, tag-based filtering, and exclusion filters.
 
 ## Core Methods
 
-| Method    | Description                      | Parameters                       | Return Type                 |
-| --------- | -------------------------------- | -------------------------------- | --------------------------- |
-| `fetch()` | Gets a specific service by name  | `name: str`, `container: str`    | `ServiceResponseModel`       |
-| `list()`  | Lists services with filtering    | `folder: str`, `**filters`       | `List[ServiceResponseModel]` |
+| Method    | Description                     | Parameters                    | Return Type                  |
+| --------- | ------------------------------- | ----------------------------- | ---------------------------- |
+| `fetch()` | Gets a specific service by name | `name: str`, `container: str` | `ServiceResponseModel`       |
+| `list()`  | Lists services with filtering   | `folder: str`, `**filters`    | `List[ServiceResponseModel]` |
 
 ## Service Info Parameters
 
-| Parameter          | Type   | Required      | Description                                                               |
-| ------------------ | ------ | ------------- | ------------------------------------------------------------------------- |
-| `name`             | str    | No            | The name of a specific service object to retrieve                         |
-| `gather_subset`    | list   | No            | Determines which information to gather (default: ['config'])              |
-| `folder`           | str    | One container* | Filter services by folder container                                       |
-| `snippet`          | str    | One container* | Filter services by snippet container                                      |
-| `device`           | str    | One container* | Filter services by device container                                       |
-| `exact_match`      | bool   | No            | When True, only return objects defined exactly in the specified container |
-| `exclude_folders`  | list   | No            | List of folder names to exclude from results                              |
-| `exclude_snippets` | list   | No            | List of snippet values to exclude from results                            |
-| `exclude_devices`  | list   | No            | List of device values to exclude from results                             |
-| `protocol_types`   | list   | No            | Filter by protocol types (["tcp"], ["udp"], or ["tcp", "udp"])           |
-| `tags`             | list   | No            | Filter by tags                                                            |
+| Parameter          | Type | Required        | Description                                                               |
+| ------------------ | ---- | --------------- | ------------------------------------------------------------------------- |
+| `name`             | str  | No              | The name of a specific service object to retrieve                         |
+| `gather_subset`    | list | No              | Determines which information to gather (default: ['config'])              |
+| `folder`           | str  | One container\* | Filter services by folder container                                       |
+| `snippet`          | str  | One container\* | Filter services by snippet container                                      |
+| `device`           | str  | One container\* | Filter services by device container                                       |
+| `exact_match`      | bool | No              | When True, only return objects defined exactly in the specified container |
+| `exclude_folders`  | list | No              | List of folder names to exclude from results                              |
+| `exclude_snippets` | list | No              | List of snippet values to exclude from results                            |
+| `exclude_devices`  | list | No              | List of device values to exclude from results                             |
+| `protocol_types`   | list | No              | Filter by protocol types (["tcp"], ["udp"], or ["tcp", "udp"])            |
+| `tags`             | list | No              | Filter by tags                                                            |
 
-*One container parameter is required when `name` is not specified.
+\*One container parameter is required when `name` is not specified.
 
 ### Provider Dictionary
 
 | Parameter       | Type | Required | Description                             |
 | --------------- | ---- | -------- | --------------------------------------- |
-| `client_id`     | str  | Yes      | Client ID for SCM authentication         |
-| `client_secret` | str  | Yes      | Client secret for SCM authentication     |
-| `tsg_id`        | str  | Yes      | Tenant Service Group ID                  |
-| `log_level`     | str  | No       | Log level for the SDK (default: "INFO")  |
+| `client_id`     | str  | Yes      | Client ID for SCM authentication        |
+| `client_secret` | str  | Yes      | Client secret for SCM authentication    |
+| `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
+| `log_level`     | str  | No       | Log level for the SDK (default: "INFO") |
 
 ## Exceptions
 
-| Exception                    | Description                     |
-| ---------------------------- | ------------------------------- |
-| `InvalidObjectError`         | Invalid request data or format  |
-| `MissingQueryParameterError` | Missing required parameters     |
-| `ObjectNotPresentError`      | Service not found               |
-| `AuthenticationError`        | Authentication failed           |
-| `ServerError`                | Internal server error           |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid request data or format |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `ObjectNotPresentError`      | Service not found              |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The Service Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Service Info module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Service Info Configuration
@@ -189,7 +194,8 @@ This example shows how to filter services by tag values.
 
 ## Managing Configuration Changes
 
-As an info module, `service_info` does not make any configuration changes. However, you can use the information it retrieves to make decisions about other configuration operations.
+As an info module, `service_info` does not make any configuration changes. However, you can use the
+information it retrieves to make decisions about other configuration operations.
 
 ```yaml
 - name: Use service information to create service groups

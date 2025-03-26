@@ -1,64 +1,67 @@
 # Http Server Profiles Configuration Object
 
-## 01. Table of Contents
+## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [HTTP Server Profile Model Attributes](#http-server-profile-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
-   - [Creating HTTP Server Profiles](#creating-http-server-profiles)
-   - [Basic HTTP Server Profile](#basic-http-server-profile)
-   - [HTTPS Server Profile](#https-server-profile)
-   - [Multiple Servers Configuration](#multiple-servers-configuration)
-   - [Updating HTTP Server Profiles](#updating-http-server-profiles)
-   - [Deleting HTTP Server Profiles](#deleting-http-server-profiles)
-7. [Managing Configuration Changes](#managing-configuration-changes)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [HTTP Server Profile Model Attributes](#http-server-profile-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Creating HTTP Server Profiles](#creating-http-server-profiles)
+    - [Basic HTTP Server Profile](#basic-http-server-profile)
+    - [HTTPS Server Profile](#https-server-profile)
+    - [Multiple Servers Configuration](#multiple-servers-configuration)
+    - [Updating HTTP Server Profiles](#updating-http-server-profiles)
+    - [Deleting HTTP Server Profiles](#deleting-http-server-profiles)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
-## 02. Overview
+## Overview
 
-The `http_server_profiles` Ansible module provides functionality to manage HTTP server profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). HTTP server profiles define server configurations for services like log forwarding, and this module supports creating, updating, and deleting these profiles with various server configurations and protocol settings.
+The `http_server_profiles` Ansible module provides functionality to manage HTTP server profile
+objects in Palo Alto Networks' Strata Cloud Manager (SCM). HTTP server profiles define server
+configurations for services like log forwarding, and this module supports creating, updating, and
+deleting these profiles with various server configurations and protocol settings.
 
-## 03. Core Methods
+## Core Methods
 
-| Method     | Description                          | Parameters                            | Return Type                          |
-| ---------- | ------------------------------------ | ------------------------------------- | ------------------------------------ |
-| `create()` | Creates a new HTTP server profile    | `data: Dict[str, Any]`                | `HttpServerProfileResponseModel`     |
-| `update()` | Updates an existing server profile   | `profile: HttpServerProfileUpdateModel` | `HttpServerProfileResponseModel`   |
-| `delete()` | Removes a server profile             | `object_id: str`                      | `None`                               |
-| `fetch()`  | Gets a server profile by name        | `name: str`, `container: str`         | `HttpServerProfileResponseModel`     |
-| `list()`   | Lists server profiles with filtering | `folder: str`, `**filters`            | `List[HttpServerProfileResponseModel]` |
+| Method     | Description                          | Parameters                              | Return Type                            |
+| ---------- | ------------------------------------ | --------------------------------------- | -------------------------------------- |
+| `create()` | Creates a new HTTP server profile    | `data: Dict[str, Any]`                  | `HttpServerProfileResponseModel`       |
+| `update()` | Updates an existing server profile   | `profile: HttpServerProfileUpdateModel` | `HttpServerProfileResponseModel`       |
+| `delete()` | Removes a server profile             | `object_id: str`                        | `None`                                 |
+| `fetch()`  | Gets a server profile by name        | `name: str`, `container: str`           | `HttpServerProfileResponseModel`       |
+| `list()`   | Lists server profiles with filtering | `folder: str`, `**filters`              | `List[HttpServerProfileResponseModel]` |
 
-## 04. HTTP Server Profile Model Attributes
+## HTTP Server Profile Model Attributes
 
-| Attribute          | Type   | Required      | Description                                                 |
-| ------------------ | ------ | ------------- | ----------------------------------------------------------- |
-| `name`             | str    | Yes           | Name of the HTTP server profile (max 63 chars)              |
-| `description`      | str    | No            | Description of the HTTP server profile                       |
-| `server`           | list   | Yes*          | List of server configurations                               |
-| `tag_registration` | bool   | No            | Whether to register tags on match                           |
-| `format`           | dict   | No            | Format settings for different log types                     |
-| `folder`           | str    | One container | The folder in which the profile is defined (max 64 chars)   |
-| `snippet`          | str    | One container | The snippet in which the profile is defined (max 64 chars)  |
-| `device`           | str    | One container | The device in which the profile is defined (max 64 chars)   |
+| Attribute          | Type | Required      | Description                                                |
+| ------------------ | ---- | ------------- | ---------------------------------------------------------- |
+| `name`             | str  | Yes           | Name of the HTTP server profile (max 63 chars)             |
+| `description`      | str  | No            | Description of the HTTP server profile                     |
+| `server`           | list | Yes\*         | List of server configurations                              |
+| `tag_registration` | bool | No            | Whether to register tags on match                          |
+| `format`           | dict | No            | Format settings for different log types                    |
+| `folder`           | str  | One container | The folder in which the profile is defined (max 64 chars)  |
+| `snippet`          | str  | One container | The snippet in which the profile is defined (max 64 chars) |
+| `device`           | str  | One container | The device in which the profile is defined (max 64 chars)  |
 
-*Required when `state=present`
+\*Required when `state=present`
 
 ### Server Configuration Attributes
 
-| Attribute             | Type    | Required | Description                                                   |
-| --------------------- | ------- | -------- | ------------------------------------------------------------- |
-| `name`                | str     | Yes      | Server name                                                   |
-| `address`             | str     | Yes      | Server address (IP or FQDN)                                   |
-| `protocol`            | str     | Yes      | Protocol: "HTTP" or "HTTPS"                                   |
-| `port`                | int     | Yes      | Port number                                                   |
-| `http_method`         | str     | Yes      | HTTP method: "GET", "POST", "PUT", "DELETE"                   |
-| `tls_version`         | str     | No       | TLS version: "1.0", "1.1", "1.2", "1.3" (for HTTPS only)     |
-| `certificate_profile` | str     | No       | Certificate profile name (for HTTPS only)                     |
+| Attribute             | Type | Required | Description                                              |
+| --------------------- | ---- | -------- | -------------------------------------------------------- |
+| `name`                | str  | Yes      | Server name                                              |
+| `address`             | str  | Yes      | Server address (IP or FQDN)                              |
+| `protocol`            | str  | Yes      | Protocol: "HTTP" or "HTTPS"                              |
+| `port`                | int  | Yes      | Port number                                              |
+| `http_method`         | str  | Yes      | HTTP method: "GET", "POST", "PUT", "DELETE"              |
+| `tls_version`         | str  | No       | TLS version: "1.0", "1.1", "1.2", "1.3" (for HTTPS only) |
+| `certificate_profile` | str  | No       | Certificate profile name (for HTTPS only)                |
 
 ### Provider Dictionary Attributes
 
@@ -69,21 +72,22 @@ The `http_server_profiles` Ansible module provides functionality to manage HTTP 
 | `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
 | `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
 
-## 05. Exceptions
+## Exceptions
 
-| Exception                    | Description                          |
-| ---------------------------- | ------------------------------------ |
-| `InvalidObjectError`         | Invalid profile data or format       |
-| `NameNotUniqueError`         | Profile name already exists          |
-| `ObjectNotPresentError`      | Profile not found                    |
-| `MissingQueryParameterError` | Missing required parameters          |
-| `AuthenticationError`        | Authentication failed                |
-| `ServerError`                | Internal server error                |
-| `InvalidServerConfigError`   | Invalid server configuration         |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid profile data or format |
+| `NameNotUniqueError`         | Profile name already exists    |
+| `ObjectNotPresentError`      | Profile not found              |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
+| `InvalidServerConfigError`   | Invalid server configuration   |
 
-## 06. Basic Configuration
+## Basic Configuration
 
-The HTTP Server Profiles module requires proper authentication credentials to access the Strata Cloud Manager API.
+The HTTP Server Profiles module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic HTTP Server Profile Configuration
@@ -111,11 +115,12 @@ The HTTP Server Profiles module requires proper authentication credentials to ac
         state: "present"
 ```
 
-## 07. Usage Examples
+## Usage Examples
 
 ### Creating HTTP Server Profiles
 
-HTTP server profiles can be created with different server configurations and protocols to meet various logging and communication requirements.
+HTTP server profiles can be created with different server configurations and protocols to meet
+various logging and communication requirements.
 
 ### Basic HTTP Server Profile
 
@@ -223,9 +228,10 @@ This example removes an HTTP server profile.
     state: "absent"
 ```
 
-## 08. Managing Configuration Changes
+## Managing Configuration Changes
 
-After creating, updating, or deleting HTTP server profiles, you need to commit your changes to apply them.
+After creating, updating, or deleting HTTP server profiles, you need to commit your changes to apply
+them.
 
 ```yaml
 - name: Commit changes
@@ -235,7 +241,7 @@ After creating, updating, or deleting HTTP server profiles, you need to commit y
     description: "Updated HTTP server profiles"
 ```
 
-## 09. Error Handling
+## Error Handling
 
 It's important to handle potential errors when working with HTTP server profiles.
 
@@ -275,7 +281,7 @@ It's important to handle potential errors when working with HTTP server profiles
       when: "'server' in ansible_failed_result.msg"
 ```
 
-## 10. Best Practices
+## Best Practices
 
 ### Server Configuration
 
@@ -314,9 +320,13 @@ It's important to handle potential errors when working with HTTP server profiles
 - Test profiles under expected load conditions
 - Implement appropriate error handling and retry logic in your playbooks
 
-## 11. Related Modules
+## Related Modules
 
-- [http_server_profiles_info](http_server_profiles_info.md) - Retrieve information about HTTP server profiles
-- [log_forwarding_profile](log_forwarding_profile.md) - Configure log forwarding profiles that use HTTP server profiles
-- [log_forwarding_profile_info](log_forwarding_profile_info.md) - Retrieve information about log forwarding profiles
-- [syslog_server_profiles](syslog_server_profiles.md) - Configure syslog server profiles for system logging
+- [http_server_profiles_info](http_server_profiles_info.md) - Retrieve information about HTTP server
+  profiles
+- [log_forwarding_profile](log_forwarding_profile.md) - Configure log forwarding profiles that use
+  HTTP server profiles
+- [log_forwarding_profile_info](log_forwarding_profile_info.md) - Retrieve information about log
+  forwarding profiles
+- [syslog_server_profiles](syslog_server_profiles.md) - Configure syslog server profiles for system
+  logging

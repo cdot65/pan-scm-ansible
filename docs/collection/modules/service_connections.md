@@ -22,59 +22,63 @@
 
 ## Overview
 
-The `service_connections` Ansible module provides functionality to manage Service Connections in Palo Alto Networks' Strata Cloud Manager (SCM). Service Connections allow you to securely connect your network to various cloud services and third-party providers, enabling direct access to SaaS applications, cloud resources, and other internet-based services with appropriate security controls.
+The `service_connections` Ansible module provides functionality to manage Service Connections in
+Palo Alto Networks' Strata Cloud Manager (SCM). Service Connections allow you to securely connect
+your network to various cloud services and third-party providers, enabling direct access to SaaS
+applications, cloud resources, and other internet-based services with appropriate security controls.
 
 ## Core Methods
 
-| Method     | Description                          | Parameters                    | Return Type                       |
-| ---------- | ------------------------------------ | ----------------------------- | --------------------------------- |
-| `create()` | Creates a new Service Connection     | `data: Dict[str, Any]`        | `ServiceConnectionResponseModel`  |
-| `update()` | Updates an existing connection       | `connection: ServiceConnectionUpdateModel` | `ServiceConnectionResponseModel` |
-| `delete()` | Removes a connection                 | `object_id: str`              | `None`                            |
-| `fetch()`  | Gets a connection by name            | `name: str`, `container: str` | `ServiceConnectionResponseModel`  |
-| `list()`   | Lists connections with filtering     | `folder: str`, `**filters`    | `List[ServiceConnectionResponseModel]` |
+| Method     | Description                      | Parameters                                 | Return Type                            |
+| ---------- | -------------------------------- | ------------------------------------------ | -------------------------------------- |
+| `create()` | Creates a new Service Connection | `data: Dict[str, Any]`                     | `ServiceConnectionResponseModel`       |
+| `update()` | Updates an existing connection   | `connection: ServiceConnectionUpdateModel` | `ServiceConnectionResponseModel`       |
+| `delete()` | Removes a connection             | `object_id: str`                           | `None`                                 |
+| `fetch()`  | Gets a connection by name        | `name: str`, `container: str`              | `ServiceConnectionResponseModel`       |
+| `list()`   | Lists connections with filtering | `folder: str`, `**filters`                 | `List[ServiceConnectionResponseModel]` |
 
 ## Service Connections Model Attributes
 
-| Attribute           | Type      | Required | Description                                            |
-| ------------------- | --------- | -------- | ------------------------------------------------------ |
-| `name`              | str       | Yes      | Name of the Service Connection                         |
-| `description`       | str       | No       | Description of the Service Connection                  |
-| `service_type`      | str       | Yes      | Type of service (aws, azure, gcp, o365, etc.)         |
-| `service_details`   | dict      | Yes      | Service-specific configuration details                 |
-| `network_locations` | list      | No       | List of Network Locations that can use this connection |
-| `tags`              | list      | No       | List of tags to apply to the Service Connection        |
+| Attribute           | Type | Required | Description                                            |
+| ------------------- | ---- | -------- | ------------------------------------------------------ |
+| `name`              | str  | Yes      | Name of the Service Connection                         |
+| `description`       | str  | No       | Description of the Service Connection                  |
+| `service_type`      | str  | Yes      | Type of service (aws, azure, gcp, o365, etc.)          |
+| `service_details`   | dict | Yes      | Service-specific configuration details                 |
+| `network_locations` | list | No       | List of Network Locations that can use this connection |
+| `tags`              | list | No       | List of tags to apply to the Service Connection        |
 
 ### Service Details Attributes (O365)
 
-| Attribute | Type   | Required | Description                                    |
-| --------- | ------ | -------- | ---------------------------------------------- |
-| `region`  | str    | Yes      | Region for O365 (worldwide, china, etc.)       |
-| `services`| list   | Yes      | O365 services to enable (exchange, sharepoint, skype, etc.) |
+| Attribute  | Type | Required | Description                                                 |
+| ---------- | ---- | -------- | ----------------------------------------------------------- |
+| `region`   | str  | Yes      | Region for O365 (worldwide, china, etc.)                    |
+| `services` | list | Yes      | O365 services to enable (exchange, sharepoint, skype, etc.) |
 
 ### Service Details Attributes (AWS)
 
-| Attribute         | Type   | Required | Description                                    |
-| ----------------- | ------ | -------- | ---------------------------------------------- |
-| `region`          | str    | Yes      | AWS region (us-east-1, eu-west-1, etc.)        |
-| `services`        | list   | Yes      | AWS services to enable (s3, dynamodb, etc.)    |
-| `authentication`  | dict   | Yes      | Authentication details for AWS                 |
+| Attribute        | Type | Required | Description                                 |
+| ---------------- | ---- | -------- | ------------------------------------------- |
+| `region`         | str  | Yes      | AWS region (us-east-1, eu-west-1, etc.)     |
+| `services`       | list | Yes      | AWS services to enable (s3, dynamodb, etc.) |
+| `authentication` | dict | Yes      | Authentication details for AWS              |
 
 ## Exceptions
 
-| Exception                    | Description                         |
-| ---------------------------- | ----------------------------------- |
-| `InvalidObjectError`         | Invalid connection data or format   |
-| `NameNotUniqueError`         | Connection name already exists      |
-| `ObjectNotPresentError`      | Connection not found                |
-| `MissingQueryParameterError` | Missing required parameters         |
-| `AuthenticationError`        | Authentication failed               |
-| `ServerError`                | Internal server error               |
-| `ReferenceNotFoundError`     | Referenced location doesn't exist   |
+| Exception                    | Description                       |
+| ---------------------------- | --------------------------------- |
+| `InvalidObjectError`         | Invalid connection data or format |
+| `NameNotUniqueError`         | Connection name already exists    |
+| `ObjectNotPresentError`      | Connection not found              |
+| `MissingQueryParameterError` | Missing required parameters       |
+| `AuthenticationError`        | Authentication failed             |
+| `ServerError`                | Internal server error             |
+| `ReferenceNotFoundError`     | Referenced location doesn't exist |
 
 ## Basic Configuration
 
-The Service Connections module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Service Connections module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Service Connection Configuration
@@ -107,11 +111,13 @@ The Service Connections module requires proper authentication credentials to acc
 
 ### Creating Service Connections
 
-Service Connections allow your network to securely access various cloud services and SaaS applications.
+Service Connections allow your network to securely access various cloud services and SaaS
+applications.
 
 ### Office 365 Service Connection
 
-This example creates a service connection for Office 365 to enable direct access to Exchange, SharePoint, and Skype.
+This example creates a service connection for Office 365 to enable direct access to Exchange,
+SharePoint, and Skype.
 
 ```yaml
 - name: Create Office 365 Service Connection
@@ -194,7 +200,8 @@ This example creates a service connection for Azure services using service princ
 
 ### GCP Service Connection
 
-This example creates a service connection for Google Cloud Platform services using service account authentication.
+This example creates a service connection for Google Cloud Platform services using service account
+authentication.
 
 ```yaml
 - name: Create Google Cloud Service Connection
@@ -261,7 +268,8 @@ This example removes a service connection that is no longer needed.
 
 ## Managing Configuration Changes
 
-After creating, updating, or deleting service connections, you need to commit your changes to apply them.
+After creating, updating, or deleting service connections, you need to commit your changes to apply
+them.
 
 ```yaml
 - name: Commit changes
@@ -353,7 +361,8 @@ It's important to handle potential errors when working with service connections.
 
 ## Related Modules
 
-- [network_locations](network_locations.md) - Manage network locations that can use service connections
+- [network_locations](network_locations.md) - Manage network locations that can use service
+  connections
 - [security_rule](security_rule.md) - Configure security policies that reference service connections
 - [remote_networks](remote_networks.md) - Configure remote networks that may use service connections
 - [tag](tag.md) - Manage tags that can be applied to service connections

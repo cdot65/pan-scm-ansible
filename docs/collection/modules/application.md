@@ -20,60 +20,61 @@
 
 ## Overview
 
-The `application` Ansible module provides functionality to manage custom application objects in Palo Alto
-Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and delete application
-objects with various attributes such as category, subcategory, technology, risk level, and
-behavioral characteristics. Custom applications can be used in security policies to control
+The `application` Ansible module provides functionality to manage custom application objects in Palo
+Alto Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and delete
+application objects with various attributes such as category, subcategory, technology, risk level,
+and behavioral characteristics. Custom applications can be used in security policies to control
 application-specific traffic.
 
 ## Core Methods
 
-| Method     | Description                      | Parameters                      | Return Type                  |
-| ---------- | -------------------------------- | ------------------------------- | ---------------------------- |
-| `create()` | Creates a new application object | `data: Dict[str, Any]`          | `ApplicationResponseModel`    |
-| `update()` | Updates an existing application  | `app: ApplicationUpdateModel`   | `ApplicationResponseModel`    |
-| `delete()` | Removes an application           | `object_id: str`                | `None`                       |
-| `fetch()`  | Gets an application by name      | `name: str`, `container: str`   | `ApplicationResponseModel`    |
-| `list()`   | Lists applications with filtering| `folder: str`, `**filters`      | `List[ApplicationResponseModel]`|
+| Method     | Description                       | Parameters                    | Return Type                      |
+| ---------- | --------------------------------- | ----------------------------- | -------------------------------- |
+| `create()` | Creates a new application object  | `data: Dict[str, Any]`        | `ApplicationResponseModel`       |
+| `update()` | Updates an existing application   | `app: ApplicationUpdateModel` | `ApplicationResponseModel`       |
+| `delete()` | Removes an application            | `object_id: str`              | `None`                           |
+| `fetch()`  | Gets an application by name       | `name: str`, `container: str` | `ApplicationResponseModel`       |
+| `list()`   | Lists applications with filtering | `folder: str`, `**filters`    | `List[ApplicationResponseModel]` |
 
 ## Application Model Attributes
 
-| Attribute                  | Type | Required      | Description                                                |
-| -------------------------- | ---- | ------------- | ---------------------------------------------------------- |
-| `name`                     | str  | Yes           | The name of the application                                |
-| `category`                 | str  | Yes           | High-level category to which the application belongs       |
-| `subcategory`              | str  | Yes           | Specific sub-category within the high-level category       |
-| `technology`               | str  | Yes           | The underlying technology utilized by the application      |
-| `risk`                     | int  | Yes           | The risk level associated with the application (1-5)       |
-| `description`              | str  | No            | Description for the application                            |
-| `ports`                    | list | No            | List of TCP/UDP ports associated with the application      |
-| `evasive`                  | bool | No            | Indicates if the application uses evasive techniques       |
-| `pervasive`                | bool | No            | Indicates if the application is widely used                |
-| `excessive_bandwidth_use`  | bool | No            | Indicates if the application uses excessive bandwidth      |
-| `used_by_malware`          | bool | No            | Indicates if the application is commonly used by malware   |
-| `transfers_files`          | bool | No            | Indicates if the application transfers files               |
-| `has_known_vulnerabilities`| bool | No            | Indicates if the application has known vulnerabilities     |
-| `tunnels_other_apps`       | bool | No            | Indicates if the application tunnels other applications    |
-| `prone_to_misuse`          | bool | No            | Indicates if the application is prone to misuse            |
-| `no_certifications`        | bool | No            | Indicates if the application lacks certifications          |
-| `folder`                   | str  | One container | The folder in which the application is defined (max 64 chars) |
-| `snippet`                  | str  | One container | The snippet in which the application is defined (max 64 chars)|
+| Attribute                   | Type | Required      | Description                                                    |
+| --------------------------- | ---- | ------------- | -------------------------------------------------------------- |
+| `name`                      | str  | Yes           | The name of the application                                    |
+| `category`                  | str  | Yes           | High-level category to which the application belongs           |
+| `subcategory`               | str  | Yes           | Specific sub-category within the high-level category           |
+| `technology`                | str  | Yes           | The underlying technology utilized by the application          |
+| `risk`                      | int  | Yes           | The risk level associated with the application (1-5)           |
+| `description`               | str  | No            | Description for the application                                |
+| `ports`                     | list | No            | List of TCP/UDP ports associated with the application          |
+| `evasive`                   | bool | No            | Indicates if the application uses evasive techniques           |
+| `pervasive`                 | bool | No            | Indicates if the application is widely used                    |
+| `excessive_bandwidth_use`   | bool | No            | Indicates if the application uses excessive bandwidth          |
+| `used_by_malware`           | bool | No            | Indicates if the application is commonly used by malware       |
+| `transfers_files`           | bool | No            | Indicates if the application transfers files                   |
+| `has_known_vulnerabilities` | bool | No            | Indicates if the application has known vulnerabilities         |
+| `tunnels_other_apps`        | bool | No            | Indicates if the application tunnels other applications        |
+| `prone_to_misuse`           | bool | No            | Indicates if the application is prone to misuse                |
+| `no_certifications`         | bool | No            | Indicates if the application lacks certifications              |
+| `folder`                    | str  | One container | The folder in which the application is defined (max 64 chars)  |
+| `snippet`                   | str  | One container | The snippet in which the application is defined (max 64 chars) |
 
 ## Exceptions
 
-| Exception                    | Description                         |
-| ---------------------------- | ----------------------------------- |
-| `InvalidObjectError`         | Invalid application data or format  |
-| `NameNotUniqueError`         | Application name already exists     |
-| `ObjectNotPresentError`      | Application not found               |
-| `MissingQueryParameterError` | Missing required parameters         |
-| `InvalidRiskLevelError`      | Invalid risk level (must be 1-5)    |
-| `AuthenticationError`        | Authentication failed               |
-| `ServerError`                | Internal server error               |
+| Exception                    | Description                        |
+| ---------------------------- | ---------------------------------- |
+| `InvalidObjectError`         | Invalid application data or format |
+| `NameNotUniqueError`         | Application name already exists    |
+| `ObjectNotPresentError`      | Application not found              |
+| `MissingQueryParameterError` | Missing required parameters        |
+| `InvalidRiskLevelError`      | Invalid risk level (must be 1-5)   |
+| `AuthenticationError`        | Authentication failed              |
+| `ServerError`                | Internal server error              |
 
 ## Basic Configuration
 
-The Application module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Application module requires proper authentication credentials to access the Strata Cloud Manager
+API.
 
 ```yaml
 - name: Basic Application Configuration
@@ -105,7 +106,8 @@ The Application module requires proper authentication credentials to access the 
 
 ### Creating Applications
 
-Applications can be created with various characteristics and port definitions to precisely control network traffic.
+Applications can be created with various characteristics and port definitions to precisely control
+network traffic.
 
 ### Basic Application
 
@@ -129,7 +131,8 @@ This example creates a simple application with basic attributes.
 
 ### Comprehensive Application
 
-This example creates a more comprehensive application with multiple ports and detailed characteristics.
+This example creates a more comprehensive application with multiple ports and detailed
+characteristics.
 
 ```yaml
 - name: Create a comprehensive application
@@ -288,6 +291,7 @@ It's important to handle potential errors when working with application objects.
 
 - [application_info](application_info.md) - Retrieve information about application objects
 - [application_group](application_group.md) - Manage application group objects
-- [application_group_info](application_group_info.md) - Retrieve information about application groups
+- [application_group_info](application_group_info.md) - Retrieve information about application
+  groups
 - [security_rule](security_rule.md) - Configure security policies that reference applications
 - [service](service.md) - Define service objects that can be used with applications

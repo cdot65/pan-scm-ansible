@@ -19,46 +19,50 @@
 
 ## Overview
 
-The `quarantined_devices` Ansible module provides functionality to manage quarantined devices in Palo Alto Networks' Strata Cloud Manager (SCM). This module enables you to add devices to quarantine and remove them from quarantine. Note that SCM's API only supports create, list, and delete operations for quarantined devices (no direct fetch or update).
+The `quarantined_devices` Ansible module provides functionality to manage quarantined devices in
+Palo Alto Networks' Strata Cloud Manager (SCM). This module enables you to add devices to quarantine
+and remove them from quarantine. Note that SCM's API only supports create, list, and delete
+operations for quarantined devices (no direct fetch or update).
 
 ## Core Methods
 
-| Method     | Description                       | Parameters                      | Return Type                      |
-| ---------- | --------------------------------- | ------------------------------- | -------------------------------- |
-| `create()` | Adds a device to quarantine       | `data: Dict[str, Any]`          | `QuarantinedDeviceResponseModel` |
-| `delete()` | Removes a device from quarantine  | `host_id: str`                  | `None`                           |
-| `list()`   | Lists quarantined devices         | `filters: Dict[str, Any]`       | `List[QuarantinedDeviceResponseModel]` |
+| Method     | Description                      | Parameters                | Return Type                            |
+| ---------- | -------------------------------- | ------------------------- | -------------------------------------- |
+| `create()` | Adds a device to quarantine      | `data: Dict[str, Any]`    | `QuarantinedDeviceResponseModel`       |
+| `delete()` | Removes a device from quarantine | `host_id: str`            | `None`                                 |
+| `list()`   | Lists quarantined devices        | `filters: Dict[str, Any]` | `List[QuarantinedDeviceResponseModel]` |
 
 ## Quarantined Devices Model Attributes
 
-| Attribute       | Type | Required | Description                                      |
-| --------------- | ---- | -------- | ------------------------------------------------ |
-| `host_id`       | str  | Yes      | The host ID of the device to quarantine          |
-| `serial_number` | str  | No       | The serial number of the device to quarantine    |
+| Attribute       | Type | Required | Description                                   |
+| --------------- | ---- | -------- | --------------------------------------------- |
+| `host_id`       | str  | Yes      | The host ID of the device to quarantine       |
+| `serial_number` | str  | No       | The serial number of the device to quarantine |
 
 ### Provider Dictionary
 
 | Parameter       | Type | Required | Description                             |
 | --------------- | ---- | -------- | --------------------------------------- |
-| `client_id`     | str  | Yes      | Client ID for SCM authentication         |
-| `client_secret` | str  | Yes      | Client secret for SCM authentication     |
-| `tsg_id`        | str  | Yes      | Tenant Service Group ID                  |
-| `log_level`     | str  | No       | Log level for the SDK (default: "INFO")  |
+| `client_id`     | str  | Yes      | Client ID for SCM authentication        |
+| `client_secret` | str  | Yes      | Client secret for SCM authentication    |
+| `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
+| `log_level`     | str  | No       | Log level for the SDK (default: "INFO") |
 
 ## Exceptions
 
-| Exception                    | Description                     |
-| ---------------------------- | ------------------------------- |
-| `InvalidObjectError`         | Invalid device data or format   |
-| `NameNotUniqueError`         | Device already quarantined      |
-| `ObjectNotPresentError`      | Device not found in quarantine  |
-| `MissingQueryParameterError` | Missing required parameters     |
-| `AuthenticationError`        | Authentication failed           |
-| `ServerError`                | Internal server error           |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid device data or format  |
+| `NameNotUniqueError`         | Device already quarantined     |
+| `ObjectNotPresentError`      | Device not found in quarantine |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The Quarantined Devices module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Quarantined Devices module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Quarantined Devices Configuration
@@ -83,7 +87,8 @@ The Quarantined Devices module requires proper authentication credentials to acc
 
 ### Quarantining Devices
 
-Quarantined devices allow for isolating potentially compromised or problematic devices from your network.
+Quarantined devices allow for isolating potentially compromised or problematic devices from your
+network.
 
 ### Basic Device Quarantine
 
@@ -104,7 +109,8 @@ This example shows how to add a device to quarantine using its host ID.
 
 ### Device Quarantine with Serial Number
 
-This example shows how to quarantine a device with both host ID and serial number for better identification.
+This example shows how to quarantine a device with both host ID and serial number for better
+identification.
 
 ```yaml
 - name: Quarantine a device with serial number
@@ -139,7 +145,8 @@ This example demonstrates how to remove a device from quarantine.
 
 ## Managing Configuration Changes
 
-Quarantining or unquarantining devices takes effect immediately and does not require a commit operation.
+Quarantining or unquarantining devices takes effect immediately and does not require a commit
+operation.
 
 ```yaml
 - name: Manage quarantined devices
@@ -223,7 +230,8 @@ It's important to handle potential errors when working with quarantined devices.
 
 ## Related Modules
 
-- [quarantined_devices_info](quarantined_devices_info.md) - Retrieve information about quarantined devices
+- [quarantined_devices_info](quarantined_devices_info.md) - Retrieve information about quarantined
+  devices
 - [address](address.md) - Manage address objects that can be used to represent quarantined devices
 - [tag](tag.md) - Manage tag objects that can be used to mark quarantined devices
 - [security_rule](security_rule.md) - Create security policies affecting quarantined devices

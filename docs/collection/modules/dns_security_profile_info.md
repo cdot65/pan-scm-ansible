@@ -1,51 +1,54 @@
 # DNS Security Profile Information Object
 
-## 01. Table of Contents
+## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [DNS Security Profile Info Model Attributes](#dns-security-profile-info-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
-   - [Getting Information about a Specific DNS Security Profile](#getting-information-about-a-specific-dns-security-profile)
-   - [Listing All DNS Security Profiles in a Folder](#listing-all-dns-security-profiles-in-a-folder)
-   - [Filtering by DNS Security Categories](#filtering-by-dns-security-categories)
-   - [Using Advanced Filtering Options](#using-advanced-filtering-options)
-7. [Processing Retrieved Information](#processing-retrieved-information)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [DNS Security Profile Info Model Attributes](#dns-security-profile-info-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Getting Information about a Specific DNS Security Profile](#getting-information-about-a-specific-dns-security-profile)
+    - [Listing All DNS Security Profiles in a Folder](#listing-all-dns-security-profiles-in-a-folder)
+    - [Filtering by DNS Security Categories](#filtering-by-dns-security-categories)
+    - [Using Advanced Filtering Options](#using-advanced-filtering-options)
+07. [Processing Retrieved Information](#processing-retrieved-information)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
-## 02. Overview
+## Overview
 
-The `dns_security_profile_info` Ansible module provides functionality to gather information about DNS Security Profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an info module that allows fetching details about specific DNS security profiles or listing profiles with various filtering options, including DNS security categories.
+The `dns_security_profile_info` Ansible module provides functionality to gather information about
+DNS Security Profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an info
+module that allows fetching details about specific DNS security profiles or listing profiles with
+various filtering options, including DNS security categories.
 
-## 03. Core Methods
+## Core Methods
 
-| Method    | Description                     | Parameters                    | Return Type                          |
-| --------- | ------------------------------- | ----------------------------- | ------------------------------------ |
-| `fetch()` | Gets a specific profile by name | `name: str`, `container: str` | `DnsSecurityProfileResponseModel`    |
+| Method    | Description                     | Parameters                    | Return Type                             |
+| --------- | ------------------------------- | ----------------------------- | --------------------------------------- |
+| `fetch()` | Gets a specific profile by name | `name: str`, `container: str` | `DnsSecurityProfileResponseModel`       |
 | `list()`  | Lists profiles with filtering   | `folder: str`, `**filters`    | `List[DnsSecurityProfileResponseModel]` |
 
-## 04. DNS Security Profile Info Model Attributes
+## DNS Security Profile Info Model Attributes
 
-| Parameter               | Type   | Required | Description                                                               |
-| ----------------------- | ------ | -------- | ------------------------------------------------------------------------- |
-| `name`                  | str    | No       | Name of a specific DNS security profile to retrieve                       |
-| `gather_subset`         | list   | No       | Determines which information to gather (default: config)                  |
-| `folder`                | str    | No\*     | Filter profiles by folder container                                       |
-| `snippet`               | str    | No\*     | Filter profiles by snippet container                                      |
-| `device`                | str    | No\*     | Filter profiles by device container                                       |
-| `exact_match`           | bool   | No       | When True, only return objects defined exactly in the specified container |
-| `exclude_folders`       | list   | No       | List of folder names to exclude from results                              |
-| `exclude_snippets`      | list   | No       | List of snippet values to exclude from results                            |
-| `exclude_devices`       | list   | No       | List of device values to exclude from results                             |
-| `dns_security_categories`| list  | No       | Filter by DNS security categories                                         |
+| Parameter                 | Type | Required | Description                                                               |
+| ------------------------- | ---- | -------- | ------------------------------------------------------------------------- |
+| `name`                    | str  | No       | Name of a specific DNS security profile to retrieve                       |
+| `gather_subset`           | list | No       | Determines which information to gather (default: config)                  |
+| `folder`                  | str  | No\*     | Filter profiles by folder container                                       |
+| `snippet`                 | str  | No\*     | Filter profiles by snippet container                                      |
+| `device`                  | str  | No\*     | Filter profiles by device container                                       |
+| `exact_match`             | bool | No       | When True, only return objects defined exactly in the specified container |
+| `exclude_folders`         | list | No       | List of folder names to exclude from results                              |
+| `exclude_snippets`        | list | No       | List of snippet values to exclude from results                            |
+| `exclude_devices`         | list | No       | List of device values to exclude from results                             |
+| `dns_security_categories` | list | No       | Filter by DNS security categories                                         |
 
 \*One container parameter is required when `name` is not specified.
 
-## 05. Exceptions
+## Exceptions
 
 | Exception                    | Description                    |
 | ---------------------------- | ------------------------------ |
@@ -55,10 +58,10 @@ The `dns_security_profile_info` Ansible module provides functionality to gather 
 | `AuthenticationError`        | Authentication failed          |
 | `ServerError`                | Internal server error          |
 
-## 06. Basic Configuration
+## Basic Configuration
 
-The DNS Security Profile Info module requires proper authentication credentials to access the
-Strata Cloud Manager API.
+The DNS Security Profile Info module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic DNS Security Profile Info Configuration
@@ -76,13 +79,13 @@ Strata Cloud Manager API.
         provider: "{{ provider }}"
         folder: "Texas"
       register: profiles_result
-      
+
     - name: Display retrieved DNS security profiles
       debug:
         var: profiles_result
 ```
 
-## 07. Usage Examples
+## Usage Examples
 
 ### Getting Information about a Specific DNS Security Profile
 
@@ -95,11 +98,11 @@ Retrieve details about a specific DNS security profile by name and container.
     name: "test-dns-security"
     folder: "Texas"
   register: profile_info
-  
+
 - name: Display DNS security profile information
   debug:
     var: profile_info.dns_security_profile
-    
+
 - name: Check if profile has botnet domains
   debug:
     msg: "Profile contains botnet domains configuration"
@@ -118,15 +121,15 @@ List all DNS security profiles in a specific folder.
     provider: "{{ provider }}"
     folder: "Texas"
   register: all_profiles
-  
+
 - name: Display all DNS security profiles
   debug:
     var: all_profiles.dns_security_profiles
-    
+
 - name: Display count of DNS security profiles
   debug:
     msg: "Found {{ all_profiles.dns_security_profiles | length }} DNS security profiles"
-    
+
 - name: List names of all DNS security profiles
   debug:
     msg: "{{ all_profiles.dns_security_profiles | map(attribute='name') | list }}"
@@ -141,9 +144,9 @@ Filter DNS security profiles by security categories.
   cdot65.scm.dns_security_profile_info:
     provider: "{{ provider }}"
     folder: "Texas"
-    dns_security_categories: ["command-and-control", "malware"]
+    dns_security_categories: [ "command-and-control", "malware" ]
   register: category_profiles
-  
+
 - name: Process category filtered profiles
   debug:
     msg: "Category filtered profile: {{ item.name }}"
@@ -167,12 +170,12 @@ Use advanced filtering options to refine your query results.
     provider: "{{ provider }}"
     folder: "Texas"
     exact_match: true
-    exclude_folders: ["All"]
-    exclude_snippets: ["default"]
+    exclude_folders: [ "All" ]
+    exclude_snippets: [ "default" ]
   register: filtered_profiles
 ```
 
-## 08. Processing Retrieved Information
+## Processing Retrieved Information
 
 Example of processing and utilizing the retrieved DNS security profile information.
 
@@ -192,7 +195,7 @@ Example of processing and utilizing the retrieved DNS security profile informati
         provider: "{{ provider }}"
         folder: "Texas"
       register: profiles_info
-      
+
     - name: Create summary of DNS security categories used
       set_fact:
         category_summary: >-
@@ -211,21 +214,21 @@ Example of processing and utilizing the retrieved DNS security profile informati
             {% endif %}
           {% endfor %}
           {{ result }}
-      
+
     - name: Display category summary
       debug:
         var: category_summary
-        
+
     - name: Find profiles with sinkhole configuration
       set_fact:
         sinkhole_profiles: "{{ profiles_info.dns_security_profiles | selectattr('sinkhole', 'defined') | list }}"
-        
+
     - name: Display profiles with sinkhole configuration
       debug:
         msg: "Profiles using sinkhole configuration: {{ sinkhole_profiles | map(attribute='name') | list }}"
 ```
 
-## 09. Error Handling
+## Error Handling
 
 It's important to handle potential errors when retrieving information about DNS security profiles.
 
@@ -238,23 +241,23 @@ It's important to handle potential errors when retrieving information about DNS 
         name: "test-dns-security"
         folder: "Texas"
       register: info_result
-      
+
     - name: Display DNS security profile information
       debug:
         var: info_result.dns_security_profile
-        
+
   rescue:
     - name: Handle errors
       debug:
         msg: "Failed to retrieve DNS security profile information: {{ ansible_failed_result.msg }}"
-        
+
     - name: Check if it's a 'not found' error
       debug:
         msg: "The specified DNS security profile does not exist, creating it..."
       when: "'not found' in ansible_failed_result.msg"
 ```
 
-## 10. Best Practices
+## Best Practices
 
 ### Efficient Querying
 
@@ -298,9 +301,12 @@ It's important to handle potential errors when retrieving information about DNS 
 - Use the retrieved information to make decisions in your playbooks
 - Integrate with security rule modules to verify profile utilization
 
-## 11. Related Modules
+## Related Modules
 
 - [dns_security_profile](dns_security_profile.md) - Create, update, and delete DNS security profiles
-- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that use DNS security profiles
-- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that include DNS security profiles
-- [vulnerability_protection_profile_info](vulnerability_protection_profile_info.md) - Retrieve information about vulnerability protection profiles
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that use
+  DNS security profiles
+- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that
+  include DNS security profiles
+- [vulnerability_protection_profile_info](vulnerability_protection_profile_info.md) - Retrieve
+  information about vulnerability protection profiles

@@ -20,55 +20,57 @@
 
 ## Overview
 
-The `address_group` Ansible module provides functionality to manage address group objects in Palo Alto
-Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and delete both static and
-dynamic address groups. Static address groups contain a fixed list of address objects, while dynamic
-address groups use tag-based filters to automatically include addresses based on their tags.
+The `address_group` Ansible module provides functionality to manage address group objects in Palo
+Alto Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and delete both
+static and dynamic address groups. Static address groups contain a fixed list of address objects,
+while dynamic address groups use tag-based filters to automatically include addresses based on their
+tags.
 
 ## Core Methods
 
-| Method     | Description                       | Parameters                         | Return Type                     |
-| ---------- | --------------------------------- | ---------------------------------- | ------------------------------- |
-| `create()` | Creates a new address group       | `data: Dict[str, Any]`             | `AddressGroupResponseModel`     |
-| `update()` | Updates an existing address group | `group: AddressGroupUpdateModel`   | `AddressGroupResponseModel`     |
-| `delete()` | Removes an address group          | `object_id: str`                   | `None`                          |
-| `fetch()`  | Gets an address group by name     | `name: str`, `container: str`      | `AddressGroupResponseModel`     |
-| `list()`   | Lists address groups with filters | `folder: str`, `**filters`         | `List[AddressGroupResponseModel]`|
+| Method     | Description                       | Parameters                       | Return Type                       |
+| ---------- | --------------------------------- | -------------------------------- | --------------------------------- |
+| `create()` | Creates a new address group       | `data: Dict[str, Any]`           | `AddressGroupResponseModel`       |
+| `update()` | Updates an existing address group | `group: AddressGroupUpdateModel` | `AddressGroupResponseModel`       |
+| `delete()` | Removes an address group          | `object_id: str`                 | `None`                            |
+| `fetch()`  | Gets an address group by name     | `name: str`, `container: str`    | `AddressGroupResponseModel`       |
+| `list()`   | Lists address groups with filters | `folder: str`, `**filters`       | `List[AddressGroupResponseModel]` |
 
 ## Address Group Model Attributes
 
-| Attribute      | Type | Required       | Description                                                 |
-| -------------- | ---- | -------------- | ----------------------------------------------------------- |
-| `name`         | str  | Yes            | The name of the address group                               |
-| `description`  | str  | No             | Description of the address group                            |
-| `tag`          | list | No             | List of tags associated with the address group              |
-| `static`       | list | One type only  | List of static addresses in the group                       |
-| `dynamic`      | dict | One type only  | Dynamic filter configuration                                |
-| `folder`       | str  | One container  | The folder in which the group is defined (max 64 chars)     |
-| `snippet`      | str  | One container  | The snippet in which the group is defined (max 64 chars)    |
-| `device`       | str  | One container  | The device in which the group is defined (max 64 chars)     |
+| Attribute     | Type | Required      | Description                                              |
+| ------------- | ---- | ------------- | -------------------------------------------------------- |
+| `name`        | str  | Yes           | The name of the address group                            |
+| `description` | str  | No            | Description of the address group                         |
+| `tag`         | list | No            | List of tags associated with the address group           |
+| `static`      | list | One type only | List of static addresses in the group                    |
+| `dynamic`     | dict | One type only | Dynamic filter configuration                             |
+| `folder`      | str  | One container | The folder in which the group is defined (max 64 chars)  |
+| `snippet`     | str  | One container | The snippet in which the group is defined (max 64 chars) |
+| `device`      | str  | One container | The device in which the group is defined (max 64 chars)  |
 
 ### Dynamic Filter Attributes
 
-| Attribute | Type | Required | Description                                      |
-| --------- | ---- | -------- | ------------------------------------------------ |
-| `filter`  | str  | Yes      | Tag-based filter expression defining membership  |
+| Attribute | Type | Required | Description                                     |
+| --------- | ---- | -------- | ----------------------------------------------- |
+| `filter`  | str  | Yes      | Tag-based filter expression defining membership |
 
 ## Exceptions
 
-| Exception                    | Description                         |
-| ---------------------------- | ----------------------------------- |
-| `InvalidObjectError`         | Invalid address group data or format|
-| `NameNotUniqueError`         | Address group name already exists   |
+| Exception                    | Description                                   |
+| ---------------------------- | --------------------------------------------- |
+| `InvalidObjectError`         | Invalid address group data or format          |
+| `NameNotUniqueError`         | Address group name already exists             |
 | `ObjectNotPresentError`      | Address group or referenced address not found |
-| `MissingQueryParameterError` | Missing required parameters         |
-| `InvalidFilterSyntaxError`   | Invalid dynamic filter expression   |
-| `AuthenticationError`        | Authentication failed               |
-| `ServerError`                | Internal server error               |
+| `MissingQueryParameterError` | Missing required parameters                   |
+| `InvalidFilterSyntaxError`   | Invalid dynamic filter expression             |
+| `AuthenticationError`        | Authentication failed                         |
+| `ServerError`                | Internal server error                         |
 
 ## Basic Configuration
 
-The Address Group module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Address Group module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Address Group Configuration
@@ -98,7 +100,8 @@ The Address Group module requires proper authentication credentials to access th
 
 ### Creating Address Groups
 
-Address groups can be created as either static (with explicit members) or dynamic (with tag-based filters).
+Address groups can be created as either static (with explicit members) or dynamic (with tag-based
+filters).
 
 ### Static Address Group
 
@@ -136,7 +139,8 @@ This example creates a dynamic address group that automatically includes address
 
 ### Updating Address Groups
 
-This example updates an existing static address group by modifying its members, description, and tags.
+This example updates an existing static address group by modifying its members, description, and
+tags.
 
 ```yaml
 - name: Update the static address group

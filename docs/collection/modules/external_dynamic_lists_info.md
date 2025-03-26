@@ -1,48 +1,51 @@
 # External Dynamic Lists Information Object
 
-## 01. Table of Contents
+## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [External Dynamic List Info Model Attributes](#external-dynamic-list-info-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
-   - [Getting Information about a Specific External Dynamic List](#getting-information-about-a-specific-external-dynamic-list)
-   - [Listing All External Dynamic Lists in a Folder](#listing-all-external-dynamic-lists-in-a-folder)
-   - [Filtering by EDL Types](#filtering-by-edl-types)
-   - [Using Advanced Filtering Options](#using-advanced-filtering-options)
-   - [Combining Multiple Filters](#combining-multiple-filters)
-7. [Processing Retrieved Information](#processing-retrieved-information)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [External Dynamic List Info Model Attributes](#external-dynamic-list-info-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Getting Information about a Specific External Dynamic List](#getting-information-about-a-specific-external-dynamic-list)
+    - [Listing All External Dynamic Lists in a Folder](#listing-all-external-dynamic-lists-in-a-folder)
+    - [Filtering by EDL Types](#filtering-by-edl-types)
+    - [Using Advanced Filtering Options](#using-advanced-filtering-options)
+    - [Combining Multiple Filters](#combining-multiple-filters)
+07. [Processing Retrieved Information](#processing-retrieved-information)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
-## 02. Overview
+## Overview
 
-The `external_dynamic_lists_info` Ansible module provides functionality to gather information about External Dynamic List (EDL) objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an info module that allows fetching details about specific EDLs or listing EDLs with various filtering options, including by type (IP, domain, URL, IMSI, IMEI).
+The `external_dynamic_lists_info` Ansible module provides functionality to gather information about
+External Dynamic List (EDL) objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an
+info module that allows fetching details about specific EDLs or listing EDLs with various filtering
+options, including by type (IP, domain, URL, IMSI, IMEI).
 
-## 03. Core Methods
+## Core Methods
 
-| Method    | Description                           | Parameters                    | Return Type                         |
-| --------- | ------------------------------------- | ----------------------------- | ----------------------------------- |
-| `fetch()` | Gets a specific EDL by name           | `name: str`, `container: str` | `ExternalDynamicListResponseModel`  |
-| `list()`  | Lists EDLs with filtering             | `folder: str`, `**filters`    | `List[ExternalDynamicListResponseModel]` |
+| Method    | Description                 | Parameters                    | Return Type                              |
+| --------- | --------------------------- | ----------------------------- | ---------------------------------------- |
+| `fetch()` | Gets a specific EDL by name | `name: str`, `container: str` | `ExternalDynamicListResponseModel`       |
+| `list()`  | Lists EDLs with filtering   | `folder: str`, `**filters`    | `List[ExternalDynamicListResponseModel]` |
 
-## 04. External Dynamic List Info Model Attributes
+## External Dynamic List Info Model Attributes
 
-| Parameter          | Type   | Required | Description                                                 |
-| ------------------ | ------ | -------- | ----------------------------------------------------------- |
-| `name`             | str    | No       | Name of a specific EDL to retrieve                          |
-| `gather_subset`    | list   | No       | Determines which information to gather (default: config)    |
-| `folder`           | str    | No\*     | Filter EDLs by folder container                             |
-| `snippet`          | str    | No\*     | Filter EDLs by snippet container                            |
-| `device`           | str    | No\*     | Filter EDLs by device container                             |
-| `exact_match`      | bool   | No       | When True, only return objects defined exactly in container |
-| `exclude_folders`  | list   | No       | List of folder names to exclude from results                |
-| `exclude_snippets` | list   | No       | List of snippet values to exclude from results              |
-| `exclude_devices`  | list   | No       | List of device values to exclude from results               |
-| `types`            | list   | No       | Filter by EDL types (ip, domain, url, imsi, imei, etc.)     |
+| Parameter          | Type | Required | Description                                                 |
+| ------------------ | ---- | -------- | ----------------------------------------------------------- |
+| `name`             | str  | No       | Name of a specific EDL to retrieve                          |
+| `gather_subset`    | list | No       | Determines which information to gather (default: config)    |
+| `folder`           | str  | No\*     | Filter EDLs by folder container                             |
+| `snippet`          | str  | No\*     | Filter EDLs by snippet container                            |
+| `device`           | str  | No\*     | Filter EDLs by device container                             |
+| `exact_match`      | bool | No       | When True, only return objects defined exactly in container |
+| `exclude_folders`  | list | No       | List of folder names to exclude from results                |
+| `exclude_snippets` | list | No       | List of snippet values to exclude from results              |
+| `exclude_devices`  | list | No       | List of device values to exclude from results               |
+| `types`            | list | No       | Filter by EDL types (ip, domain, url, imsi, imei, etc.)     |
 
 \*One container parameter is required when `name` is not specified.
 
@@ -55,7 +58,7 @@ The `external_dynamic_lists_info` Ansible module provides functionality to gathe
 | `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
 | `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
 
-## 05. Exceptions
+## Exceptions
 
 | Exception                    | Description                    |
 | ---------------------------- | ------------------------------ |
@@ -65,7 +68,7 @@ The `external_dynamic_lists_info` Ansible module provides functionality to gathe
 | `AuthenticationError`        | Authentication failed          |
 | `ServerError`                | Internal server error          |
 
-## 06. Basic Configuration
+## Basic Configuration
 
 The External Dynamic Lists Info module requires proper authentication credentials to access the
 Strata Cloud Manager API.
@@ -92,7 +95,7 @@ Strata Cloud Manager API.
         var: edls_result
 ```
 
-## 07. Usage Examples
+## Usage Examples
 
 ### Getting Information about a Specific External Dynamic List
 
@@ -207,7 +210,7 @@ Combine multiple filtering options for precise queries.
     label: "{{ item.name }}"
 ```
 
-## 08. Processing Retrieved Information
+## Processing Retrieved Information
 
 Example of processing and utilizing the retrieved external dynamic list information.
 
@@ -258,7 +261,7 @@ Example of processing and utilizing the retrieved external dynamic list informat
         msg: "EDLs with five-minute updates: {{ frequent_edls | map(attribute='name') | list }}"
 ```
 
-## 09. Error Handling
+## Error Handling
 
 It's important to handle potential errors when retrieving information about external dynamic lists.
 
@@ -287,7 +290,7 @@ It's important to handle potential errors when retrieving information about exte
       when: "'not found' in ansible_failed_result.msg"
 ```
 
-## 10. Best Practices
+## Best Practices
 
 ### Efficient Querying
 
@@ -331,9 +334,13 @@ It's important to handle potential errors when retrieving information about exte
 - Use the retrieved information to make decisions in your playbooks
 - Integrate with security rule modules to verify EDL utilization
 
-## 11. Related Modules
+## Related Modules
 
-- [external_dynamic_lists](external_dynamic_lists.md) - Create, update, and delete external dynamic lists
-- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that use external dynamic lists
-- [security_profiles_group_info](security_profiles_group_info.md) - Retrieve information about security profile groups
-- [tag_info](tag_info.md) - Retrieve information about tags that might be used to organize external dynamic lists
+- [external_dynamic_lists](external_dynamic_lists.md) - Create, update, and delete external dynamic
+  lists
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that use
+  external dynamic lists
+- [security_profiles_group_info](security_profiles_group_info.md) - Retrieve information about
+  security profile groups
+- [tag_info](tag_info.md) - Retrieve information about tags that might be used to organize external
+  dynamic lists

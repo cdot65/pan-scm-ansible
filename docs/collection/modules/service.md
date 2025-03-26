@@ -20,71 +20,75 @@
 
 ## Overview
 
-The `service` Ansible module provides functionality to manage service objects in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and delete service objects for both TCP and UDP protocols with port specifications and timeout override settings. Service objects are essential components for defining application traffic in security policies.
+The `service` Ansible module provides functionality to manage service objects in Palo Alto Networks'
+Strata Cloud Manager (SCM). This module allows you to create, update, and delete service objects for
+both TCP and UDP protocols with port specifications and timeout override settings. Service objects
+are essential components for defining application traffic in security policies.
 
 ## Core Methods
 
-| Method     | Description                    | Parameters                    | Return Type                 |
-| ---------- | ------------------------------ | ----------------------------- | --------------------------- |
-| `create()` | Creates a new service object   | `data: Dict[str, Any]`        | `ServiceResponseModel`       |
-| `update()` | Updates an existing service    | `service: ServiceUpdateModel` | `ServiceResponseModel`       |
-| `delete()` | Removes a service              | `object_id: str`              | `None`                       |
-| `fetch()`  | Gets a service by name         | `name: str`, `container: str` | `ServiceResponseModel`       |
-| `list()`   | Lists services with filtering  | `folder: str`, `**filters`    | `List[ServiceResponseModel]` |
+| Method     | Description                   | Parameters                    | Return Type                  |
+| ---------- | ----------------------------- | ----------------------------- | ---------------------------- |
+| `create()` | Creates a new service object  | `data: Dict[str, Any]`        | `ServiceResponseModel`       |
+| `update()` | Updates an existing service   | `service: ServiceUpdateModel` | `ServiceResponseModel`       |
+| `delete()` | Removes a service             | `object_id: str`              | `None`                       |
+| `fetch()`  | Gets a service by name        | `name: str`, `container: str` | `ServiceResponseModel`       |
+| `list()`   | Lists services with filtering | `folder: str`, `**filters`    | `List[ServiceResponseModel]` |
 
 ## Service Model Attributes
 
-| Attribute    | Type | Required      | Description                                                    |
-| ------------ | ---- | ------------- | -------------------------------------------------------------- |
-| `name`       | str  | Yes           | Service name. Must match pattern: ^[a-zA-Z0-9.\_-]+$          |
-| `protocol`   | dict | Yes           | Protocol configuration (TCP or UDP). Exactly one required.     |
-| `description`| str  | No            | Description of the service (max 1023 chars)                    |
-| `tag`        | list | No            | List of tags associated with the service (max 64 chars each)   |
-| `folder`     | str  | One container | The folder in which the service is defined (max 64 chars)      |
-| `snippet`    | str  | One container | The snippet in which the service is defined (max 64 chars)     |
-| `device`     | str  | One container | The device in which the service is defined (max 64 chars)      |
+| Attribute     | Type | Required      | Description                                                  |
+| ------------- | ---- | ------------- | ------------------------------------------------------------ |
+| `name`        | str  | Yes           | Service name. Must match pattern: ^[a-zA-Z0-9.\_-]+$         |
+| `protocol`    | dict | Yes           | Protocol configuration (TCP or UDP). Exactly one required.   |
+| `description` | str  | No            | Description of the service (max 1023 chars)                  |
+| `tag`         | list | No            | List of tags associated with the service (max 64 chars each) |
+| `folder`      | str  | One container | The folder in which the service is defined (max 64 chars)    |
+| `snippet`     | str  | One container | The snippet in which the service is defined (max 64 chars)   |
+| `device`      | str  | One container | The device in which the service is defined (max 64 chars)    |
 
 ### TCP Protocol Attributes
 
-| Attribute           | Type | Required | Description                                        |
-| ------------------- | ---- | -------- | -------------------------------------------------- |
-| `port`              | str  | Yes      | TCP port(s) for the service (e.g., '80' or '80,443') |
-| `override`          | dict | No       | Override settings for TCP timeouts                 |
-| `override.timeout`  | int  | No       | Connection timeout in seconds (default: 3600)      |
-| `override.halfclose_timeout` | int | No | Half-close timeout in seconds (default: 120)    |
-| `override.timewait_timeout`  | int | No | Time-wait timeout in seconds (default: 15)      |
+| Attribute                    | Type | Required | Description                                          |
+| ---------------------------- | ---- | -------- | ---------------------------------------------------- |
+| `port`                       | str  | Yes      | TCP port(s) for the service (e.g., '80' or '80,443') |
+| `override`                   | dict | No       | Override settings for TCP timeouts                   |
+| `override.timeout`           | int  | No       | Connection timeout in seconds (default: 3600)        |
+| `override.halfclose_timeout` | int  | No       | Half-close timeout in seconds (default: 120)         |
+| `override.timewait_timeout`  | int  | No       | Time-wait timeout in seconds (default: 15)           |
 
 ### UDP Protocol Attributes
 
-| Attribute          | Type | Required | Description                                        |
-| ------------------ | ---- | -------- | -------------------------------------------------- |
+| Attribute          | Type | Required | Description                                         |
+| ------------------ | ---- | -------- | --------------------------------------------------- |
 | `port`             | str  | Yes      | UDP port(s) for the service (e.g., '53' or '67,68') |
-| `override`         | dict | No       | Override settings for UDP timeouts                 |
-| `override.timeout` | int  | No       | Connection timeout in seconds (default: 30)        |
+| `override`         | dict | No       | Override settings for UDP timeouts                  |
+| `override.timeout` | int  | No       | Connection timeout in seconds (default: 30)         |
 
 ### Provider Dictionary
 
 | Parameter       | Type | Required | Description                             |
 | --------------- | ---- | -------- | --------------------------------------- |
-| `client_id`     | str  | Yes      | Client ID for SCM authentication         |
-| `client_secret` | str  | Yes      | Client secret for SCM authentication     |
-| `tsg_id`        | str  | Yes      | Tenant Service Group ID                  |
-| `log_level`     | str  | No       | Log level for the SDK (default: "INFO")  |
+| `client_id`     | str  | Yes      | Client ID for SCM authentication        |
+| `client_secret` | str  | Yes      | Client secret for SCM authentication    |
+| `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
+| `log_level`     | str  | No       | Log level for the SDK (default: "INFO") |
 
 ## Exceptions
 
-| Exception                    | Description                     |
-| ---------------------------- | ------------------------------- |
-| `InvalidObjectError`         | Invalid service data or format  |
-| `NameNotUniqueError`         | Service name already exists     |
-| `ObjectNotPresentError`      | Service not found               |
-| `MissingQueryParameterError` | Missing required parameters     |
-| `AuthenticationError`        | Authentication failed           |
-| `ServerError`                | Internal server error           |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid service data or format |
+| `NameNotUniqueError`         | Service name already exists    |
+| `ObjectNotPresentError`      | Service not found              |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The Service module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Service module requires proper authentication credentials to access the Strata Cloud Manager
+API.
 
 ```yaml
 - name: Basic Service Configuration
@@ -189,7 +193,8 @@ The UDP protocol supports a simpler override configuration with just the timeout
 
 ### Updating Services
 
-When updating a service, you only need to include the parameters you want to change. Existing values for other parameters will be preserved.
+When updating a service, you only need to include the parameters you want to change. Existing values
+for other parameters will be preserved.
 
 ```yaml
 - name: Update TCP service with additional port and changed description
@@ -250,7 +255,8 @@ You can also delete multiple services using a loop:
 
 ## Managing Configuration Changes
 
-After creating, updating, or deleting service objects, you need to commit your changes to apply them.
+After creating, updating, or deleting service objects, you need to commit your changes to apply
+them.
 
 ```yaml
 - name: Commit changes

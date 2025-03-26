@@ -20,53 +20,57 @@
 
 ## Overview
 
-The `service_group` Ansible module provides functionality to manage service group objects in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and delete service group objects, which combine multiple service objects into a single reference that can be used in security policies, simplifying administration and policy management.
+The `service_group` Ansible module provides functionality to manage service group objects in Palo
+Alto Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and delete
+service group objects, which combine multiple service objects into a single reference that can be
+used in security policies, simplifying administration and policy management.
 
 ## Core Methods
 
-| Method     | Description                   | Parameters                    | Return Type                    |
-| ---------- | ----------------------------- | ----------------------------- | ------------------------------ |
-| `create()` | Creates a new service group   | `data: Dict[str, Any]`        | `ServiceGroupResponseModel`    |
-| `update()` | Updates an existing group     | `group: ServiceGroupUpdateModel` | `ServiceGroupResponseModel` |
-| `delete()` | Removes a group               | `object_id: str`              | `None`                         |
-| `fetch()`  | Gets a group by name          | `name: str`, `container: str` | `ServiceGroupResponseModel`    |
-| `list()`   | Lists groups with filtering   | `folder: str`, `**filters`    | `List[ServiceGroupResponseModel]` |
+| Method     | Description                 | Parameters                       | Return Type                       |
+| ---------- | --------------------------- | -------------------------------- | --------------------------------- |
+| `create()` | Creates a new service group | `data: Dict[str, Any]`           | `ServiceGroupResponseModel`       |
+| `update()` | Updates an existing group   | `group: ServiceGroupUpdateModel` | `ServiceGroupResponseModel`       |
+| `delete()` | Removes a group             | `object_id: str`                 | `None`                            |
+| `fetch()`  | Gets a group by name        | `name: str`, `container: str`    | `ServiceGroupResponseModel`       |
+| `list()`   | Lists groups with filtering | `folder: str`, `**filters`       | `List[ServiceGroupResponseModel]` |
 
 ## Service Group Model Attributes
 
-| Attribute    | Type      | Required      | Description                                                |
-| ------------ | --------- | ------------- | ---------------------------------------------------------- |
-| `name`       | str       | Yes           | The name of the service group (max 63 chars)               |
-| `members`    | list      | Yes           | List of service objects that are members of this group     |
-| `tag`        | list      | No            | List of tags associated with the service group             |
-| `folder`     | str       | One container | The folder in which the group is defined (max 64 chars)    |
-| `snippet`    | str       | One container | The snippet in which the group is defined (max 64 chars)   |
-| `device`     | str       | One container | The device in which the group is defined (max 64 chars)    |
+| Attribute | Type | Required      | Description                                              |
+| --------- | ---- | ------------- | -------------------------------------------------------- |
+| `name`    | str  | Yes           | The name of the service group (max 63 chars)             |
+| `members` | list | Yes           | List of service objects that are members of this group   |
+| `tag`     | list | No            | List of tags associated with the service group           |
+| `folder`  | str  | One container | The folder in which the group is defined (max 64 chars)  |
+| `snippet` | str  | One container | The snippet in which the group is defined (max 64 chars) |
+| `device`  | str  | One container | The device in which the group is defined (max 64 chars)  |
 
 ### Provider Dictionary
 
 | Parameter       | Type | Required | Description                             |
 | --------------- | ---- | -------- | --------------------------------------- |
-| `client_id`     | str  | Yes      | Client ID for SCM authentication         |
-| `client_secret` | str  | Yes      | Client secret for SCM authentication     |
-| `tsg_id`        | str  | Yes      | Tenant Service Group ID                  |
-| `log_level`     | str  | No       | Log level for the SDK (default: "INFO")  |
+| `client_id`     | str  | Yes      | Client ID for SCM authentication        |
+| `client_secret` | str  | Yes      | Client secret for SCM authentication    |
+| `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
+| `log_level`     | str  | No       | Log level for the SDK (default: "INFO") |
 
 ## Exceptions
 
-| Exception                    | Description                         |
-| ---------------------------- | ----------------------------------- |
+| Exception                    | Description                          |
+| ---------------------------- | ------------------------------------ |
 | `InvalidObjectError`         | Invalid service group data or format |
-| `NameNotUniqueError`         | Service group name already exists   |
-| `ObjectNotPresentError`      | Service group not found             |
-| `MissingQueryParameterError` | Missing required parameters         |
-| `AuthenticationError`        | Authentication failed               |
-| `ServerError`                | Internal server error               |
-| `ReferenceNotFoundError`     | Referenced service doesn't exist    |
+| `NameNotUniqueError`         | Service group name already exists    |
+| `ObjectNotPresentError`      | Service group not found              |
+| `MissingQueryParameterError` | Missing required parameters          |
+| `AuthenticationError`        | Authentication failed                |
+| `ServerError`                | Internal server error                |
+| `ReferenceNotFoundError`     | Referenced service doesn't exist     |
 
 ## Basic Configuration
 
-The Service Group module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Service Group module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Service Group Configuration
@@ -94,7 +98,8 @@ The Service Group module requires proper authentication credentials to access th
 
 ### Creating Service Groups
 
-Service groups allow you to combine multiple related service objects into a single reference for use in security policies.
+Service groups allow you to combine multiple related service objects into a single reference for use
+in security policies.
 
 ### Web Services Group
 
