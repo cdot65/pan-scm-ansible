@@ -1,6 +1,8 @@
 # Playbook Examples
 
-This page provides real-world examples of Ansible playbooks using the Palo Alto Networks Strata Cloud Manager Ansible Collection. These examples demonstrate common use cases and best practices for automating SCM management.
+This page provides real-world examples of Ansible playbooks using the Palo Alto Networks Strata
+Cloud Manager Ansible Collection. These examples demonstrate common use cases and best practices for
+automating SCM management.
 
 ## Basic Object Management
 
@@ -569,4 +571,6 @@ This page provides real-world examples of Ansible playbooks using the Palo Alto 
       when: rule_result is defined and rule_result.changed
 ```
 
-These examples demonstrate various usage scenarios for the SCM Ansible Collection. For more specific guidance or advanced examples, refer to the [Module Reference](../collection/modules/index.md) and [Using Roles](using-roles.md) documentation.
+These examples demonstrate various usage scenarios for the SCM Ansible Collection. For more specific
+guidance or advanced examples, refer to the [Module Reference](../collection/modules/index.md) and
+[Using Roles](using-roles.md) documentation.

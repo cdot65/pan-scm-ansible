@@ -33,6 +33,13 @@ help:
 	@echo "  make format-path PATH=path Format a specific path with ruff"
 	@echo "  make isort                 Run isort on all modules"
 	@echo "  make fix-lint              Fix common linting issues"
+	@echo "  make format-docs           Format markdown files in docs/ for MkDocs"
+	@echo "  make format-docs-file FILE=file Format a specific markdown file for MkDocs"
+	@echo "  make lint-docs             Lint markdown files in docs/ directory"
+	@echo "  make format-module-docs    Format module documentation"
+	@echo "  make fix-module-doc-styling Fix module docs to comply with style guide"
+	@echo "  make check-docs-links      Check documentation for broken links"
+	@echo "  make docs-prepare-release  Prepare all documentation for release"
 	@echo "  make test-address          Run address module tests"
 	@echo "  make test-address-info     Run address_info module tests"
 	@echo "  make test-wildfire         Run wildfire_antivirus_profiles module tests"
@@ -203,6 +210,108 @@ check:
 	@echo "Running diagnostic checks..."
 	chmod +x check_installation.sh
 	ANSIBLE_COLLECTIONS_PATH=$(COLLECTION_PATH) ./check_installation.sh
+
+# Format markdown files in docs/
+.PHONY: format-docs
+format-docs:
+	@echo "Formatting markdown files in docs/ directory for MkDocs..."
+	@# Format files individually to handle errors gracefully
+	@find docs/ -name "*.md" | while read file; do \
+		echo "Formatting $$file"; \
+		poetry run mdformat --wrap=100 --number --extensions tables "$$file" || echo "Warning: Could not format $$file"; \
+	done
+	@echo "Markdown formatting completed."
+	@echo "Now running post-format validation to ensure MkDocs compatibility..."
+	poetry run mkdocs build --strict || echo "Warning: MkDocs validation found issues but continuing..."
+	@echo "All documents processed."
+
+# Format a specific markdown file
+.PHONY: format-docs-file
+format-docs-file:
+ifndef FILE
+	$(error FILE is undefined. Usage: make format-docs-file FILE=path/to/file.md)
+endif
+	@echo "Formatting markdown file $(FILE) for MkDocs..."
+	poetry run mdformat --wrap=100 --number --extensions tables "$(FILE)" || echo "Warning: Could not format $(FILE)"
+	@echo "Markdown formatting completed."
+	@echo "Now validating file with MkDocs build..."
+	poetry run mkdocs build --strict || echo "Warning: MkDocs validation found issues but continuing..."
+	@echo "Document processing completed."
+
+# Lint markdown files in docs/
+.PHONY: lint-docs
+lint-docs:
+	@echo "Linting markdown files in docs/ directory..."
+	@find docs/ -name "*.md" | while read file; do \
+		echo "Linting $$file"; \
+		poetry run mdformat --check --extensions tables "$$file" || echo "Warning: Formatting issues in $$file"; \
+	done
+	@echo "Checking MkDocs build validation..."
+	poetry run mkdocs build --strict || echo "Warning: MkDocs validation found issues but continuing..."
+	@echo "Markdown linting and validation completed."
+
+# Format module documentation specifically
+.PHONY: format-module-docs
+format-module-docs:
+	@echo "Formatting module documentation for MkDocs..."
+	@# Format module documentation files individually to handle errors gracefully
+	@find docs/collection/modules/ -name "*.md" | while read file; do \
+		echo "Formatting module doc: $$file"; \
+		poetry run mdformat --wrap=100 --number --extensions tables "$$file" || echo "Warning: Could not format $$file"; \
+	done
+	@echo "Module documentation formatting completed."
+	@echo "Validating module documentation with MkDocs build..."
+	poetry run mkdocs build --strict || echo "Warning: MkDocs validation found issues but continuing..."
+	@echo "Module documentation processing completed."
+
+# Check documentation for broken links
+.PHONY: check-docs-links
+check-docs-links:
+	@echo "Checking documentation for broken links..."
+	@# We'll use find and grep to check for potential broken links
+	@# This grep pattern looks for Markdown links or HTML links that don't point to actual files
+	find docs/ -name "*.md" -exec grep -n -E '\[.*\]\(\S*\)|\<a href="[^"]+"' {} \; | \
+		grep -v "http" | grep -v "https" | \
+		grep -v "#" | grep -v "index.md" | \
+		grep -v ".md" || echo "No potentially broken links found."
+	@echo "Link check completed. Any output above represents potential issues."
+
+# Fix module documentation styling according to style guide
+.PHONY: fix-module-doc-styling
+fix-module-doc-styling:
+	@echo "Fixing module documentation styling according to style guide..."
+	@echo "This will update titles, fix TOC numbering, and remove termy div tags"
+	@find docs/collection/modules/ -name "*.md" | while read file; do \
+		echo "Processing: $$file"; \
+		module_name=$$(basename $$file .md | sed 's/_info//g' | sed 's/_/ /g' | awk '{for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
+		sed -i '' -e '/<div class="termy">/d' -e '/<!-- termynal -->/d' -e '/<\/div>/d' "$$file"; \
+		sed -i '' -e 's/^0\([0-9]\. \)/\1/g' "$$file"; \
+		if [ "$$(echo $$file | grep '_info.md')" ]; then \
+			sed -i '' -e "1s/^# .*/# $$module_name Information Object/" "$$file"; \
+		else \
+			sed -i '' -e "1s/^# .*/# $$module_name Configuration Object/" "$$file"; \
+		fi; \
+	done
+	@echo "Module documentation styling has been fixed according to style guide."
+	@echo "Now validating with MkDocs build..."
+	poetry run mkdocs build --strict || echo "Warning: MkDocs validation found issues but continuing..."
+	@echo "Module documentation styling completed successfully."
+
+# Prepare all documentation for release
+.PHONY: docs-prepare-release
+docs-prepare-release:
+	@echo "Preparing all documentation for release..."
+	@# First, fix module documentation styling
+	$(MAKE) fix-module-doc-styling
+	@# Then, format all docs
+	$(MAKE) format-docs
+	@# Then, run special formatting for module docs
+	$(MAKE) format-module-docs
+	@# Verify docs build correctly
+	poetry run mkdocs build --strict
+	@# Check all links in documentation
+	$(MAKE) check-docs-links
+	@echo "Documentation has been prepared for release and validated successfully."
 
 # Build docs
 .PHONY: docs

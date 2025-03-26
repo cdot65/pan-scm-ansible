@@ -1,4 +1,4 @@
-# HIP Object Configuration
+# Hip Object Configuration Object
 
 ## Table of Contents
 
@@ -21,51 +21,54 @@
 
 ## Overview
 
-The `hip_object` Ansible module provides functionality to manage Host Information Profile (HIP) objects in Palo Alto Networks' Strata Cloud Manager (SCM). HIP objects are used for endpoint security posture assessment and contain various criteria that determine endpoint security compliance. This module supports creating, updating, and deleting HIP objects with various criteria types.
+The `hip_object` Ansible module provides functionality to manage Host Information Profile (HIP)
+objects in Palo Alto Networks' Strata Cloud Manager (SCM). HIP objects are used for endpoint
+security posture assessment and contain various criteria that determine endpoint security
+compliance. This module supports creating, updating, and deleting HIP objects with various criteria
+types.
 
 ## Core Methods
 
-| Method      | Description                        | Parameters                          | Returned                |
-|-------------|------------------------------------|-------------------------------------|-------------------------|
-| `create`    | Creates a new HIP object          | HIP object configuration            | HIP object details      |
-| `update`    | Updates an existing HIP object    | HIP object data with modifications  | Updated HIP object      |
-| `delete`    | Removes a HIP object              | HIP object name and container       | Status of operation     |
-| `fetch`     | Gets a HIP object by name         | Name and container                  | HIP object details      |
+| Method   | Description                    | Parameters                         | Returned            |
+| -------- | ------------------------------ | ---------------------------------- | ------------------- |
+| `create` | Creates a new HIP object       | HIP object configuration           | HIP object details  |
+| `update` | Updates an existing HIP object | HIP object data with modifications | Updated HIP object  |
+| `delete` | Removes a HIP object           | HIP object name and container      | Status of operation |
+| `fetch`  | Gets a HIP object by name      | Name and container                 | HIP object details  |
 
 ## HIP Object Model Attributes
 
-| Attribute           | Type        | Required           | Description                                                                   |
-|---------------------|-------------|-------------------|-------------------------------------------------------------------------------|
-| `name`              | str         | Yes               | Name of the HIP object (max 31 chars)                                         |
-| `description`       | str         | No                | Description of the HIP object (max 255 chars)                                 |
-| `host_info`         | dict        | One criteria type | Host information criteria including OS, domain, client version, etc.          |
-| `network_info`      | dict        | One criteria type | Network information criteria                                                  |
-| `patch_management`  | dict        | One criteria type | Patch management criteria with vendor information and patch status            |
-| `disk_encryption`   | dict        | One criteria type | Disk encryption criteria with encrypted locations and encryption state        |
-| `mobile_device`     | dict        | One criteria type | Mobile device criteria including jailbroken status, encryption, etc.          |
-| `certificate`       | dict        | One criteria type | Certificate validation criteria                                               |
-| `folder`            | str         | One container     | The folder in which the HIP object is defined (max 64 chars)                  |
-| `snippet`           | str         | One container     | The snippet in which the HIP object is defined (max 64 chars)                 |
-| `device`            | str         | One container     | The device in which the HIP object is defined (max 64 chars)                  |
+| Attribute          | Type | Required          | Description                                                            |
+| ------------------ | ---- | ----------------- | ---------------------------------------------------------------------- |
+| `name`             | str  | Yes               | Name of the HIP object (max 31 chars)                                  |
+| `description`      | str  | No                | Description of the HIP object (max 255 chars)                          |
+| `host_info`        | dict | One criteria type | Host information criteria including OS, domain, client version, etc.   |
+| `network_info`     | dict | One criteria type | Network information criteria                                           |
+| `patch_management` | dict | One criteria type | Patch management criteria with vendor information and patch status     |
+| `disk_encryption`  | dict | One criteria type | Disk encryption criteria with encrypted locations and encryption state |
+| `mobile_device`    | dict | One criteria type | Mobile device criteria including jailbroken status, encryption, etc.   |
+| `certificate`      | dict | One criteria type | Certificate validation criteria                                        |
+| `folder`           | str  | One container     | The folder in which the HIP object is defined (max 64 chars)           |
+| `snippet`          | str  | One container     | The snippet in which the HIP object is defined (max 64 chars)          |
+| `device`           | str  | One container     | The device in which the HIP object is defined (max 64 chars)           |
 
 ## Exceptions
 
-| Exception                  | Description                                         |
-|----------------------------|-----------------------------------------------------|
-| `InvalidObjectError`       | Invalid HIP object data or format                   |
-| `NameNotUniqueError`       | HIP object name already exists                      |
-| `ObjectNotPresentError`    | HIP object not found                                |
-| `MissingQueryParameterError`| Missing required parameters                        |
-| `AuthenticationError`      | Authentication failed                               |
-| `ServerError`              | Internal server error                               |
+| Exception                    | Description                       |
+| ---------------------------- | --------------------------------- |
+| `InvalidObjectError`         | Invalid HIP object data or format |
+| `NameNotUniqueError`         | HIP object name already exists    |
+| `ObjectNotPresentError`      | HIP object not found              |
+| `MissingQueryParameterError` | Missing required parameters       |
+| `AuthenticationError`        | Authentication failed             |
+| `ServerError`                | Internal server error             |
 
 ## Basic Configuration
 
-The HIP Object module requires proper authentication credentials to access the Strata Cloud Manager API.
+The HIP Object module requires proper authentication credentials to access the Strata Cloud Manager
+API.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Basic HIP Object Module Configuration
@@ -93,21 +96,19 @@ The HIP Object module requires proper authentication credentials to access the S
         state: "present"
 ```
 
-</div>
 
 ## Usage Examples
 
 ### Creating HIP Objects
 
-HIP objects can contain different types of criteria based on the security requirements for endpoints.
+HIP objects can contain different types of criteria based on the security requirements for
+endpoints.
 
 ### Basic Host Information HIP Object
 
 This example creates a HIP object that matches Windows workstations that are managed.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Create a basic HIP object with host information
@@ -125,15 +126,13 @@ This example creates a HIP object that matches Windows workstations that are man
     state: "present"
 ```
 
-</div>
 
 ### Patch Management HIP Object
 
-This example creates a HIP object that matches endpoints with properly installed and enabled patch management software with no severe missing patches.
+This example creates a HIP object that matches endpoints with properly installed and enabled patch
+management software with no severe missing patches.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Create HIP object with patch management criteria
@@ -155,15 +154,13 @@ This example creates a HIP object that matches endpoints with properly installed
     state: "present"
 ```
 
-</div>
 
 ### Disk Encryption HIP Object
 
-This example creates a HIP object that matches endpoints with disk encryption enabled on the C: drive.
+This example creates a HIP object that matches endpoints with disk encryption enabled on the C:
+drive.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Create HIP object with disk encryption requirements
@@ -182,15 +179,12 @@ This example creates a HIP object that matches endpoints with disk encryption en
     state: "present"
 ```
 
-</div>
 
 ### Updating HIP Objects
 
 This example updates an existing HIP object with additional criteria.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Update an existing HIP object
@@ -210,15 +204,12 @@ This example updates an existing HIP object with additional criteria.
     state: "present"
 ```
 
-</div>
 
 ### Deleting HIP Objects
 
 This example removes a HIP object.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Delete a HIP object
@@ -229,15 +220,12 @@ This example removes a HIP object.
     state: "absent"
 ```
 
-</div>
 
 ## Managing Configuration Changes
 
 After creating, updating, or deleting HIP objects, you need to commit your changes to apply them.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Commit changes
@@ -247,15 +235,12 @@ After creating, updating, or deleting HIP objects, you need to commit your chang
     description: "Updated HIP objects"
 ```
 
-</div>
 
 ## Error Handling
 
 It's important to handle potential errors when working with HIP objects.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Create or update HIP object with error handling
@@ -287,31 +272,35 @@ It's important to handle potential errors when working with HIP objects.
         msg: "An error occurred: {{ ansible_failed_result.msg }}"
 ```
 
-</div>
 
 ## Best Practices
 
 1. **Container Consistency**
+
    - Always specify exactly one container (folder, snippet, or device)
    - Use consistent container names across operations
    - Organize related HIP objects in the same container
 
 2. **HIP Object Naming**
+
    - Use descriptive names that reflect the purpose of the HIP object
    - Keep names concise but meaningful
    - Follow a consistent naming convention
 
 3. **Criteria Selection**
+
    - Include only necessary criteria to match your security requirements
    - Avoid overly restrictive criteria that might exclude legitimate endpoints
    - Test HIP objects thoroughly before deploying to production
 
 4. **Error Handling**
+
    - Implement comprehensive error handling for all operations
    - Check operation results carefully
    - Use debug messages to track the progress of operations
 
 5. **Security Practices**
+
    - Follow the principle of least privilege when defining HIP objects
    - Regularly review and update HIP objects to reflect current security policies
    - Document your HIP object configurations and their purposes

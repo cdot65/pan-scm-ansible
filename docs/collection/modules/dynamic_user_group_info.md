@@ -1,44 +1,45 @@
-# Dynamic User Group Info Module
+# Dynamic User Group Information Object
 
 ## Overview
 
-The Dynamic User Group Info module (`cdot65.scm.dynamic_user_group_info`) provides a read-only interface to retrieve information about dynamic user groups in Palo Alto Networks' Strata Cloud Manager. This module allows you to retrieve detailed information about specific dynamic user groups by name or list all dynamic user groups with various filtering options.
+The Dynamic User Group Info module (`cdot65.scm.dynamic_user_group_info`) provides a read-only
+interface to retrieve information about dynamic user groups in Palo Alto Networks' Strata Cloud
+Manager. This module allows you to retrieve detailed information about specific dynamic user groups
+by name or list all dynamic user groups with various filtering options.
 
 ## Module Parameters
 
-| Parameter          | Type      | Required | Default | Choices | Description |
-|-------------------|-----------|----------|---------|---------|-------------|
-| `name`            | string    | No       |         |         | Name of a specific dynamic user group to retrieve |
-| `gather_subset`   | list      | No       | ['config'] | all, config | Determines which information to gather |
-| `folder`          | string    | No*      |         |         | Filter dynamic user groups by folder container |
-| `snippet`         | string    | No*      |         |         | Filter dynamic user groups by snippet container |
-| `device`          | string    | No*      |         |         | Filter dynamic user groups by device container |
-| `exact_match`     | boolean   | No       | False  |         | When True, only return objects defined exactly in container |
-| `exclude_folders` | list      | No       |         |         | List of folder names to exclude from results |
-| `exclude_snippets`| list      | No       |         |         | List of snippet values to exclude from results |
-| `exclude_devices` | list      | No       |         |         | List of device values to exclude from results |
-| `filters`         | list      | No       |         |         | Filter by filter expressions |
-| `tags`            | list      | No       |         |         | Filter by tags |
-| `provider`        | dict      | Yes      |         |         | Authentication credentials |
+| Parameter          | Type    | Required | Default    | Choices     | Description                                                 |
+| ------------------ | ------- | -------- | ---------- | ----------- | ----------------------------------------------------------- |
+| `name`             | string  | No       |            |             | Name of a specific dynamic user group to retrieve           |
+| `gather_subset`    | list    | No       | ['config'] | all, config | Determines which information to gather                      |
+| `folder`           | string  | No\*     |            |             | Filter dynamic user groups by folder container              |
+| `snippet`          | string  | No\*     |            |             | Filter dynamic user groups by snippet container             |
+| `device`           | string  | No\*     |            |             | Filter dynamic user groups by device container              |
+| `exact_match`      | boolean | No       | False      |             | When True, only return objects defined exactly in container |
+| `exclude_folders`  | list    | No       |            |             | List of folder names to exclude from results                |
+| `exclude_snippets` | list    | No       |            |             | List of snippet values to exclude from results              |
+| `exclude_devices`  | list    | No       |            |             | List of device values to exclude from results               |
+| `filters`          | list    | No       |            |             | Filter by filter expressions                                |
+| `tags`             | list    | No       |            |             | Filter by tags                                              |
+| `provider`         | dict    | Yes      |            |             | Authentication credentials                                  |
 
-*Note: When `name` is not specified, exactly one of `folder`, `snippet`, or `device` is required.
+\*Note: When `name` is not specified, exactly one of `folder`, `snippet`, or `device` is required.
 
 ### Provider Dictionary
 
-| Parameter       | Type   | Required | Default | Choices | Description |
-|-----------------|--------|----------|---------|---------|-------------|
-| `client_id`     | string | Yes      |         |         | Client ID for authentication |
-| `client_secret` | string | Yes      |         |         | Client secret for authentication |
-| `tsg_id`        | string | Yes      |         |         | Tenant Service Group ID |
-| `log_level`     | string | No       | "INFO"  | DEBUG, INFO, WARNING, ERROR, CRITICAL | Log level for the SDK |
+| Parameter       | Type   | Required | Default | Choices                               | Description                      |
+| --------------- | ------ | -------- | ------- | ------------------------------------- | -------------------------------- |
+| `client_id`     | string | Yes      |         |                                       | Client ID for authentication     |
+| `client_secret` | string | Yes      |         |                                       | Client secret for authentication |
+| `tsg_id`        | string | Yes      |         |                                       | Tenant Service Group ID          |
+| `log_level`     | string | No       | "INFO"  | DEBUG, INFO, WARNING, ERROR, CRITICAL | Log level for the SDK            |
 
 ## Examples
 
 ### Retrieving a Specific Dynamic User Group
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Get information about a specific dynamic user group
@@ -53,13 +54,10 @@ The Dynamic User Group Info module (`cdot65.scm.dynamic_user_group_info`) provid
     var: dug_info.dynamic_user_group
 ```
 
-</div>
 
 ### Listing All Dynamic User Groups in a Folder
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: List all dynamic user group objects in a folder
@@ -77,13 +75,10 @@ The Dynamic User Group Info module (`cdot65.scm.dynamic_user_group_info`) provid
     msg: "Found {{ all_dugs.dynamic_user_groups | length }} dynamic user groups"
 ```
 
-</div>
 
 ### Filtering by Tags
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: List dynamic user groups with specific tags
@@ -98,13 +93,10 @@ The Dynamic User Group Info module (`cdot65.scm.dynamic_user_group_info`) provid
     var: tagged_dugs.dynamic_user_groups
 ```
 
-</div>
 
 ### Filtering by Filter Expressions
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: List dynamic user groups with specific filter expressions
@@ -119,13 +111,10 @@ The Dynamic User Group Info module (`cdot65.scm.dynamic_user_group_info`) provid
     var: filtered_dugs.dynamic_user_groups
 ```
 
-</div>
 
 ### Using Advanced Filtering Options
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: List dynamic user groups with exact match (no inherited objects)
@@ -143,15 +132,12 @@ The Dynamic User Group Info module (`cdot65.scm.dynamic_user_group_info`) provid
   register: filtered_dugs
 ```
 
-</div>
 
 ## Return Values
 
 ### When Requesting a Specific Dynamic User Group by Name
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 dynamic_user_group:
@@ -167,13 +153,10 @@ dynamic_user_group:
         tag: ["RiskManagement", "Security"]
 ```
 
-</div>
 
 ### When Listing Multiple Dynamic User Groups
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 dynamic_user_groups:
@@ -196,15 +179,13 @@ dynamic_user_groups:
         tag: ["RiskManagement", "Contractors"]
 ```
 
-</div>
 
 ## Complete Playbook Example
 
-This example demonstrates comprehensive use of the Dynamic User Group info module to retrieve and filter results:
+This example demonstrates comprehensive use of the Dynamic User Group info module to retrieve and
+filter results:
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 ---
@@ -272,15 +253,14 @@ This example demonstrates comprehensive use of the Dynamic User Group info modul
         dest: "./dug_inventory.yml"
 ```
 
-</div>
 
 ## Error Handling
 
-When the module fails to retrieve information (for example, when a specified dynamic user group doesn't exist), an error will be returned. You can handle these errors using Ansible's standard error handling mechanisms:
+When the module fails to retrieve information (for example, when a specified dynamic user group
+doesn't exist), an error will be returned. You can handle these errors using Ansible's standard
+error handling mechanisms:
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Try to get information about a non-existent dynamic user group
@@ -310,28 +290,34 @@ When the module fails to retrieve information (for example, when a specified dyn
         msg: "Dynamic user group not found or another error occurred: {{ ansible_failed_result.msg }}"
 ```
 
-</div>
 
 ## Notes and Limitations
 
 ### Container Parameters
 
-- When retrieving a specific dynamic user group by name, you must also specify exactly one container parameter (`folder`, `snippet`, or `device`)
-- When listing dynamic user groups without a name, at least one container parameter is required to scope the query
+- When retrieving a specific dynamic user group by name, you must also specify exactly one container
+  parameter (`folder`, `snippet`, or `device`)
+- When listing dynamic user groups without a name, at least one container parameter is required to
+  scope the query
 
 ### Filtering Behavior
 
-- The `exact_match` parameter only returns objects defined directly in the specified container, excluding inherited objects
-- Exclusion filters (`exclude_folders`, `exclude_snippets`, `exclude_devices`) are applied after the initial query
+- The `exact_match` parameter only returns objects defined directly in the specified container,
+  excluding inherited objects
+- Exclusion filters (`exclude_folders`, `exclude_snippets`, `exclude_devices`) are applied after the
+  initial query
 - The `filters` parameter is used to filter dynamic user groups by their filter expressions
 - The `tags` parameter is used to filter dynamic user groups by assigned tags
 
 ### Performance Considerations
 
 - For large environments, consider using specific filtering to reduce the result set size
-- When retrieving only specific dynamic user groups based on tags or filter expressions, add these filters to improve query performance
+- When retrieving only specific dynamic user groups based on tags or filter expressions, add these
+  filters to improve query performance
 
 ## Related Information
 
-- [Dynamic User Group module](dynamic_user_group.md) - For creating, updating, and deleting dynamic user groups
-- [Security Rule module](security_rule.md) - For configuring security rules that utilize dynamic user groups
+- [Dynamic User Group module](dynamic_user_group.md) - For creating, updating, and deleting dynamic
+  user groups
+- [Security Rule module](security_rule.md) - For configuring security rules that utilize dynamic
+  user groups

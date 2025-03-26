@@ -1,4 +1,4 @@
-# Quarantined Devices Info Module
+# Quarantined Devices Information Object
 
 ## Table of Contents
 
@@ -9,40 +9,41 @@
    - [Filter by Host ID](#filter-by-host-id)
    - [Filter by Serial Number](#filter-by-serial-number)
    - [Using Different Gather Subsets](#using-different-gather-subsets)
-4. [Return Values](#return-values) 
+4. [Return Values](#return-values)
 5. [Error Handling](#error-handling)
 6. [Best Practices](#best-practices)
 7. [Related Modules](#related-modules)
 
 ## Overview
 
-The `quarantined_devices_info` module provides functionality to retrieve information about quarantined devices in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to list all quarantined devices or filter the results by host ID or serial number. As an info module, it only retrieves information and does not modify any configuration.
+The `quarantined_devices_info` module provides functionality to retrieve information about
+quarantined devices in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to
+list all quarantined devices or filter the results by host ID or serial number. As an info module,
+it only retrieves information and does not modify any configuration.
 
 ## Module Parameters
 
-| Parameter       | Type      | Required | Description                                   |
-|----------------|-----------|----------|-----------------------------------------------|
-| `host_id`      | str       | No       | Filter quarantined devices by host ID          |
-| `serial_number`| str       | No       | Filter quarantined devices by serial number    |
-| `gather_subset`| list      | No       | Determines which information to gather (default: ['config']) |
-| `provider`     | dict      | Yes      | Authentication credentials for SCM             |
+| Parameter       | Type | Required | Description                                                  |
+| --------------- | ---- | -------- | ------------------------------------------------------------ |
+| `host_id`       | str  | No       | Filter quarantined devices by host ID                        |
+| `serial_number` | str  | No       | Filter quarantined devices by serial number                  |
+| `gather_subset` | list | No       | Determines which information to gather (default: ['config']) |
+| `provider`      | dict | Yes      | Authentication credentials for SCM                           |
 
 ### Provider Dictionary
 
-| Parameter       | Type   | Required | Description                                    |
-|----------------|--------|----------|------------------------------------------------|
-| `client_id`    | str    | Yes      | Client ID for authentication                    |
-| `client_secret`| str    | Yes      | Client secret for authentication                |
-| `tsg_id`       | str    | Yes      | Tenant Service Group ID                         |
-| `log_level`    | str    | No       | Log level for the SDK (default: "INFO")         |
+| Parameter       | Type | Required | Description                             |
+| --------------- | ---- | -------- | --------------------------------------- |
+| `client_id`     | str  | Yes      | Client ID for authentication            |
+| `client_secret` | str  | Yes      | Client secret for authentication        |
+| `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
+| `log_level`     | str  | No       | Log level for the SDK (default: "INFO") |
 
 ## Examples
 
 ### List All Quarantined Devices
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 ---
@@ -68,13 +69,10 @@ The `quarantined_devices_info` module provides functionality to retrieve informa
         var: result.quarantined_devices
 ```
 
-</div>
 
 ### Filter by Host ID
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 ---
@@ -101,13 +99,10 @@ The `quarantined_devices_info` module provides functionality to retrieve informa
         var: result.quarantined_devices
 ```
 
-</div>
 
 ### Filter by Serial Number
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 ---
@@ -134,13 +129,10 @@ The `quarantined_devices_info` module provides functionality to retrieve informa
         var: result.quarantined_devices
 ```
 
-</div>
 
 ### Using Different Gather Subsets
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 ---
@@ -168,19 +160,16 @@ The `quarantined_devices_info` module provides functionality to retrieve informa
         var: result_all.quarantined_devices
 ```
 
-</div>
 
 ## Return Values
 
-| Name                 | Description                                        | Type   | Sample                                                    |
-|----------------------|----------------------------------------------------|--------|-----------------------------------------------------------|
-| `quarantined_devices`| List of quarantined devices matching filter criteria | list   | `[{"host_id": "device-12345", "serial_number": "PA-987654321"}]` |
+| Name                  | Description                                          | Type | Sample                                                           |
+| --------------------- | ---------------------------------------------------- | ---- | ---------------------------------------------------------------- |
+| `quarantined_devices` | List of quarantined devices matching filter criteria | list | `[{"host_id": "device-12345", "serial_number": "PA-987654321"}]` |
 
 ## Error Handling
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 ---
@@ -214,27 +203,30 @@ The `quarantined_devices_info` module provides functionality to retrieve informa
       when: result.quarantined_devices is defined and result.quarantined_devices | length == 0
 ```
 
-</div>
 
 ## Best Practices
 
 1. **Filtering**
+
    - Filter by host_id when you want to check a specific device
    - Filter by serial_number when integrating with physical device inventory systems
    - Avoid unnecessary filtering when you need the complete list
    - Combine multiple filters for more precise results
 
 2. **Error Handling**
+
    - Implement proper error handling for API failures
    - Handle cases where no devices match the filters
    - Validate return structures before accessing nested data
 
 3. **Performance**
+
    - Be mindful of listing all devices in large environments
    - Use specific filters when possible to reduce response size
    - Process results efficiently when dealing with large device lists
 
 4. **Integration**
+
    - Use with monitoring systems to track quarantined devices
    - Combine with security automation for incident response
    - Create reports of quarantined devices for security operations

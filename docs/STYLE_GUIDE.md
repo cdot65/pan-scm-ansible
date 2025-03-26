@@ -1,103 +1,112 @@
-I'll create a comprehensive style guide based on the provided mkdocs files, capturing the structure, styling, and design patterns for future documentation.
+I'll create a comprehensive style guide based on the provided mkdocs files, capturing the structure,
+styling, and design patterns for future documentation.
 
 # Palo Alto Networks Strata Cloud Manager Documentation Style Guide
 
 ## Document Structure
 
 1. **Title and Header**
-   - Use H1 (`#`) for the main document title
-   - Title should clearly indicate the object/component being documented
-   - Format: "[Object] Configuration Object"
+
+    - Use H1 (`#`) for the main document title
+    - Title should clearly indicate the object/component being documented
+    - Format: "[Object] Configuration Object"
 
 2. **Table of Contents**
-   - Include a structured ToC immediately after the title
-   - Use numbered lists for ToC items
-   - Include anchor links to each section (`[Section Name](#section-name)`)
-   - Standard sections should appear in this order:
-     1. Overview
-     2. Core Methods
-     3. Model Attributes
-     4. Exceptions
-     5. Basic Configuration
-     6. Usage Examples (with sub-sections)
-     7. Managing Configuration Changes
-     8. Error Handling
-     9. Best Practices
-     10. Full Script Examples
-     11. Related Models
+
+    - Include a structured ToC immediately after the title
+    - Use numbered lists for ToC items
+    - Include anchor links to each section (`[Section Name](#section-name)`)
+    - Standard sections should appear in this order:
+        01. Overview
+        02. Core Methods
+        03. Model Attributes
+        04. Exceptions
+        05. Basic Configuration
+        06. Usage Examples (with sub-sections)
+        07. Managing Configuration Changes
+        08. Error Handling
+        09. Best Practices
+        10. Full Script Examples
+        11. Related Models
 
 3. **Section Headers**
-   - Use H2 (`##`) for main sections
-   - Use H3 (`###`) for subsections
-   - Keep section headers concise and descriptive
-   - Use title case for all headings
+
+    - Use H2 (`##`) for main sections
+    - Use H3 (`###`) for subsections
+    - Keep section headers concise and descriptive
+    - Use title case for all headings
 
 ## Content Elements
 
 ### Overview Section
+
 - Provide a concise introduction to the object/component
 - Explain its purpose and relationship to other components
 - Mention base classes or inheritance where applicable
 - Keep to 2-4 sentences
 
 ### Method and Attribute Tables
+
 - Use markdown tables for structured information
 - Include headers with proper alignment
 - Common table columns for methods:
-  - Method
-  - Description
-  - Parameters
-  - Return Type
+    - Method
+    - Description
+    - Parameters
+    - Return Type
 - Common table columns for attributes:
-  - Attribute
-  - Type
-  - Required
-  - Description
+    - Attribute
+    - Type
+    - Required
+    - Description
 - Use consistent formatting for all tables
-- Include asterisks (*) to indicate special conditions
+- Include asterisks (\*) to indicate special conditions
 
 ### Exception Tables
+
 - Document all possible exceptions
 - Include HTTP code and description columns
 - Group related exceptions together
 
 ### Code Examples
 
-1. **Terminal-Style Code Blocks**
-   - Always wrap code examples in `<div class="termy">` tags
-   - Include `<!-- termynal -->` comment before each code block
-   - Use triple backtick code blocks with language specification
-   ```
-   <div class="termy">
+1. **Language Specific Code Blocks**
 
-   <!-- termynal -->
+    - NEVER EVER EVER wrap code examples in `<div class="termy">` tags
+    - Remove any instance of `<!-- termynal -->` comment before a code block
+    - Use triple backtick code blocks with language specification
 
+   ````
    ```python
    # Code goes here
-   ```
+   ````
 
-   </div>
    ```
 
 2. **Import Statements**
-   - Show proper import structure at the beginning of examples
-   - Demonstrate both unified client interface and traditional approach where applicable
+
+    - Show proper import structure at the beginning of examples
+    - Demonstrate both unified client interface and traditional approach where applicable
 
 3. **Client Initialization**
-   - Include standard client initialization for all example blocks
-   - Use placeholder values (`your_client_id`, `your_client_secret`, `your_tsg_id`)
+
+    - Include standard client initialization for all example blocks
+    - Use placeholder values (`your_client_id`, `your_client_secret`, `your_tsg_id`)
 
 4. **Code Comments**
-   - Include descriptive comments for significant operations
-   - Use comments to explain the purpose of each code block
-   - Include print statements for result validation
+
+    - Include descriptive comments for significant operations
+    - Use comments to explain the purpose of each code block
+    - Include print statements for result validation
 
 5. **Error Handling**
-   - Show comprehensive try/except blocks in error handling examples
-   - Include specific exception handling for all relevant exceptions
-   - Add message logging in the exception handlers
+
+    - Show comprehensive try/except blocks in error handling examples
+    - Include specific exception handling for all relevant exceptions
+    - Add message logging in the exception handlers
 
 ### Notes and Admonitions
+
 - Use !!! note syntax for important information
 - Keep notes concise and focused
 - Use notes to highlight best practices or alternative approaches
@@ -105,59 +114,68 @@ I'll create a comprehensive style guide based on the provided mkdocs files, capt
 ## Styling Guidelines
 
 1. **Terminology**
-   - Use consistent terminology throughout documentation
-   - Prefer "unified client interface" when referring to the modern approach
-   - Use "traditional service instantiation" for the legacy approach
-   - Be consistent with capitalization (e.g., "Strata Cloud Manager" not "strata cloud manager")
+
+    - Use consistent terminology throughout documentation
+    - Prefer "unified client interface" when referring to the modern approach
+    - Use "traditional service instantiation" for the legacy approach
+    - Be consistent with capitalization (e.g., "Strata Cloud Manager" not "strata cloud manager")
 
 2. **Code Style**
-   - Follow PEP 8 conventions for Python code
-   - Use 3-space indentation in examples for readability
-   - Use snake_case for variables and function names
-   - Include proper spacing around operators
+
+    - Follow PEP 8 conventions for Python code
+    - Use 3-space indentation in examples for readability
+    - Use snake_case for variables and function names
+    - Include proper spacing around operators
 
 3. **Naming Conventions**
-   - Use descriptive variable names that indicate their purpose
-   - Follow consistent naming patterns across examples:
-     - `client` for client instances
-     - `[object]_config` for configuration dictionaries
-     - `new_[object]` for newly created objects
-     - `existing_[object]` for objects being modified
-     - `updated_[object]` for objects after update
+
+    - Use descriptive variable names that indicate their purpose
+    - Follow consistent naming patterns across examples:
+        - `client` for client instances
+        - `[object]_config` for configuration dictionaries
+        - `new_[object]` for newly created objects
+        - `existing_[object]` for objects being modified
+        - `updated_[object]` for objects after update
 
 4. **Example Structure**
-   - Each code example should follow this pattern:
-     1. Start with imports and initialization
-     2. Show the main operation with comments
-     3. Demonstrate result handling or validation
-   - Group related operations into single examples
-   - Provide both simple and complex examples
+
+    - Each code example should follow this pattern:
+        1. Start with imports and initialization
+        2. Show the main operation with comments
+        3. Demonstrate result handling or validation
+    - Group related operations into single examples
+    - Provide both simple and complex examples
 
 ## Section-Specific Guidelines
 
 ### Basic Configuration
+
 - Show both unified client interface and traditional service instantiation
 - Clearly mark the recommended approach
 - Include a note about which approach is preferred
 
 ### Usage Examples
+
 - Break down by operation type (create, retrieve, update, list, delete)
 - Show complete examples including imports and initialization
 - Demonstrate different variations where applicable (static vs. dynamic for address groups)
 - Include parameter variations and filtering options
 
 ### Managing Configuration Changes
+
 - Show commit operations with proper parameters
 - Include job monitoring examples
 - Demonstrate sync and async approaches
 
 ### Best Practices
+
 - Use numbered lists for best practice categories
 - Group related best practices
 - Include 4-6 items per category
 - Cover client usage, performance, security, and object-specific considerations
 
 ### Related Models
+
 - Link to corresponding model documentation
 - List all related model types with links
 
@@ -166,6 +184,7 @@ I'll create a comprehensive style guide based on the provided mkdocs files, capt
 For consistency, use these templates for common documentation patterns:
 
 ### Method Table Template
+
 ```markdown
 ## Core Methods
 
@@ -179,7 +198,8 @@ For consistency, use these templates for common documentation patterns:
 ```
 
 ### Code Example Template
-```markdown
+
+````markdown
 <div class="termy">
 
 <!-- termynal -->
@@ -206,13 +226,14 @@ result = client.service.operation(config)
 
 # Process results
 print(f"Operation result: {result.id}")
-```
+````
 
 </div>
 ```
 
 ### Error Handling Template
-```markdown
+
+````markdown
 <div class="termy">
 
 <!-- termynal -->
@@ -239,18 +260,21 @@ except ExceptionType1 as e:
    print(f"Error message: {e.message}")
 except ExceptionType2 as e:
    print(f"Error message: {e.message}")
-```
+````
 
 </div>
 ```
 
 ## Final Recommendations
 
-1. **Consistency** - Maintain consistent formatting, terminology, and structure across all documentation
+1. **Consistency** - Maintain consistent formatting, terminology, and structure across all
+   documentation
 2. **Completeness** - Ensure all methods, attributes, and exceptions are fully documented
 3. **Examples** - Provide comprehensive examples for all common operations
 4. **Error Handling** - Include proper error handling in all examples
 5. **Navigation** - Ensure proper linking between related documentation pages
 6. **Readability** - Use clear, concise language and proper code formatting
 
-This style guide captures the consistent patterns observed in the provided documentation and should serve as a comprehensive reference for creating future mkdocs pages that maintain the same professional look and feel.
+This style guide captures the consistent patterns observed in the provided documentation and should
+serve as a comprehensive reference for creating future mkdocs pages that maintain the same
+professional look and feel.

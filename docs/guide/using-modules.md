@@ -1,6 +1,7 @@
 # Using Modules
 
-This guide explains how to effectively use the modules in the Palo Alto Networks SCM Ansible Collection.
+This guide explains how to effectively use the modules in the Palo Alto Networks SCM Ansible
+Collection.
 
 ## Module Structure
 
@@ -16,7 +17,7 @@ All modules in the collection follow a consistent structure:
 These parameters are available in most modules:
 
 | Parameter  | Description          | Required | Default              |
-|------------|----------------------|----------|----------------------|
+| ---------- | -------------------- | -------- | -------------------- |
 | `username` | SCM username         | No       | Environment variable |
 | `password` | SCM password         | No       | Environment variable |
 | `tenant`   | SCM tenant ID        | No       | Environment variable |
@@ -203,6 +204,7 @@ Handle potential errors in your playbooks:
 Each module has detailed documentation available:
 
 - Use `ansible-doc` from the command line:
+
   ```bash
   ansible-doc cdot65.scm.address
   ```

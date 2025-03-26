@@ -1,15 +1,16 @@
-# Security Profiles Group Module
+# Security Profiles Group Configuration Object
 
 ## Overview
 
-The `security_profiles_group` module enables management of Security Profiles Groups in Palo Alto Networks Strata Cloud
-Manager (SCM). Security Profiles Groups allow you to bundle multiple security profiles (Anti-Spyware, Vulnerability
-Protection, URL Filtering, etc.) into a single group that can be applied to security rules.
+The `security_profiles_group` module enables management of Security Profiles Groups in Palo Alto
+Networks Strata Cloud Manager (SCM). Security Profiles Groups allow you to bundle multiple security
+profiles (Anti-Spyware, Vulnerability Protection, URL Filtering, etc.) into a single group that can
+be applied to security rules.
 
 ## Core Methods
 
 | Method   | Description                                                    |
-|----------|----------------------------------------------------------------|
+| -------- | -------------------------------------------------------------- |
 | `create` | Creates a new Security Profiles Group in SCM                   |
 | `update` | Modifies an existing Security Profiles Group                   |
 | `delete` | Removes a Security Profiles Group from SCM                     |
@@ -19,7 +20,7 @@ Protection, URL Filtering, etc.) into a single group that can be applied to secu
 ## Model Attributes
 
 | Attribute                   | Type   | Description                                      | Required |
-|-----------------------------|--------|--------------------------------------------------|----------|
+| --------------------------- | ------ | ------------------------------------------------ | -------- |
 | `name`                      | String | Name of the Security Profiles Group              | Yes      |
 | `description`               | String | Description of the group                         | No       |
 | `anti_spyware_profile`      | String | Name of the Anti-Spyware profile to include      | No       |
@@ -132,9 +133,11 @@ The module will fail with proper error messages if:
 - Regularly review and update the profiles included in each group
 - Apply more stringent profiles to groups used for sensitive assets
 - Use tags to categorize and organize groups
-- Test changes to Security Profiles Groups in pre-production environments before applying to production
+- Test changes to Security Profiles Groups in pre-production environments before applying to
+  production
 
 ## Related Models
 
 - [Anti-Spyware Profile](anti_spyware_profile.md) - Can be included in Security Profiles Groups
-- [Security Rule](security_rule.md) - References Security Profiles Groups to determine which security profiles to apply
+- [Security Rule](security_rule.md) - References Security Profiles Groups to determine which
+  security profiles to apply

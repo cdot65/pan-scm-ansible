@@ -1,13 +1,13 @@
 # Roles Overview
 
-The Palo Alto Networks Strata Cloud Manager Ansible Collection includes pre-built roles that simplify common
-configuration tasks. These roles provide a more structured way to manage SCM configurations compared to using individual
-modules directly.
+The Palo Alto Networks Strata Cloud Manager Ansible Collection includes pre-built roles that
+simplify common configuration tasks. These roles provide a more structured way to manage SCM
+configurations compared to using individual modules directly.
 
 ## Available Roles
 
 | Role Name | Description |
-|-----------|-------------|
+| --------- | ----------- |
 
 ## Using Roles
 
@@ -40,8 +40,8 @@ To use a role in your playbook:
 
 ## Role Variables
 
-Each role has its own set of variables that control its behavior. These variables can be set in your playbook, in
-group/host variables, or in defaults.
+Each role has its own set of variables that control its behavior. These variables can be set in your
+playbook, in group/host variables, or in defaults.
 
 To view the variables for a specific role, refer to its documentation:
 
@@ -50,7 +50,7 @@ To view the variables for a specific role, refer to its documentation:
 All roles share these common variables:
 
 | Variable            | Description             | Required | Default |
-|---------------------|-------------------------|----------|---------|
+| ------------------- | ----------------------- | -------- | ------- |
 | `scm_client_id`     | OAuth2 client ID        | Yes      |         |
 | `scm_client_secret` | OAuth2 client secret    | Yes      |         |
 | `scm_tsg_id`        | Tenant Service Group ID | Yes      |         |
@@ -62,7 +62,8 @@ You can customize role behavior by:
 
 1. **Overriding Variables**: Set variables in your playbook or inventory
 2. **Using Role Defaults**: Create a `defaults/main.yml` file with your preferred defaults
-3. **Creating Custom Templates**: Override templates by placing them in your playbook's `templates` directory
+3. **Creating Custom Templates**: Override templates by placing them in your playbook's `templates`
+   directory
 
 ### Example: Customizing the deploy_config Role
 
@@ -112,11 +113,11 @@ Common tags used across roles:
 
 ## Best Practices
 
-1. **Define Variables in Vault Files**:
-   Store sensitive variables like client credentials in encrypted files using Ansible Vault.
+1. **Define Variables in Vault Files**: Store sensitive variables like client credentials in
+   encrypted files using Ansible Vault.
 
-2. **Use Structured Variable Files**:
-   Keep configuration data in separate YAML files organized by object type:
+2. **Use Structured Variable Files**: Keep configuration data in separate YAML files organized by
+   object type:
 
    ```
    group_vars/
@@ -127,11 +128,10 @@ Common tags used across roles:
    │   └── security_rules.yml # Security rules
    ```
 
-3. **Validate Before Deployment**:
-   Use the `validate_only` variable to check configurations without making changes.
+3. **Validate Before Deployment**: Use the `validate_only` variable to check configurations without
+   making changes.
 
-4. **Tag Your Tasks**:
-   Add tags to your playbooks for more selective execution:
+4. **Tag Your Tasks**: Add tags to your playbooks for more selective execution:
 
    ```yaml
    - name: Deploy SCM Configuration
@@ -145,8 +145,7 @@ Common tags used across roles:
            - config
    ```
 
-5. **Include Dependencies**:
-   Ensure required collections are declared in your playbook:
+5. **Include Dependencies**: Ensure required collections are declared in your playbook:
 
    ```yaml
    - name: Deploy SCM Configuration

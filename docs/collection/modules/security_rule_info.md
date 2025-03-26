@@ -1,14 +1,14 @@
-# security_rule_info
+# Security Rule Information Object
 
 Gather information about security rule objects in Strata Cloud Manager (SCM).
 
 ## Description
 
-Gather information about security rule objects within Strata Cloud Manager (SCM).
-Supports retrieving a specific security rule by name or listing security rules with various filters.
-Provides additional client-side filtering capabilities for exact matches and exclusions.
-Returns detailed information about each security rule object.
-This is an info module that only retrieves information and does not modify anything.
+Gather information about security rule objects within Strata Cloud Manager (SCM). Supports
+retrieving a specific security rule by name or listing security rules with various filters. Provides
+additional client-side filtering capabilities for exact matches and exclusions. Returns detailed
+information about each security rule object. This is an info module that only retrieves information
+and does not modify anything.
 
 ## Requirements
 
@@ -17,31 +17,31 @@ This is an info module that only retrieves information and does not modify anyth
 
 ## Parameters
 
-| Parameter | Choices/Defaults | Comments |
-| --- | --- | --- |
-| name | | The name of a specific security rule object to retrieve. |
-| gather_subset | Choices: ["all", "config"] <br> Default: ["config"] | Determines which information to gather about security rules. |
-| folder | | Filter security rules by folder container. |
-| snippet | | Filter security rules by snippet container. |
-| device | | Filter security rules by device container. |
-| rulebase | Choices: ["pre", "post"] <br> Default: "pre" | Which rulebase to query. |
-| exact_match | Default: false | When True, only return objects defined exactly in the specified container. |
-| exclude_folders | | List of folder names to exclude from results. |
-| exclude_snippets | | List of snippet values to exclude from results. |
-| exclude_devices | | List of device values to exclude from results. |
-| action | Choices: ["allow", "deny", "drop", "reset-client", "reset-server", "reset-both"] | Filter by action. |
-| category | | Filter by URL categories. |
-| service | | Filter by services. |
-| application | | Filter by applications. |
-| destination | | Filter by destinations. |
-| to_ | | Filter by to zones. |
-| source | | Filter by sources. |
-| from_ | | Filter by from zones. |
-| tag | | Filter by tags. |
-| disabled | | Filter by disabled status. |
-| profile_setting | | Filter by profile setting groups. |
-| log_setting | | Filter by log setting. |
-| provider | | Authentication credentials. |
+| Parameter        | Choices/Defaults                                                                 | Comments                                                                   |
+| ---------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| name             |                                                                                  | The name of a specific security rule object to retrieve.                   |
+| gather_subset    | Choices: ["all", "config"] <br> Default: ["config"]                              | Determines which information to gather about security rules.               |
+| folder           |                                                                                  | Filter security rules by folder container.                                 |
+| snippet          |                                                                                  | Filter security rules by snippet container.                                |
+| device           |                                                                                  | Filter security rules by device container.                                 |
+| rulebase         | Choices: ["pre", "post"] <br> Default: "pre"                                     | Which rulebase to query.                                                   |
+| exact_match      | Default: false                                                                   | When True, only return objects defined exactly in the specified container. |
+| exclude_folders  |                                                                                  | List of folder names to exclude from results.                              |
+| exclude_snippets |                                                                                  | List of snippet values to exclude from results.                            |
+| exclude_devices  |                                                                                  | List of device values to exclude from results.                             |
+| action           | Choices: ["allow", "deny", "drop", "reset-client", "reset-server", "reset-both"] | Filter by action.                                                          |
+| category         |                                                                                  | Filter by URL categories.                                                  |
+| service          |                                                                                  | Filter by services.                                                        |
+| application      |                                                                                  | Filter by applications.                                                    |
+| destination      |                                                                                  | Filter by destinations.                                                    |
+| to\_             |                                                                                  | Filter by to zones.                                                        |
+| source           |                                                                                  | Filter by sources.                                                         |
+| from\_           |                                                                                  | Filter by from zones.                                                      |
+| tag              |                                                                                  | Filter by tags.                                                            |
+| disabled         |                                                                                  | Filter by disabled status.                                                 |
+| profile_setting  |                                                                                  | Filter by profile setting groups.                                          |
+| log_setting      |                                                                                  | Filter by log setting.                                                     |
+| provider         |                                                                                  | Authentication credentials.                                                |
 
 ## Examples
 
@@ -112,15 +112,16 @@ This is an info module that only retrieves information and does not modify anyth
 
 ## Return Values
 
-| Key | Returned | Description |
-| --- | --- | --- |
+| Key            | Returned                   | Description                                                 |
+| -------------- | -------------------------- | ----------------------------------------------------------- |
 | security_rules | When name is not specified | List of security rule objects matching the filter criteria. |
-| security_rule | When name is specified | Information about the requested security rule. |
+| security_rule  | When name is specified     | Information about the requested security rule.              |
 
 ## Notes
 
 - Security rules require exactly one container (folder, snippet, or device) to be specified.
-- When using rulebase="post", the module will query the post-rulebase rather than the default pre-rulebase.
+- When using rulebase="post", the module will query the post-rulebase rather than the default
+  pre-rulebase.
 - The module supports check mode for all operations.
 
 ## Authors

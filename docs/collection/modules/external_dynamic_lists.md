@@ -1,43 +1,46 @@
-# External Dynamic Lists Module
+# External Dynamic Lists Configuration Object
 
 ## Overview
 
-The External Dynamic Lists module (`cdot65.scm.external_dynamic_lists`) manages external dynamic lists (EDLs) in Palo
-Alto Networks' Strata Cloud Manager. EDLs are used to dynamically fetch updated lists of IPs, domains, URLs, IMSIs, or
-IMEIs from external sources to use in security policies. This module enables you to create, update, and delete various
-types of external dynamic lists with configurable update intervals.
+The External Dynamic Lists module (`cdot65.scm.external_dynamic_lists`) manages external dynamic
+lists (EDLs) in Palo Alto Networks' Strata Cloud Manager. EDLs are used to dynamically fetch updated
+lists of IPs, domains, URLs, IMSIs, or IMEIs from external sources to use in security policies. This
+module enables you to create, update, and delete various types of external dynamic lists with
+configurable update intervals.
 
 ## Module Parameters
 
-| Parameter     | Type    | Required     | Default | Choices         | Description                                                 |
-|---------------|---------|--------------|---------|-----------------|-------------------------------------------------------------|
-| `name`        | string  | Yes          |         |                 | Name of the external dynamic list (max 63 chars)            |
-| `description` | string  | No           |         |                 | Description of the external dynamic list (max 255 chars)    |
-| `ip_list`     | dict    | One Required |         |                 | Configuration for an IP-based external dynamic list         |
-| `domain_list` | dict    | One Required |         |                 | Configuration for a domain-based external dynamic list      |
-| `url_list`    | dict    | One Required |         |                 | Configuration for a URL-based external dynamic list         |
-| `imsi_list`   | dict    | One Required |         |                 | Configuration for an IMSI-based external dynamic list       |
-| `imei_list`   | dict    | One Required |         |                 | Configuration for an IMEI-based external dynamic list       |
-| `five_minute` | boolean | One Required* |         |                 | Configure list to update every five minutes                 |
-| `hourly`      | boolean | One Required* |         |                 | Configure list to update hourly                             |
-| `daily`       | dict    | One Required* |         |                 | Configure list to update daily at specified hour            |
-| `weekly`      | dict    | One Required* |         |                 | Configure list to update weekly on specified day and time   |
-| `monthly`     | dict    | One Required* |         |                 | Configure list to update monthly on specified day and time  |
-| `folder`      | string  | One Required** |         |                 | The folder in which the resource is defined (max 64 chars)  |
-| `snippet`     | string  | One Required** |         |                 | The snippet in which the resource is defined (max 64 chars) |
-| `device`      | string  | One Required** |         |                 | The device in which the resource is defined (max 64 chars)  |
-| `provider`    | dict    | Yes          |         |                 | Authentication credentials                                  |
-| `state`       | string  | Yes          |         | present, absent | Desired state of the external dynamic list                  |
+| Parameter     | Type    | Required         | Default | Choices         | Description                                                 |
+| ------------- | ------- | ---------------- | ------- | --------------- | ----------------------------------------------------------- |
+| `name`        | string  | Yes              |         |                 | Name of the external dynamic list (max 63 chars)            |
+| `description` | string  | No               |         |                 | Description of the external dynamic list (max 255 chars)    |
+| `ip_list`     | dict    | One Required     |         |                 | Configuration for an IP-based external dynamic list         |
+| `domain_list` | dict    | One Required     |         |                 | Configuration for a domain-based external dynamic list      |
+| `url_list`    | dict    | One Required     |         |                 | Configuration for a URL-based external dynamic list         |
+| `imsi_list`   | dict    | One Required     |         |                 | Configuration for an IMSI-based external dynamic list       |
+| `imei_list`   | dict    | One Required     |         |                 | Configuration for an IMEI-based external dynamic list       |
+| `five_minute` | boolean | One Required\*   |         |                 | Configure list to update every five minutes                 |
+| `hourly`      | boolean | One Required\*   |         |                 | Configure list to update hourly                             |
+| `daily`       | dict    | One Required\*   |         |                 | Configure list to update daily at specified hour            |
+| `weekly`      | dict    | One Required\*   |         |                 | Configure list to update weekly on specified day and time   |
+| `monthly`     | dict    | One Required\*   |         |                 | Configure list to update monthly on specified day and time  |
+| `folder`      | string  | One Required\*\* |         |                 | The folder in which the resource is defined (max 64 chars)  |
+| `snippet`     | string  | One Required\*\* |         |                 | The snippet in which the resource is defined (max 64 chars) |
+| `device`      | string  | One Required\*\* |         |                 | The device in which the resource is defined (max 64 chars)  |
+| `provider`    | dict    | Yes              |         |                 | Authentication credentials                                  |
+| `state`       | string  | Yes              |         | present, absent | Desired state of the external dynamic list                  |
 
-*Note: Exactly one update interval (five_minute, hourly, daily, weekly, or monthly) must be specified.  
-**Note: Exactly one container parameter (folder, snippet, or device) must be specified.
+\*Note: Exactly one update interval (five_minute, hourly, daily, weekly, or monthly) must be
+specified.\
+\*\*Note: Exactly one container parameter (folder, snippet, or device) must be specified.
 
 ### List Type Details
 
-Each list type (`ip_list`, `domain_list`, `url_list`, `imsi_list`, `imei_list`) supports the following parameters:
+Each list type (`ip_list`, `domain_list`, `url_list`, `imsi_list`, `imei_list`) supports the
+following parameters:
 
 | Parameter             | Type    | Required | Description                                               |
-|-----------------------|---------|----------|-----------------------------------------------------------|
+| --------------------- | ------- | -------- | --------------------------------------------------------- |
 | `url`                 | string  | Yes      | URL to fetch the list content                             |
 | `exception_list`      | list    | No       | List of entries to exclude from the external dynamic list |
 | `certificate_profile` | string  | No       | Client certificate profile for secure connections         |
@@ -47,7 +50,7 @@ Each list type (`ip_list`, `domain_list`, `url_list`, `imsi_list`, `imei_list`) 
 ### Update Interval Details
 
 | Parameter     | Sub-parameters                           | Description                                   |
-|---------------|------------------------------------------|-----------------------------------------------|
+| ------------- | ---------------------------------------- | --------------------------------------------- |
 | `five_minute` | None (boolean flag)                      | Update every 5 minutes                        |
 | `hourly`      | None (boolean flag)                      | Update every hour                             |
 | `daily`       | `at`: Hour of day (00-23)                | Update once a day at the specified hour       |
@@ -56,18 +59,16 @@ Each list type (`ip_list`, `domain_list`, `url_list`, `imsi_list`, `imei_list`) 
 
 ### Provider Dictionary
 
-| Parameter       | Type   | Required | Default | Choices | Description                      |
-|-----------------|--------|----------|---------|---------|----------------------------------|
-| `client_id`     | string | Yes      |         |         | Client ID for authentication     |
-| `client_secret` | string | Yes      |         |         | Client secret for authentication |
-| `tsg_id`        | string | Yes      |         |         | Tenant Service Group ID          |
+| Parameter       | Type   | Required | Default | Choices                               | Description                      |
+| --------------- | ------ | -------- | ------- | ------------------------------------- | -------------------------------- |
+| `client_id`     | string | Yes      |         |                                       | Client ID for authentication     |
+| `client_secret` | string | Yes      |         |                                       | Client secret for authentication |
+| `tsg_id`        | string | Yes      |         |                                       | Tenant Service Group ID          |
 | `log_level`     | string | No       | "INFO"  | DEBUG, INFO, WARNING, ERROR, CRITICAL | Log level for the SDK            |
 
 ## Examples
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Create IP-based external dynamic list with hourly updates
@@ -135,13 +136,10 @@ Each list type (`ip_list`, `domain_list`, `url_list`, `imsi_list`, `imei_list`) 
     state: "absent"
 ```
 
-</div>
 
 ## Return Values
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 changed:
@@ -166,16 +164,13 @@ external_dynamic_list:
         folder: "Texas"
 ```
 
-</div>
 
 ## Complete Playbook Example
 
-This example demonstrates a complete workflow for managing external dynamic lists, including creation, retrieval,
-updating, and deletion.
+This example demonstrates a complete workflow for managing external dynamic lists, including
+creation, retrieval, updating, and deletion.
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 ---
@@ -292,7 +287,6 @@ updating, and deletion.
         - "{{ create_domain_result.external_dynamic_list.name }}"
 ```
 
-</div>
 
 ## Notes and Limitations
 
@@ -300,9 +294,10 @@ updating, and deletion.
 
 When working with certificate profiles in any EDL type, be aware of the following:
 
-- If `certificate_profile` is provided as an empty string or `null`, the module will remove it from the request to avoid
-  API validation issues
-- To specify a certificate profile, provide a valid profile name such as "default-certificate-profile"
+- If `certificate_profile` is provided as an empty string or `null`, the module will remove it from
+  the request to avoid API validation issues
+- To specify a certificate profile, provide a valid profile name such as
+  "default-certificate-profile"
 - Certificate profiles must already exist in SCM before they can be referenced
 
 ### Exception List Handling
@@ -310,16 +305,17 @@ When working with certificate profiles in any EDL type, be aware of the followin
 Exception lists have these behaviors:
 
 - If the exception list is empty, it will be removed from the request
-- Exception list entries must be formatted according to the EDL type (IP addresses for IP lists, domain names for domain
-  lists, etc.)
+- Exception list entries must be formatted according to the EDL type (IP addresses for IP lists,
+  domain names for domain lists, etc.)
 
 ### Update Interval Requirements
 
-- Exactly one update interval must be specified (`five_minute`, `hourly`, `daily`, `weekly`, or `monthly`)
+- Exactly one update interval must be specified (`five_minute`, `hourly`, `daily`, `weekly`, or
+  `monthly`)
 - For `daily`, `weekly`, and `monthly` intervals, additional parameters are required:
-    - `daily` requires `at` parameter specifying the hour (00-23)
-    - `weekly` requires `day_of_week` parameter and optionally `at`
-    - `monthly` requires `day_of_month` parameter and optionally `at`
+  - `daily` requires `at` parameter specifying the hour (00-23)
+  - `weekly` requires `day_of_week` parameter and optionally `at`
+  - `monthly` requires `day_of_month` parameter and optionally `at`
 
 ### Container Requirements
 
@@ -335,6 +331,7 @@ The module attempts to handle idempotency, but there are known issues:
 
 ## Related Information
 
-- [External Dynamic Lists Info module](external_dynamic_lists_info.md) - Module for retrieving information about
-  external dynamic lists
-- [Security Rule module](security_rule.md) - For configuring security rules that utilize external dynamic lists
+- [External Dynamic Lists Info module](external_dynamic_lists_info.md) - Module for retrieving
+  information about external dynamic lists
+- [Security Rule module](security_rule.md) - For configuring security rules that utilize external
+  dynamic lists

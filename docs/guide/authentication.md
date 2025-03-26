@@ -1,14 +1,17 @@
 # Authentication
 
-This guide explains the authentication methods available when using the Palo Alto Networks Strata Cloud Manager Ansible Collection.
+This guide explains the authentication methods available when using the Palo Alto Networks Strata
+Cloud Manager Ansible Collection.
 
 ## Authentication Overview
 
-The collection uses OAuth2 client credentials to authenticate with the Strata Cloud Manager API. All modules and roles require these credentials to interact with SCM.
+The collection uses OAuth2 client credentials to authenticate with the Strata Cloud Manager API. All
+modules and roles require these credentials to interact with SCM.
 
 ## Provider Dictionary
 
-The recommended way to authenticate is using the `provider` dictionary parameter that's consistent across all modules:
+The recommended way to authenticate is using the `provider` dictionary parameter that's consistent
+across all modules:
 
 ```yaml
 - name: Create address object
@@ -26,12 +29,12 @@ The recommended way to authenticate is using the `provider` dictionary parameter
 
 The provider dictionary contains:
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `client_id` | OAuth2 client ID | Yes | - |
-| `client_secret` | OAuth2 client secret | Yes | - |
-| `tsg_id` | Tenant Service Group ID | Yes | - |
-| `log_level` | SDK log level | No | `"INFO"` |
+| Parameter       | Description             | Required | Default  |
+| --------------- | ----------------------- | -------- | -------- |
+| `client_id`     | OAuth2 client ID        | Yes      | -        |
+| `client_secret` | OAuth2 client secret    | Yes      | -        |
+| `tsg_id`        | Tenant Service Group ID | Yes      | -        |
+| `log_level`     | SDK log level           | No       | `"INFO"` |
 
 ## Using Ansible Vault
 
@@ -109,7 +112,8 @@ export SCM_CLIENT_SECRET="your-client-secret"
 export SCM_TSG_ID="your-tsg-id"
 ```
 
-With special configuration, the collection can read these variables. However, the `provider` dictionary approach is more explicit and reliable.
+With special configuration, the collection can read these variables. However, the `provider`
+dictionary approach is more explicit and reliable.
 
 ## Token Management
 

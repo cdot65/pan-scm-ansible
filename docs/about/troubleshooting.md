@@ -1,6 +1,7 @@
 # Troubleshooting
 
-This guide provides solutions to common issues you might encounter when using the SCM Ansible Collection.
+This guide provides solutions to common issues you might encounter when using the SCM Ansible
+Collection.
 
 ## Authentication Issues
 
@@ -9,6 +10,7 @@ This guide provides solutions to common issues you might encounter when using th
 If you receive an authentication error when running playbooks:
 
 1. Verify your credentials:
+
    ```bash
    echo $PAN_SCM_USERNAME
    echo $PAN_SCM_TENANT
@@ -20,6 +22,7 @@ If you receive an authentication error when running playbooks:
 3. Ensure your tenant ID is correct
 
 4. Try with explicit credentials in your playbook (for testing only):
+
    ```yaml
    - name: Test connection
      cdot65.scm.address:
@@ -31,7 +34,7 @@ If you receive an authentication error when running playbooks:
        ip_netmask: "192.168.1.1/32"
      register: result
      ignore_errors: true
-   
+
    - name: Debug connection result
      debug:
        var: result
@@ -55,6 +58,7 @@ If a module reports a missing object (like a folder or tag that you believe exis
 If your playbook runs successfully but changes aren't reflected in SCM:
 
 1. Remember to commit changes - many modules only stage changes:
+
    ```yaml
    - name: Commit changes
      cdot65.scm.commit:
@@ -62,6 +66,7 @@ If your playbook runs successfully but changes aren't reflected in SCM:
    ```
 
 2. Check if the changes are in a candidate configuration not yet pushed:
+
    ```yaml
    - name: Push candidate configuration
      cdot65.scm.push_config:
@@ -102,11 +107,13 @@ Enable debug mode to get detailed information:
 If you see errors about missing methods or unexpected behavior:
 
 1. Check your SDK version:
+
    ```bash
    pip show pan-scm-sdk
    ```
 
 2. Update to the latest version:
+
    ```bash
    pip install --upgrade pan-scm-sdk
    ```
@@ -115,11 +122,12 @@ If you see errors about missing methods or unexpected behavior:
 
 If you're still experiencing issues:
 
-1. Check the [GitHub Issues](https://github.com/cdot65/pan-scm-ansible/issues) for similar problems and solutions
+1. Check the [GitHub Issues](https://github.com/cdot65/pan-scm-ansible/issues) for similar problems
+   and solutions
 2. Submit a detailed bug report with:
-    - Collection version (`ansible-galaxy collection list`)
-    - SDK version (`pip show pan-scm-sdk`)
-    - Python version (`python --version`)
-    - Ansible version (`ansible --version`)
-    - Full error output (with `-vvv` flag)
-    - Steps to reproduce the issue
+   - Collection version (`ansible-galaxy collection list`)
+   - SDK version (`pip show pan-scm-sdk`)
+   - Python version (`python --version`)
+   - Ansible version (`ansible --version`)
+   - Full error output (with `-vvv` flag)
+   - Steps to reproduce the issue

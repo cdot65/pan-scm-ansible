@@ -1,4 +1,4 @@
-# URL Categories Configuration Object
+# Url Categories Configuration Object
 
 ## Table of Contents
 
@@ -10,43 +10,44 @@
 
 ## Overview
 
-The `url_categories` module manages URL categories within Palo Alto Networks' Strata Cloud Manager (SCM). It provides functionality to create, update, and delete URL category objects used for URL filtering and security policies.
+The `url_categories` module manages URL categories within Palo Alto Networks' Strata Cloud Manager
+(SCM). It provides functionality to create, update, and delete URL category objects used for URL
+filtering and security policies.
 
 URL categories can be of two types:
+
 - URL List: Contains a list of specific URLs to match
 - Category Match: Matches predefined URL categories
 
 ## Module Parameters
 
-| Parameter     | Type       | Required | Choices             | Default    | Description                                  |
-|---------------|------------|----------|---------------------|------------|----------------------------------------------|
-| name          | str        | yes      |                     |            | Name of the URL category object              |
-| description   | str        | no       |                     |            | Description of the URL category object       |
-| list          | list       | yes†     |                     |            | List of URLs or categories                   |
-| type          | str        | no       | URL List, Category Match | URL List | Type of URL category                        |
-| folder        | str        | yes‡     |                     |            | Folder where this resource is stored         |
-| snippet       | str        | yes‡     |                     |            | Snippet where this resource is defined       |
-| device        | str        | yes‡     |                     |            | Device where this resource is defined        |
-| provider      | dict       | yes      |                     |            | SCM authentication credentials               |
-| state         | str        | yes      | present, absent     |            | Whether the resource should exist            |
+| Parameter   | Type | Required | Choices                  | Default  | Description                            |
+| ----------- | ---- | -------- | ------------------------ | -------- | -------------------------------------- |
+| name        | str  | yes      |                          |          | Name of the URL category object        |
+| description | str  | no       |                          |          | Description of the URL category object |
+| list        | list | yes†     |                          |          | List of URLs or categories             |
+| type        | str  | no       | URL List, Category Match | URL List | Type of URL category                   |
+| folder      | str  | yes‡     |                          |          | Folder where this resource is stored   |
+| snippet     | str  | yes‡     |                          |          | Snippet where this resource is defined |
+| device      | str  | yes‡     |                          |          | Device where this resource is defined  |
+| provider    | dict | yes      |                          |          | SCM authentication credentials         |
+| state       | str  | yes      | present, absent          |          | Whether the resource should exist      |
 
-† Required when `state=present`  
+† Required when `state=present`\
 ‡ One of these parameters is required
 
 ### Provider Dictionary
 
-| Parameter     | Type | Required | Default | Description                           |
-|---------------|------|----------|---------|---------------------------------------|
-| client_id     | str  | yes      |         | OAuth2 client ID                      |
-| client_secret | str  | yes      |         | OAuth2 client secret                  |
-| tsg_id        | str  | yes      |         | Tenant Service Group ID               |
-| log_level     | str  | no       | INFO    | Log level for the SDK                 |
+| Parameter     | Type | Required | Default | Description             |
+| ------------- | ---- | -------- | ------- | ----------------------- |
+| client_id     | str  | yes      |         | OAuth2 client ID        |
+| client_secret | str  | yes      |         | OAuth2 client secret    |
+| tsg_id        | str  | yes      |         | Tenant Service Group ID |
+| log_level     | str  | no       | INFO    | Log level for the SDK   |
 
 ## Examples
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Create a URL category with URL List type
@@ -60,11 +61,8 @@ URL categories can be of two types:
     state: "present"
 ```
 
-</div>
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Create a URL category with Category Match type
@@ -78,11 +76,8 @@ URL categories can be of two types:
     state: "present"
 ```
 
-</div>
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Update a URL category with new URLs
@@ -96,11 +91,8 @@ URL categories can be of two types:
     state: "present"
 ```
 
-</div>
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Delete URL category
@@ -111,13 +103,10 @@ URL categories can be of two types:
     state: "absent"
 ```
 
-</div>
 
 ## Return Values
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 changed:
@@ -139,7 +128,6 @@ url_category:
         folder: "Security"
 ```
 
-</div>
 
 ## Usage Notes
 

@@ -1,4 +1,4 @@
-# URL Categories Info Module
+# Url Categories Information Object
 
 ## Table of Contents
 
@@ -10,42 +10,42 @@
 
 ## Overview
 
-The `url_categories_info` module retrieves information about URL categories in Palo Alto Networks' Strata Cloud Manager (SCM). It allows you to fetch details about specific URL categories or list multiple URL categories with various filtering options.
+The `url_categories_info` module retrieves information about URL categories in Palo Alto Networks'
+Strata Cloud Manager (SCM). It allows you to fetch details about specific URL categories or list
+multiple URL categories with various filtering options.
 
 ## Module Parameters
 
-| Parameter       | Type    | Required | Choices       | Default | Description                                    |
-|-----------------|---------|----------|---------------|---------|------------------------------------------------|
-| name            | str     | no       |               |         | Name of a specific URL category to retrieve    |
-| gather_subset   | list    | no       | all, config   | config  | Information to gather about URL categories     |
-| folder          | str     | yes*     |               |         | Filter URL categories by folder container      |
-| snippet         | str     | yes*     |               |         | Filter URL categories by snippet container     |
-| device          | str     | yes*     |               |         | Filter URL categories by device container      |
-| exact_match     | bool    | no       |               | false   | Only return objects in the specified container |
-| exclude_folders | list    | no       |               |         | List of folder names to exclude from results   |
-| exclude_snippets| list    | no       |               |         | List of snippet values to exclude              |
-| exclude_devices | list    | no       |               |         | List of device values to exclude               |
-| members         | list    | no       |               |         | Filter by URLs or categories in the list       |
-| provider        | dict    | yes      |               |         | SCM authentication credentials                 |
+| Parameter        | Type | Required | Choices     | Default | Description                                    |
+| ---------------- | ---- | -------- | ----------- | ------- | ---------------------------------------------- |
+| name             | str  | no       |             |         | Name of a specific URL category to retrieve    |
+| gather_subset    | list | no       | all, config | config  | Information to gather about URL categories     |
+| folder           | str  | yes\*    |             |         | Filter URL categories by folder container      |
+| snippet          | str  | yes\*    |             |         | Filter URL categories by snippet container     |
+| device           | str  | yes\*    |             |         | Filter URL categories by device container      |
+| exact_match      | bool | no       |             | false   | Only return objects in the specified container |
+| exclude_folders  | list | no       |             |         | List of folder names to exclude from results   |
+| exclude_snippets | list | no       |             |         | List of snippet values to exclude              |
+| exclude_devices  | list | no       |             |         | List of device values to exclude               |
+| members          | list | no       |             |         | Filter by URLs or categories in the list       |
+| provider         | dict | yes      |             |         | SCM authentication credentials                 |
 
-*One of these parameters is required if `name` is not specified
+\*One of these parameters is required if `name` is not specified
 
 ### Provider Dictionary
 
-| Parameter     | Type | Required | Default | Description                           |
-|---------------|------|----------|---------|---------------------------------------|
-| client_id     | str  | yes      |         | OAuth2 client ID                      |
-| client_secret | str  | yes      |         | OAuth2 client secret                  |
-| tsg_id        | str  | yes      |         | Tenant Service Group ID               |
-| log_level     | str  | no       | INFO    | Log level for the SDK                 |
+| Parameter     | Type | Required | Default | Description             |
+| ------------- | ---- | -------- | ------- | ----------------------- |
+| client_id     | str  | yes      |         | OAuth2 client ID        |
+| client_secret | str  | yes      |         | OAuth2 client secret    |
+| tsg_id        | str  | yes      |         | Tenant Service Group ID |
+| log_level     | str  | no       | INFO    | Log level for the SDK   |
 
 ## Examples
 
 ### Retrieve a Specific URL Category
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: Get information about a specific URL category
@@ -60,13 +60,10 @@ The `url_categories_info` module retrieves information about URL categories in P
     var: url_category_info.url_category
 ```
 
-</div>
 
 ### List All URL Categories in a Folder
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: List all URL categories in a folder
@@ -80,13 +77,10 @@ The `url_categories_info` module retrieves information about URL categories in P
     var: all_url_categories.url_categories
 ```
 
-</div>
 
 ### Filter URL Categories by List Members
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: List URL categories containing specific URLs
@@ -101,13 +95,10 @@ The `url_categories_info` module retrieves information about URL categories in P
     var: filtered_url_categories.url_categories
 ```
 
-</div>
 
 ### Advanced Filtering
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 - name: List URL categories with exact match and exclusions
@@ -124,15 +115,12 @@ The `url_categories_info` module retrieves information about URL categories in P
     var: filtered_url_categories.url_categories
 ```
 
-</div>
 
 ## Return Values
 
 ### When Retrieving a Specific URL Category
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 url_category:
@@ -148,13 +136,10 @@ url_category:
         folder: "Security"
 ```
 
-</div>
 
 ### When Listing URL Categories
 
-<div class="termy">
 
-<!-- termynal -->
 
 ```yaml
 url_categories:
@@ -177,7 +162,6 @@ url_categories:
         folder: "Security"
 ```
 
-</div>
 
 ## Usage Notes
 
@@ -186,18 +170,23 @@ url_categories:
 The `url_categories_info` module supports these filtering mechanisms:
 
 1. **Container Filtering**:
+
    - `folder`, `snippet`, or `device` - Only one can be specified
    - This is the primary filter that determines the scope of your query
 
 2. **Member Filtering**:
+
    - `members` - Filter by specific URLs or categories in the list
    - Useful for finding URL categories containing specific entries
 
 3. **Exact Match**:
-   - `exact_match` - When set to `true`, only returns objects defined exactly in the specified container
+
+   - `exact_match` - When set to `true`, only returns objects defined exactly in the specified
+     container
    - Excludes inherited or shared objects
 
 4. **Exclusion Filters**:
+
    - `exclude_folders` - Exclude URL categories from specific folders
    - `exclude_snippets` - Exclude URL categories from specific snippets
    - `exclude_devices` - Exclude URL categories from specific devices
@@ -211,4 +200,5 @@ The `url_categories_info` module supports these filtering mechanisms:
 
 - List operations might return a large number of objects
 - Use appropriate filters to narrow down results
-- Combining filters (e.g., using both `exact_match` and `members`) can significantly reduce result size
+- Combining filters (e.g., using both `exact_match` and `members`) can significantly reduce result
+  size

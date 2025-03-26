@@ -1,15 +1,16 @@
-# IKE Crypto Profile Module
+# Ike Crypto Profile Configuration Object
 
 ## Overview
 
-The `ike_crypto_profile` module enables management of Internet Key Exchange (IKE) Crypto Profiles in Palo Alto Networks
-Strata Cloud Manager (SCM). IKE Crypto Profiles define the encryption and authentication algorithms to be used during
-the IKE Phase-1 negotiation when establishing a secure VPN tunnel.
+The `ike_crypto_profile` module enables management of Internet Key Exchange (IKE) Crypto Profiles in
+Palo Alto Networks Strata Cloud Manager (SCM). IKE Crypto Profiles define the encryption and
+authentication algorithms to be used during the IKE Phase-1 negotiation when establishing a secure
+VPN tunnel.
 
 ## Core Methods
 
 | Method   | Description                                               |
-|----------|-----------------------------------------------------------|
+| -------- | --------------------------------------------------------- |
 | `create` | Creates a new IKE Crypto Profile in SCM                   |
 | `update` | Modifies an existing IKE Crypto Profile                   |
 | `delete` | Removes an IKE Crypto Profile from SCM                    |
@@ -19,7 +20,7 @@ the IKE Phase-1 negotiation when establishing a secure VPN tunnel.
 ## Model Attributes
 
 | Attribute        | Type   | Description                       | Required |
-|------------------|--------|-----------------------------------|----------|
+| ---------------- | ------ | --------------------------------- | -------- |
 | `name`           | String | Name of the IKE Crypto Profile    | Yes      |
 | `description`    | String | Description of the profile        | No       |
 | `encryption`     | List   | List of encryption algorithms     | Yes      |
@@ -144,5 +145,6 @@ The module will fail with proper error messages if:
 ## Related Models
 
 - [IKE Gateway](ike_gateway.md) - References IKE Crypto profiles during tunnel establishment
-- [IPSec Crypto Profile](ipsec_crypto_profile.md) - Used alongside IKE Crypto profiles for VPN tunnels
+- [IPSec Crypto Profile](ipsec_crypto_profile.md) - Used alongside IKE Crypto profiles for VPN
+  tunnels
 - [IPSec Tunnel](ipsec_tunnel.md) - VPN tunnel configurations that utilize IKE Crypto profiles

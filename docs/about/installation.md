@@ -1,6 +1,7 @@
 # Installation
 
-This guide covers the installation of the Palo Alto Networks SCM Ansible Collection and its dependencies.
+This guide covers the installation of the Palo Alto Networks SCM Ansible Collection and its
+dependencies.
 
 ## Prerequisites
 
@@ -86,5 +87,5 @@ You should see the collection listed with its installed version.
 
 ## Next Steps
 
-After installation, proceed to the [Getting Started](getting-started.md) guide to configure authentication and run your
-first SCM Ansible playbook.
+After installation, proceed to the [Getting Started](getting-started.md) guide to configure
+authentication and run your first SCM Ansible playbook.
