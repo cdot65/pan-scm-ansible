@@ -73,12 +73,12 @@ class DNSSecurityProfileSpec:
                 "required": False,
                 "options": {
                     "ipv4_address": {
-                        "type": "str", 
+                        "type": "str",
                         "required": True,
                         "choices": ["pan-sinkhole-default-ip", "127.0.0.1"],
                     },
                     "ipv6_address": {
-                        "type": "str", 
+                        "type": "str",
                         "required": True,
                         "choices": ["::1"],
                     },

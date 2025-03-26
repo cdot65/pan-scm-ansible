@@ -143,6 +143,7 @@ The collection includes modules for managing various SCM configuration objects:
 | [Decryption Profile](modules/decryption_profile.md) | Manage decryption profiles | [Decryption Profile Info](modules/decryption_profile_info.md) |
 | [DNS Security Profile](modules/dns_security_profile.md) | Manage DNS security profiles | [DNS Security Profile Info](modules/dns_security_profile_info.md) |
 | [Security Profiles Group](modules/security_profiles_group.md) | Manage security profile groups | - |
+| [URL Categories](modules/url_categories.md) | Manage URL categories | [URL Categories Info](modules/url_categories_info.md) |
 
 [View All Modules →](modules/index.md)
 

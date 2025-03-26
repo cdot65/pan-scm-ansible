@@ -148,6 +148,8 @@ nav:
               - Security Profiles Group: collection/modules/security_profiles_group.md
               - Security Rule: collection/modules/security_rule.md
               - Security Rule Info: collection/modules/security_rule_info.md
+              - URL Categories: collection/modules/url_categories.md
+              - URL Categories Info: collection/modules/url_categories_info.md
       - Roles:
           - Overview: collection/roles/index.md
       - Plugins:

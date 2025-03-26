@@ -37,14 +37,14 @@ class RegionSpec:
                 "required": False,
                 "options": {
                     "latitude": {
-                        "type": "float", 
+                        "type": "float",
                         "required": True,
-                        "description": "The latitudinal position (must be between -90 and 90 degrees)."
+                        "description": "The latitudinal position (must be between -90 and 90 degrees).",
                     },
                     "longitude": {
-                        "type": "float", 
+                        "type": "float",
                         "required": True,
-                        "description": "The longitudinal position (must be between -180 and 180 degrees)."
+                        "description": "The longitudinal position (must be between -180 and 180 degrees).",
                     },
                 },
                 "description": "Geographic location of the region with latitude (-90 to 90) and longitude (-180 to 180).",

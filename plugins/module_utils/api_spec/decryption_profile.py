@@ -162,7 +162,15 @@ class DecryptionProfileSpec:
                         type="list",
                         elements="str",
                         required=False,
-                        choices=["rc4", "rc4-md5", "aes-128-cbc", "aes-128-gcm", "aes-256-cbc", "aes-256-gcm", "3des"],
+                        choices=[
+                            "rc4",
+                            "rc4-md5",
+                            "aes-128-cbc",
+                            "aes-128-gcm",
+                            "aes-256-cbc",
+                            "aes-256-gcm",
+                            "3des",
+                        ],
                         description="Encryption algorithms to allow.",
                     ),
                     auth_algorithm=dict(

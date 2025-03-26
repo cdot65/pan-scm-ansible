@@ -86,16 +86,32 @@ class RegionInfoSpec:
                         "type": "dict",
                         "required": False,
                         "options": {
-                            "min": {"type": "float", "required": True, "description": "Minimum latitude value (range: -90 to 90)."},
-                            "max": {"type": "float", "required": True, "description": "Maximum latitude value (range: -90 to 90)."},
+                            "min": {
+                                "type": "float",
+                                "required": True,
+                                "description": "Minimum latitude value (range: -90 to 90).",
+                            },
+                            "max": {
+                                "type": "float",
+                                "required": True,
+                                "description": "Maximum latitude value (range: -90 to 90).",
+                            },
                         },
                     },
                     "longitude": {
                         "type": "dict",
                         "required": False,
                         "options": {
-                            "min": {"type": "float", "required": True, "description": "Minimum longitude value (range: -180 to 180)."},
-                            "max": {"type": "float", "required": True, "description": "Maximum longitude value (range: -180 to 180)."},
+                            "min": {
+                                "type": "float",
+                                "required": True,
+                                "description": "Minimum longitude value (range: -180 to 180).",
+                            },
+                            "max": {
+                                "type": "float",
+                                "required": True,
+                                "description": "Maximum longitude value (range: -180 to 180).",
+                            },
                         },
                     },
                 },

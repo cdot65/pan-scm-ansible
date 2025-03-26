@@ -397,7 +397,7 @@ def needs_update(existing, params):
         "negate_destination",
         "action",
     ]
-    
+
     # Process regular fields - only include fields that are explicitly provided and different from current value
     for param in field_mapping:
         # If user provided a value and it's different from the current value, add it to update_data
@@ -406,7 +406,7 @@ def needs_update(existing, params):
             if current_value != params[param]:
                 update_data[param] = params[param]
                 changed = True
-                
+
     # List parameters - handle similarly to regular fields
     list_params = [
         "tag",
@@ -433,7 +433,9 @@ def needs_update(existing, params):
     if "profile_setting" in params and params["profile_setting"] is not None:
         if hasattr(existing, "profile_setting") and existing.profile_setting is not None:
             current_profile_setting = {"group": existing.profile_setting.group}
-            if "group" in params["profile_setting"] and sorted(current_profile_setting["group"]) != sorted(params["profile_setting"]["group"]):
+            if "group" in params["profile_setting"] and sorted(
+                current_profile_setting["group"]
+            ) != sorted(params["profile_setting"]["group"]):
                 update_data["profile_setting"] = params["profile_setting"]
                 changed = True
         else:

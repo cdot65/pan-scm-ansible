@@ -361,4 +361,4 @@ It's important to handle potential errors when working with log forwarding profi
 - [log_forwarding_profile_info](log_forwarding_profile_info.md) - Retrieve information about log forwarding profiles
 - [http_server_profiles](http_server_profiles.md) - Manage HTTP server profiles used in log forwarding
 - [http_server_profiles_info](http_server_profiles_info.md) - Retrieve information about HTTP server profiles
-- [commit](commit.md) - Commit configuration changes
+- commit - Commit configuration changes

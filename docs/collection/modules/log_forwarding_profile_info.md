@@ -257,4 +257,4 @@ It's important to handle potential errors when retrieving information about log 
 - [log_forwarding_profile](log_forwarding_profile.md) - Create, update, and delete log forwarding profiles
 - [http_server_profiles](http_server_profiles.md) - Manage HTTP server profiles used in log forwarding
 - [http_server_profiles_info](http_server_profiles_info.md) - Retrieve information about HTTP server profiles
-- [commit](commit.md) - Commit configuration changes
+- commit - Commit configuration changes

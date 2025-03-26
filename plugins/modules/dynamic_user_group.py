@@ -14,7 +14,7 @@
 Ansible module for managing dynamic user group objects in SCM.
 
 This module provides functionality to create, update, and delete dynamic user group objects
-in the SCM (Strata Cloud Manager) system. It handles tag-based filter expressions and supports 
+in the SCM (Strata Cloud Manager) system. It handles tag-based filter expressions and supports
 check mode operations.
 """
 
@@ -25,7 +25,9 @@ __metaclass__ = type
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
 
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.dynamic_user_group import DynamicUserGroupSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.dynamic_user_group import (
+    DynamicUserGroupSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
@@ -303,7 +305,7 @@ def main():
     Main execution path for the dynamic_user_group module.
 
     This module provides functionality to create, update, and delete dynamic user group objects
-    in the SCM (Strata Cloud Manager) system. It handles tag-based filter expressions and supports 
+    in the SCM (Strata Cloud Manager) system. It handles tag-based filter expressions and supports
     check mode operations.
 
     :return: Ansible module exit data
@@ -335,9 +337,7 @@ def main():
         if module.params["state"] == "present":
             # Ensure filter is provided for creating/updating dynamic user groups
             if "filter" not in dug_data or dug_data["filter"] is None:
-                module.fail_json(
-                    msg="Parameter 'filter' is required when state is 'present'."
-                )
+                module.fail_json(msg="Parameter 'filter' is required when state is 'present'.")
 
             if not exists:
                 # Create new dynamic user group

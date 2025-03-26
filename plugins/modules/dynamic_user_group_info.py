@@ -24,7 +24,9 @@ __metaclass__ = type
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
 
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.dynamic_user_group import DynamicUserGroupInfoSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.dynamic_user_group import (
+    DynamicUserGroupInfoSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,

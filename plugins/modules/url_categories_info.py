@@ -11,9 +11,9 @@
 # All rights reserved.
 
 """
-Ansible module for gathering information about syslog server profile objects in SCM.
+Ansible module for gathering information about URL categories in SCM.
 
-This module provides functionality to retrieve information about syslog server profile objects
+This module provides functionality to retrieve information about URL categories
 in the SCM (Strata Cloud Manager) system with various filtering options.
 """
 
@@ -24,9 +24,6 @@ __metaclass__ = type
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
 
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.syslog_server_profiles_info import (
-    SyslogServerProfilesInfoSpec,
-)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
@@ -35,27 +32,27 @@ from scm.exceptions import InvalidObjectError, MissingQueryParameterError, Objec
 
 DOCUMENTATION = r"""
 ---
-module: syslog_server_profiles_info
+module: url_categories_info
 
-short_description: Gather information about syslog server profile objects in SCM.
+short_description: Gather information about URL categories in SCM.
 
 version_added: "0.1.0"
 
 description:
-    - Gather information about syslog server profile objects within Strata Cloud Manager (SCM).
-    - Supports retrieving a specific syslog server profile by name or listing profiles with various filters.
-    - Provides additional client-side filtering capabilities for exact matches, exclusions, and transport protocols.
-    - Returns detailed information about each syslog server profile object.
+    - Gather information about URL categories within Strata Cloud Manager (SCM).
+    - Supports retrieving a specific URL category by name or listing URL categories with various filters.
+    - Provides additional client-side filtering capabilities for exact matches and exclusions.
+    - Returns detailed information about each URL category object.
     - This is an info module that only retrieves information and does not modify anything.
 
 options:
     name:
-        description: The name of a specific syslog server profile to retrieve.
+        description: The name of a specific URL category to retrieve.
         required: false
         type: str
     gather_subset:
         description:
-            - Determines which information to gather about syslog server profiles.
+            - Determines which information to gather about URL categories.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.
         type: list
@@ -63,15 +60,15 @@ options:
         default: ['config']
         choices: ['all', 'config']
     folder:
-        description: Filter syslog server profiles by folder container.
+        description: Filter URL categories by folder container.
         required: false
         type: str
     snippet:
-        description: Filter syslog server profiles by snippet container.
+        description: Filter URL categories by snippet container.
         required: false
         type: str
     device:
-        description: Filter syslog server profiles by device container.
+        description: Filter URL categories by device container.
         required: false
         type: str
     exact_match:
@@ -94,18 +91,11 @@ options:
         required: false
         type: list
         elements: str
-    transport:
-        description: Filter by transport protocol used by the syslog servers.
+    members:
+        description: Filter by URLs or categories in the list.
         required: false
         type: list
         elements: str
-        choices: ["UDP", "TCP"]
-    format:
-        description: Filter by syslog format used by the servers.
-        required: false
-        type: list
-        elements: str
-        choices: ["BSD", "IETF"]
     provider:
         description: Authentication credentials.
         required: true
@@ -135,7 +125,7 @@ author:
 
 EXAMPLES = r"""
 ---
-- name: Gather Syslog Server Profile Information in Strata Cloud Manager
+- name: Gather URL Categories Information in Strata Cloud Manager
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -148,100 +138,88 @@ EXAMPLES = r"""
       log_level: "INFO"
   tasks:
 
-    - name: Get information about a specific syslog server profile
-      cdot65.scm.syslog_server_profiles_info:
+    - name: Get information about a specific URL category
+      cdot65.scm.url_categories_info:
         provider: "{{ provider }}"
-        name: "basic-syslog-profile"
-        folder: "Shared"
-      register: syslog_profile_info
+        name: "Malicious_URLs"
+        folder: "Security"
+      register: url_category_info
 
-    - name: List all syslog server profiles in a folder
-      cdot65.scm.syslog_server_profiles_info:
+    - name: List all URL categories in a folder
+      cdot65.scm.url_categories_info:
         provider: "{{ provider }}"
-        folder: "Shared"
-      register: all_syslog_profiles
+        folder: "Security"
+      register: all_url_categories
 
-    - name: List only UDP syslog server profiles
-      cdot65.scm.syslog_server_profiles_info:
+    - name: List URL categories containing specific URLs
+      cdot65.scm.url_categories_info:
         provider: "{{ provider }}"
-        folder: "Shared"
-        transport: ["UDP"]
-      register: udp_syslog_profiles
+        folder: "Security"
+        members: ["malware.example.com"]
+      register: filtered_url_categories
 
-    - name: List only IETF format syslog server profiles
-      cdot65.scm.syslog_server_profiles_info:
+    - name: List URL categories with exact match and exclusions
+      cdot65.scm.url_categories_info:
         provider: "{{ provider }}"
-        folder: "Shared"
-        format: ["IETF"]
-      register: ietf_syslog_profiles
-
-    - name: List syslog server profiles with exact match and exclusions
-      cdot65.scm.syslog_server_profiles_info:
-        provider: "{{ provider }}"
-        folder: "Shared"
+        folder: "Security"
         exact_match: true
-        exclude_folders: ["Test"]
+        exclude_folders: ["All"]
         exclude_snippets: ["default"]
-      register: filtered_syslog_profiles
+      register: filtered_url_categories
 """
 
 RETURN = r"""
-syslog_server_profiles:
-    description: List of syslog server profile objects matching the filter criteria (returned when name is not specified).
+url_categories:
+    description: List of URL category objects matching the filter criteria (returned when name is not specified).
     returned: success, when name is not specified
     type: list
     elements: dict
     sample:
       - id: "123e4567-e89b-12d3-a456-426655440000"
-        name: "basic-syslog-profile"
-        servers:
-          server1:
-            name: "server1"
-            server: "192.168.1.100"
-            transport: "UDP"
-            port: 514
-            format: "BSD"
-            facility: "LOG_USER"
-        folder: "Shared"
+        name: "Malicious_URLs"
+        description: "List of known malicious URLs"
+        type: "URL List"
+        list: ["malware.example.com", "phishing.example.net"]
+        folder: "Security"
       - id: "234e5678-e89b-12d3-a456-426655440001"
-        name: "advanced-syslog-profile"
-        servers:
-          primary:
-            name: "primary"
-            server: "logs.example.com"
-            transport: "TCP"
-            port: 1514
-            format: "IETF"
-            facility: "LOG_LOCAL0"
-          backup:
-            name: "backup"
-            server: "backup-logs.example.com"
-            transport: "TCP"
-            port: 1514
-            format: "IETF"
-            facility: "LOG_LOCAL1"
-        format:
-          traffic: "hostname,$time,$src,$dst,$proto,$sport,$dport"
-          threat: "hostname,$time,$src,$dst,$threatid,$severity"
-          system: "hostname,$time,$severity,$result"
-        folder: "Shared"
-syslog_server_profile:
-    description: Information about the requested syslog server profile (returned when name is specified).
+        name: "Social_Media"
+        description: "Category for social media sites"
+        type: "Category Match"
+        list: ["social-networking"]
+        folder: "Security"
+url_category:
+    description: Information about the requested URL category (returned when name is specified).
     returned: success, when name is specified
     type: dict
     sample:
         id: "123e4567-e89b-12d3-a456-426655440000"
-        name: "basic-syslog-profile"
-        servers:
-          server1:
-            name: "server1"
-            server: "192.168.1.100"
-            transport: "UDP"
-            port: 514
-            format: "BSD"
-            facility: "LOG_USER"
-        folder: "Shared"
+        name: "Malicious_URLs"
+        description: "List of known malicious URLs"
+        type: "URL List"
+        list: ["malware.example.com", "phishing.example.net"]
+        folder: "Security"
 """
+
+
+def add_url_categories_to_client(client):
+    """
+    Add the URLCategories class to the SCM client.
+
+    This is a temporary solution until the SDK includes the URL categories functionality.
+
+    Args:
+        client: SCM client instance
+
+    Returns:
+        None
+    """
+    # Import the URLCategories class from the SDK module
+    from scm.config.security.url_categories import URLCategories
+
+    # Add the url_categories attribute to the client
+    client.url_categories = URLCategories(client)
+
+    return client
 
 
 def build_filter_params(module_params):
@@ -252,9 +230,7 @@ def build_filter_params(module_params):
         module_params (dict): Dictionary of module parameters
 
     Returns:
-        (dict, dict): Tuple containing:
-            - dict: Container parameters (folder, snippet, device)
-            - dict: Filter parameters for the list operation
+        dict: Filtered dictionary containing only relevant filter parameters
     """
     # Container params
     container_params = {}
@@ -268,29 +244,48 @@ def build_filter_params(module_params):
         if module_params.get(filter_param) is not None:
             filter_params[filter_param] = module_params[filter_param]
 
-    # Add transport filter if provided
-    if module_params.get("transport") is not None:
-        filter_params["transport"] = module_params["transport"]
-
-    # Add format filter if provided
-    if module_params.get("format") is not None:
-        filter_params["format"] = module_params["format"]
+    # Convert "members" parameter for SDK
+    if module_params.get("members") is not None:
+        filter_params["members"] = module_params["members"]
 
     return container_params, filter_params
 
 
 def main():
     """
-    Main execution path for the syslog_server_profiles_info module.
+    Main execution path for the url_categories_info module.
 
-    This module provides functionality to gather information about syslog server profile objects
+    This module provides functionality to gather information about URL category objects
     in the SCM (Strata Cloud Manager) system with various filtering options.
 
     :return: Ansible module exit data
     :rtype: dict
     """
     module = AnsibleModule(
-        argument_spec=SyslogServerProfilesInfoSpec.spec(),
+        argument_spec=dict(
+            name=dict(type="str", required=False),
+            gather_subset=dict(
+                type="list", elements="str", default=["config"], choices=["all", "config"]
+            ),
+            folder=dict(type="str", required=False),
+            snippet=dict(type="str", required=False),
+            device=dict(type="str", required=False),
+            exact_match=dict(type="bool", required=False, default=False),
+            exclude_folders=dict(type="list", elements="str", required=False),
+            exclude_snippets=dict(type="list", elements="str", required=False),
+            exclude_devices=dict(type="list", elements="str", required=False),
+            members=dict(type="list", elements="str", required=False),
+            provider=dict(
+                type="dict",
+                required=True,
+                options=dict(
+                    client_id=dict(type="str", required=True),
+                    client_secret=dict(type="str", required=True, no_log=True),
+                    tsg_id=dict(type="str", required=True),
+                    log_level=dict(type="str", required=False, default="INFO"),
+                ),
+            ),
+        ),
         supports_check_mode=True,
         mutually_exclusive=[["folder", "snippet", "device"]],
         # Only require a container if we're not provided with a specific name
@@ -302,7 +297,10 @@ def main():
     try:
         client = get_scm_client(module)
 
-        # Check if we're fetching a specific syslog server profile by name
+        # Add URL categories functionality to the client
+        client = add_url_categories_to_client(client)
+
+        # Check if we're fetching a specific URL category by name
         if module.params.get("name"):
             name = module.params["name"]
             container_params = {}
@@ -313,33 +311,29 @@ def main():
                     container_params[container] = module.params[container]
 
             try:
-                # Fetch a specific syslog server profile
-                syslog_server_profile = client.syslog_server_profile.fetch(
-                    name=name, **container_params
-                )
+                # Fetch a specific URL category
+                url_category = client.url_categories.fetch(name=name, **container_params)
 
                 # Serialize response for Ansible output
-                result["syslog_server_profile"] = serialize_response(syslog_server_profile)
+                result["url_category"] = serialize_response(url_category)
 
             except ObjectNotPresentError:
                 module.fail_json(
-                    msg=f"Syslog server profile with name '{name}' not found in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
+                    msg=f"URL category with name '{name}' not found in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
                 )
             except (MissingQueryParameterError, InvalidObjectError) as e:
                 module.fail_json(msg=str(e))
 
         else:
-            # List syslog server profiles with filtering
+            # List URL categories with filtering
             container_params, filter_params = build_filter_params(module.params)
 
             try:
-                syslog_server_profiles = client.syslog_server_profile.list(
-                    **container_params, **filter_params
-                )
+                url_categories = client.url_categories.list(**container_params, **filter_params)
 
                 # Serialize response for Ansible output
-                result["syslog_server_profiles"] = [
-                    serialize_response(profile) for profile in syslog_server_profiles
+                result["url_categories"] = [
+                    serialize_response(category) for category in url_categories
                 ]
 
             except MissingQueryParameterError as e:

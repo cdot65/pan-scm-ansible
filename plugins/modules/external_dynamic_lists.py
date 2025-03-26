@@ -466,7 +466,7 @@ def build_edl_type_data(module_params, recurring):
 
             # Add recurring interval configuration
             type_config["recurring"] = recurring
-            
+
             # Add to the type data
             type_data = {sdk_type: type_config}
             break
@@ -687,41 +687,52 @@ def needs_update(existing, new_data):
         # Checking if there are actual changes in the configuration
         # Always set the base configuration
         update_data["type"] = {existing_type: type_config}
-        
+
         # Check if URL has changed
         if "url" in new_type_config and type_config.get("url") != new_type_config["url"]:
             changed = True
-        
+
         # Check if description has changed
-        if "description" in new_type_config and type_config.get("description") != new_type_config["description"]:
+        if (
+            "description" in new_type_config
+            and type_config.get("description") != new_type_config["description"]
+        ):
             changed = True
-            
+
         # Check if certificate_profile has changed
-        if "certificate_profile" in new_type_config and type_config.get("certificate_profile") != new_type_config["certificate_profile"]:
+        if (
+            "certificate_profile" in new_type_config
+            and type_config.get("certificate_profile") != new_type_config["certificate_profile"]
+        ):
             changed = True
-            
+
         # Check if expand_domain has changed (for domain type)
-        if "expand_domain" in new_type_config and type_config.get("expand_domain") != new_type_config["expand_domain"]:
+        if (
+            "expand_domain" in new_type_config
+            and type_config.get("expand_domain") != new_type_config["expand_domain"]
+        ):
             changed = True
-            
+
         # Compare exception_list if provided
         if "exception_list" in new_type_config:
             existing_exceptions = set(type_config.get("exception_list", []))
             new_exceptions = set(new_type_config["exception_list"])
             if existing_exceptions != new_exceptions:
                 changed = True
-        
+
         # Check recurring schedule changes
         if "recurring" in new_type_config:
             # Get the type of recurring schedule in new data
             new_rec_type = next(iter(new_type_config["recurring"]))
-            
+
             # Check if the schedule type is different
             if "recurring" not in type_config or new_rec_type not in type_config["recurring"]:
                 changed = True
             # For detailed schedules, check their specific properties
             elif new_rec_type in ["daily", "weekly", "monthly"]:
-                if type_config["recurring"].get(new_rec_type) != new_type_config["recurring"].get(new_rec_type):
+                if type_config["recurring"].get(new_rec_type) != new_type_config["recurring"].get(
+                    new_rec_type
+                ):
                     changed = True
 
     # If types don't match or new configuration is provided but not existing, use new data
@@ -787,15 +798,18 @@ def main():
             module.fail_json(
                 msg="Exactly one of 'folder', 'snippet', or 'device' must be provided."
             )
-            
+
         # Special handling for certificate_profile and exception_list in all EDL types
         if "type" in edl_data:
             for edl_type in ["ip", "domain", "url", "imsi", "imei"]:
                 if edl_type in edl_data["type"]:
                     # Remove certificate_profile if it's not provided (to avoid API validation issues)
-                    if "certificate_profile" in edl_data["type"][edl_type] and not edl_data["type"][edl_type]["certificate_profile"]:
+                    if (
+                        "certificate_profile" in edl_data["type"][edl_type]
+                        and not edl_data["type"][edl_type]["certificate_profile"]
+                    ):
                         del edl_data["type"][edl_type]["certificate_profile"]
-                    
+
                     # Remove empty exception_list to avoid API validation issues
                     if "exception_list" in edl_data["type"][edl_type]:
                         if not edl_data["type"][edl_type]["exception_list"]:
@@ -810,14 +824,14 @@ def main():
                 if not module.check_mode:
                     # Check the specific path of certificate_profile
                     if (
-                        "type" in edl_data 
+                        "type" in edl_data
                         and "url" in edl_data["type"]
                         and "certificate_profile" in edl_data["type"]["url"]
                     ):
                         # Ensure certificate_profile is a string
                         if edl_data["type"]["url"]["certificate_profile"] is None:
                             edl_data["type"]["url"]["certificate_profile"] = "None"
-                    
+
                     try:
                         new_edl = client.external_dynamic_list.create(data=edl_data)
                         result["external_dynamic_list"] = serialize_response(new_edl)
@@ -829,8 +843,8 @@ def main():
                     except InvalidObjectError as e:
                         # Add more detailed error output
                         module.fail_json(
-                            msg=f"Invalid external dynamic list data: {str(e)}", 
-                            edl_data=str(edl_data)
+                            msg=f"Invalid external dynamic list data: {str(e)}",
+                            edl_data=str(edl_data),
                         )
                 else:
                     result["changed"] = True
@@ -845,14 +859,17 @@ def main():
                             for edl_type in ["ip", "domain", "url", "imsi", "imei"]:
                                 if edl_type in update_data["type"]:
                                     # Remove certificate_profile if it's not provided (to avoid API validation issues)
-                                    if "certificate_profile" in update_data["type"][edl_type] and not update_data["type"][edl_type]["certificate_profile"]:
+                                    if (
+                                        "certificate_profile" in update_data["type"][edl_type]
+                                        and not update_data["type"][edl_type]["certificate_profile"]
+                                    ):
                                         del update_data["type"][edl_type]["certificate_profile"]
-                                    
+
                                     # Remove empty exception_list to avoid API validation issues
                                     if "exception_list" in update_data["type"][edl_type]:
                                         if not update_data["type"][edl_type]["exception_list"]:
                                             del update_data["type"][edl_type]["exception_list"]
-                        
+
                         # Create update model with complete object data
                         update_model = ExternalDynamicListsUpdateModel(**update_data)
 

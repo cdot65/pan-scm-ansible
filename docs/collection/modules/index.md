@@ -65,6 +65,7 @@ These modules configure security policies and profiles:
 | [decryption_profile](decryption_profile.md) | Manage decryption profiles | [decryption_profile_info](decryption_profile_info.md) |
 | [dns_security_profile](dns_security_profile.md) | Manage DNS security profiles | [dns_security_profile_info](dns_security_profile_info.md) |
 | [security_profiles_group](security_profiles_group.md) | Manage security profile groups | - |
+| [url_categories](url_categories.md) | Manage URL categories | [url_categories_info](url_categories_info.md) |
 
 ## Common Module Parameters
 

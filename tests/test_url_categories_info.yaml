@@ -1,0 +1,227 @@
+---
+# Playbook for testing Strata Cloud Manager URL Categories Info operations
+# Usage: poetry run ansible-playbook tests/test_url_categories_info.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM URL Categories Info Module Operations
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%y%m%d') }}"
+    test_folder: "Texas"
+  tasks:
+    # First clean up any existing test URL category objects if they exist
+    - name: Remove test URL category objects if they exist
+      cdot65.scm.url_categories:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "URLInfo_{{ test_timestamp }}"
+        - "CatInfo_{{ test_timestamp }}"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # Skip tag creation since we're not using tags for the URL categories
+    - name: Set task tags
+      ansible.builtin.set_fact:
+        dev_ansible_tag: "dev-ansible"
+        dev_automation_tag: "dev-automation"
+        dev_test_tag: "dev-test"
+        dev_cicd_tag: "dev-cicd"
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    # ==========================================
+    # CREATE test objects for testing the info module
+    # ==========================================
+    - name: Create a URL category with URL List type for testing
+      cdot65.scm.url_categories:
+        provider: "{{ provider }}"
+        name: "URLInfo_{{ test_timestamp }}"
+        description: "Test URL category with URL List type for info testing"
+        type: "URL List"
+        list: ["test1.example.com", "test2.example.com"]
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_url_list_result
+      tags:
+        - dev-test
+
+    - name: Create a URL category with Category Match type for testing
+      cdot65.scm.url_categories:
+        provider: "{{ provider }}"
+        name: "CatInfo_{{ test_timestamp }}"
+        description: "Test URL category with Category Match type for info testing"
+        type: "Category Match"
+        list: ["social-networking"]
+        folder: "{{ test_folder }}"
+        state: "present"
+      register: create_category_match_result
+      tags:
+        - dev-test
+
+    # Set names to fixed variables after creation
+    - name: Set URL category names to existing names
+      ansible.builtin.set_fact:
+        url_list_name: "{{ create_url_list_result.url_category.name }}"
+        category_match_name: "{{ create_category_match_result.url_category.name }}"
+
+    # ==========================================
+    # INFO tests - specific object retrieval
+    # ==========================================
+    - name: Get information about a specific URL category
+      cdot65.scm.url_categories_info:
+        provider: "{{ provider }}"
+        name: "{{ url_list_name }}"
+        folder: "{{ test_folder }}"
+      register: url_category_info
+      tags:
+        - dev-test
+
+    - name: Debug URL category info result
+      debug:
+        var: url_category_info
+        verbosity: 1
+
+    - name: Verify URL category info retrieval
+      ansible.builtin.assert:
+        that:
+          - url_category_info.url_category is defined
+          - url_category_info.url_category.name == url_list_name
+          - url_category_info.url_category.type == "URL List"
+          - url_category_info.url_category.description == "Test URL category with URL List type for info testing"
+        fail_msg: "Failed to retrieve URL category info"
+        success_msg: "Successfully retrieved URL category info"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # INFO tests - list all objects
+    # ==========================================
+    - name: List all URL categories in folder
+      cdot65.scm.url_categories_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+      register: all_url_categories
+      tags:
+        - dev-test
+
+    - name: Debug all URL categories result
+      debug:
+        var: all_url_categories
+        verbosity: 1
+
+    - name: Verify all URL categories list
+      ansible.builtin.assert:
+        that:
+          - all_url_categories.url_categories is defined
+          - all_url_categories.url_categories | length >= 2
+          - url_list_name in (all_url_categories.url_categories | map(attribute='name') | list)
+          - category_match_name in (all_url_categories.url_categories | map(attribute='name') | list)
+        fail_msg: "Failed to list all URL categories"
+        success_msg: "Successfully listed all URL categories"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # INFO tests - filtering by list members
+    # ==========================================
+    - name: Filter URL categories by list member
+      cdot65.scm.url_categories_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        members: ["test1.example.com"]
+      register: filtered_url_categories
+      tags:
+        - dev-test
+
+    - name: Debug filtered URL categories result
+      debug:
+        var: filtered_url_categories
+        verbosity: 1
+
+    - name: Verify filtered URL categories list
+      ansible.builtin.assert:
+        that:
+          - filtered_url_categories.url_categories is defined
+          - filtered_url_categories.url_categories | length >= 1
+          - url_list_name in (filtered_url_categories.url_categories | map(attribute='name') | list)
+        fail_msg: "Failed to filter URL categories by list member"
+        success_msg: "Successfully filtered URL categories by list member"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # INFO tests - exact match parameter
+    # ==========================================
+    - name: Test with exact match parameter
+      cdot65.scm.url_categories_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        exact_match: true
+      register: exact_match_url_categories
+      tags:
+        - dev-test
+
+    - name: Debug exact match URL categories result
+      debug:
+        var: exact_match_url_categories
+        verbosity: 1
+
+    - name: Verify exact match URL categories list
+      ansible.builtin.assert:
+        that:
+          - exact_match_url_categories.url_categories is defined
+        fail_msg: "Failed to list URL categories with exact match"
+        success_msg: "Successfully listed URL categories with exact match"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # CLEAN UP - delete test objects
+    # ==========================================
+    - name: Delete test URL categories
+      cdot65.scm.url_categories:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      loop:
+        - "{{ url_list_name }}"
+        - "{{ category_match_name }}"
+      register: delete_result
+      tags:
+        - dev-test
+        - dev-cleanup
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+        verbosity: 1
+
+    - name: Verify URL categories were deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is succeeded
+        fail_msg: "Failed to delete test URL categories"
+        success_msg: "Successfully deleted all test URL categories"
+      tags:
+        - dev-cicd
+
+    # No tags to clean up
+    - name: Cleanup completed
+      ansible.builtin.debug:
+        msg: "Test cleanup completed"
+      tags:
+        - dev-cleanup

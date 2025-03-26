@@ -25,7 +25,9 @@ __metaclass__ = type
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
 
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.syslog_server_profiles import SyslogServerProfilesSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.syslog_server_profiles import (
+    SyslogServerProfilesSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
@@ -358,7 +360,9 @@ def is_container_specified(syslog_server_profile_data):
     Returns:
         bool: True if exactly one container is specified, False otherwise
     """
-    containers = [syslog_server_profile_data.get(container) for container in ["folder", "snippet", "device"]]
+    containers = [
+        syslog_server_profile_data.get(container) for container in ["folder", "snippet", "device"]
+    ]
     return sum(container is not None for container in containers) == 1
 
 
@@ -428,7 +432,10 @@ def get_existing_syslog_server_profile(client, syslog_server_profile_data):
         # Determine which container type is specified
         container_type = None
         for container in ["folder", "snippet", "device"]:
-            if container in syslog_server_profile_data and syslog_server_profile_data[container] is not None:
+            if (
+                container in syslog_server_profile_data
+                and syslog_server_profile_data[container] is not None
+            ):
                 container_type = container
                 break
 
@@ -437,7 +444,8 @@ def get_existing_syslog_server_profile(client, syslog_server_profile_data):
 
         # Fetch the syslog server profile using the appropriate container
         existing = client.syslog_server_profile.fetch(
-            name=syslog_server_profile_data["name"], **{container_type: syslog_server_profile_data[container_type]}
+            name=syslog_server_profile_data["name"],
+            **{container_type: syslog_server_profile_data[container_type]},
         )
         return True, existing
     except (ObjectNotPresentError, InvalidObjectError):
@@ -475,14 +483,18 @@ def main():
             )
 
         # Get existing syslog server profile
-        exists, existing_profile = get_existing_syslog_server_profile(client, syslog_server_profile_data)
+        exists, existing_profile = get_existing_syslog_server_profile(
+            client, syslog_server_profile_data
+        )
 
         if module.params["state"] == "present":
             if not exists:
                 # Create new syslog server profile
                 if not module.check_mode:
                     try:
-                        new_profile = client.syslog_server_profile.create(data=syslog_server_profile_data)
+                        new_profile = client.syslog_server_profile.create(
+                            data=syslog_server_profile_data
+                        )
                         result["syslog_server_profile"] = serialize_response(new_profile)
                         result["changed"] = True
                     except NameNotUniqueError:
@@ -495,7 +507,9 @@ def main():
                     result["changed"] = True
             else:
                 # Compare and update if needed
-                need_update, update_data = needs_update(existing_profile, syslog_server_profile_data)
+                need_update, update_data = needs_update(
+                    existing_profile, syslog_server_profile_data
+                )
 
                 if need_update:
                     if not module.check_mode:

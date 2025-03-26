@@ -291,39 +291,39 @@ log_forwarding_profile:
 def normalize_match_list_fields(match_list):
     """
     Normalize match_list fields to align with API expectations.
-    
+
     - Handle both send_http and http_profile (preferring send_http)
     - Handle both send_syslog and syslog_profiles (preferring send_syslog)
     - Handle both action_desc and description (preferring action_desc)
-    
+
     Args:
         match_list (list): List of match_list dictionaries from user input
-        
+
     Returns:
         list: Normalized match_list with consistent field names
     """
     if not match_list:
         return match_list
-        
+
     normalized_list = []
-    
+
     for item in match_list:
         normalized_item = item.copy()
-        
+
         # Handle http_profile -> send_http conversion
         if "http_profile" in normalized_item and "send_http" not in normalized_item:
             normalized_item["send_http"] = normalized_item.pop("http_profile")
-        
+
         # Handle syslog_profiles -> send_syslog conversion
         if "syslog_profiles" in normalized_item and "send_syslog" not in normalized_item:
             normalized_item["send_syslog"] = normalized_item.pop("syslog_profiles")
-            
+
         # Handle description -> action_desc conversion
         if "description" in normalized_item and "action_desc" not in normalized_item:
             normalized_item["action_desc"] = normalized_item.pop("description")
-            
+
         normalized_list.append(normalized_item)
-        
+
     return normalized_list
 
 
@@ -340,11 +340,11 @@ def build_log_forwarding_profile_data(module_params):
     data = {
         k: v for k, v in module_params.items() if k not in ["provider", "state"] and v is not None
     }
-    
+
     # Normalize match_list fields if present
     if "match_list" in data and data["match_list"]:
         data["match_list"] = normalize_match_list_fields(data["match_list"])
-        
+
     return data
 
 
@@ -587,7 +587,7 @@ def main():
                                 ):
                                     container_type = container
                                     break
-                            
+
                             existing = client.log_forwarding_profile.fetch(
                                 name=log_forwarding_profile_data["name"],
                                 **{container_type: log_forwarding_profile_data[container_type]},
@@ -597,7 +597,7 @@ def main():
                             result["changed"] = False
                             module.warn(f"Creation failed but profile exists already: {str(e)}")
                         except Exception:
-                            # If we can't fetch the profile after the error, it probably doesn't exist 
+                            # If we can't fetch the profile after the error, it probably doesn't exist
                             # so re-raise the original error
                             module.fail_json(msg=f"Error creating log forwarding profile: {str(e)}")
                 else:
