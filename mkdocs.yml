@@ -94,7 +94,18 @@ nav:
       - Overview: collection/index.md
       - Modules:
           - Overview: collection/modules/index.md
-          - Network Objects:
+          - Deployment:
+              - Remote Networks: collection/modules/remote_networks.md
+              - Network Locations: collection/modules/network_locations.md
+              - Service Connections: collection/modules/service_connections.md
+          - Network Configuration:
+              - Security Zone: collection/modules/security_zone.md
+              - IKE Crypto Profile: collection/modules/ike_crypto_profile.md
+              - IKE Gateway: collection/modules/ike_gateway.md
+              - IPsec Crypto Profile: collection/modules/ipsec_crypto_profile.md
+              - IPsec Tunnel: collection/modules/ipsec_tunnel.md
+              - BGP Routing: collection/modules/bgp_routing.md
+          - Objects:
               - Address: collection/modules/address.md
               - Address Info: collection/modules/address_info.md
               - Address Group: collection/modules/address_group.md
@@ -127,17 +138,6 @@ nav:
               - Syslog Server Profiles Info: collection/modules/syslog_server_profiles_info.md
               - Tag: collection/modules/tag.md
               - Tag Info: collection/modules/tag_info.md
-          - Network Configuration:
-              - Security Zone: collection/modules/security_zone.md
-              - IKE Crypto Profile: collection/modules/ike_crypto_profile.md
-              - IKE Gateway: collection/modules/ike_gateway.md
-              - IPsec Crypto Profile: collection/modules/ipsec_crypto_profile.md
-              - IPsec Tunnel: collection/modules/ipsec_tunnel.md
-              - BGP Routing: collection/modules/bgp_routing.md
-          - Deployment:
-              - Remote Networks: collection/modules/remote_networks.md
-              - Network Locations: collection/modules/network_locations.md
-              - Service Connections: collection/modules/service_connections.md
           - Security Services:
               - Anti-Spyware Profile: collection/modules/anti_spyware_profile.md
               - Anti-Spyware Profile Info: collection/modules/anti_spyware_profile_info.md
