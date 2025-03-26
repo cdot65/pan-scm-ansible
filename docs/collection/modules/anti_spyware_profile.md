@@ -20,52 +20,52 @@
 
 ## Overview
 
-The `anti_spyware_profile` Ansible module provides functionality to manage Anti-Spyware profiles in 
-Palo Alto Networks' Strata Cloud Manager (SCM). These profiles define rules for detecting and blocking 
-spyware and other malicious software on the network with support for various threat levels, actions, 
-and packet capture options.
+The `anti_spyware_profile` Ansible module provides functionality to manage Anti-Spyware profiles in
+Palo Alto Networks' Strata Cloud Manager (SCM). These profiles define rules for detecting and
+blocking spyware and other malicious software on the network with support for various threat levels,
+actions, and packet capture options.
 
 ## Core Methods
 
-| Method     | Description                             | Parameters                             | Return Type                           |
-| ---------- | --------------------------------------- | -------------------------------------- | ------------------------------------- |
-| `create()` | Creates a new Anti-Spyware profile      | `data: Dict[str, Any]`                 | `AntiSpywareProfileResponseModel`     |
-| `update()` | Updates an existing profile             | `profile: AntiSpywareProfileUpdateModel` | `AntiSpywareProfileResponseModel`   |
-| `delete()` | Removes a profile                       | `object_id: str`                       | `None`                                |
-| `fetch()`  | Gets a profile by name                  | `name: str`, `container: str`          | `AntiSpywareProfileResponseModel`     |
-| `list()`   | Lists profiles with filtering           | `folder: str`, `**filters`             | `List[AntiSpywareProfileResponseModel]` |
+| Method     | Description                        | Parameters                               | Return Type                             |
+| ---------- | ---------------------------------- | ---------------------------------------- | --------------------------------------- |
+| `create()` | Creates a new Anti-Spyware profile | `data: Dict[str, Any]`                   | `AntiSpywareProfileResponseModel`       |
+| `update()` | Updates an existing profile        | `profile: AntiSpywareProfileUpdateModel` | `AntiSpywareProfileResponseModel`       |
+| `delete()` | Removes a profile                  | `object_id: str`                         | `None`                                  |
+| `fetch()`  | Gets a profile by name             | `name: str`, `container: str`            | `AntiSpywareProfileResponseModel`       |
+| `list()`   | Lists profiles with filtering      | `folder: str`, `**filters`               | `List[AntiSpywareProfileResponseModel]` |
 
 ## Anti Spyware Profile Model Attributes
 
-| Attribute          | Type | Required      | Description                                                |
-| ------------------ | ---- | ------------- | ---------------------------------------------------------- |
-| `name`             | str  | Yes           | Profile name. Must match pattern: ^[a-zA-Z0-9.\_-]+$       |
-| `description`      | str  | No            | Description of the profile                                 |
-| `packet_capture`   | bool | No            | Whether packet capture is enabled                          |
-| `rules`            | list | Yes           | List of rules for the profile                              |
-| `botnet_lists`     | list | No            | List of botnet domain lists to use                         |
-| `threat_exceptions`| list | No            | List of threat exceptions                                  |
-| `folder`           | str  | One container | The folder in which the profile is defined (max 64 chars)  |
-| `snippet`          | str  | One container | The snippet in which the profile is defined (max 64 chars) |
-| `device`           | str  | One container | The device in which the profile is defined (max 64 chars)  |
+| Attribute           | Type | Required      | Description                                                |
+| ------------------- | ---- | ------------- | ---------------------------------------------------------- |
+| `name`              | str  | Yes           | Profile name. Must match pattern: ^[a-zA-Z0-9.\_-]+$       |
+| `description`       | str  | No            | Description of the profile                                 |
+| `packet_capture`    | bool | No            | Whether packet capture is enabled                          |
+| `rules`             | list | Yes           | List of rules for the profile                              |
+| `botnet_lists`      | list | No            | List of botnet domain lists to use                         |
+| `threat_exceptions` | list | No            | List of threat exceptions                                  |
+| `folder`            | str  | One container | The folder in which the profile is defined (max 64 chars)  |
+| `snippet`           | str  | One container | The snippet in which the profile is defined (max 64 chars) |
+| `device`            | str  | One container | The device in which the profile is defined (max 64 chars)  |
 
 ### Rule Attributes
 
-| Attribute        | Type | Required | Description                                                 |
-| ---------------- | ---- | -------- | ----------------------------------------------------------- |
-| `name`           | str  | Yes      | Name of the rule                                            |
+| Attribute        | Type | Required | Description                                                        |
+| ---------------- | ---- | -------- | ------------------------------------------------------------------ |
+| `name`           | str  | Yes      | Name of the rule                                                   |
 | `threat_level`   | str  | Yes      | Threat severity level (critical, high, medium, low, informational) |
-| `action`         | str  | Yes      | Action to take (block, alert, allow, default)               |
-| `packet_capture` | str  | No       | Packet capture setting (disable, single-packet, extended-capture) |
+| `action`         | str  | Yes      | Action to take (block, alert, allow, default)                      |
+| `packet_capture` | str  | No       | Packet capture setting (disable, single-packet, extended-capture)  |
 
 ### Threat Exception Attributes
 
-| Attribute    | Type | Required | Description                            |
-| ------------ | ---- | -------- | -------------------------------------- |
-| `name`       | str  | Yes      | Name of the threat exception           |
-| `threat_id`  | str  | Yes      | ID of the threat to exempt             |
-| `action`     | str  | Yes      | Action to take for this specific threat|
-| `notes`      | str  | No       | Additional notes for the exception     |
+| Attribute   | Type | Required | Description                             |
+| ----------- | ---- | -------- | --------------------------------------- |
+| `name`      | str  | Yes      | Name of the threat exception            |
+| `threat_id` | str  | Yes      | ID of the threat to exempt              |
+| `action`    | str  | Yes      | Action to take for this specific threat |
+| `notes`     | str  | No       | Additional notes for the exception      |
 
 ## Exceptions
 
@@ -80,8 +80,8 @@ and packet capture options.
 
 ## Basic Configuration
 
-The Anti-Spyware Profile module requires proper authentication credentials to access the 
-Strata Cloud Manager API.
+The Anti-Spyware Profile module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic Anti-Spyware Profile Configuration
@@ -113,7 +113,8 @@ Strata Cloud Manager API.
 
 ### Creating Anti Spyware Profiles
 
-Anti-Spyware profiles can contain multiple rules to detect and block spyware at different threat levels.
+Anti-Spyware profiles can contain multiple rules to detect and block spyware at different threat
+levels.
 
 ### Basic Anti Spyware Profile
 
@@ -141,7 +142,8 @@ This example creates a simple Anti-Spyware profile with basic rules.
 
 ### Comprehensive Anti Spyware Profile
 
-This example creates a more comprehensive profile with multiple rules, exceptions, and botnet domain lists.
+This example creates a more comprehensive profile with multiple rules, exceptions, and botnet domain
+lists.
 
 ```yaml
 - name: Create a comprehensive Anti-Spyware profile
@@ -181,7 +183,8 @@ This example creates a more comprehensive profile with multiple rules, exception
 
 ### Updating Anti Spyware Profiles
 
-This example updates an existing Anti-Spyware profile with new rules and changes the packet capture setting.
+This example updates an existing Anti-Spyware profile with new rules and changes the packet capture
+setting.
 
 ```yaml
 - name: Update an Anti-Spyware profile
@@ -222,7 +225,8 @@ This example removes an Anti-Spyware profile.
 
 ## Managing Configuration Changes
 
-After creating, updating, or deleting Anti-Spyware profiles, you need to commit your changes to apply them.
+After creating, updating, or deleting Anti-Spyware profiles, you need to commit your changes to
+apply them.
 
 ```yaml
 - name: Commit changes
@@ -313,9 +317,8 @@ It's important to handle potential errors when working with Anti-Spyware profile
 
 ## Related Modules
 
-- [anti_spyware_profile_info](anti_spyware_profile_info.md) - Retrieve information about 
+- [anti_spyware_profile_info](anti_spyware_profile_info.md) - Retrieve information about
   Anti-Spyware profiles
-- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that 
-  can include Anti-Spyware profiles
-- [security_rule](security_rule.md) - Configure security policies that use Anti-Spyware 
-  profiles
+- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that can
+  include Anti-Spyware profiles
+- [security_rule](security_rule.md) - Configure security policies that use Anti-Spyware profiles

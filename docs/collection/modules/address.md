@@ -22,34 +22,34 @@
 
 ## Overview
 
-The `address` Ansible module provides functionality to manage address objects in Palo Alto Networks' Strata 
-Cloud Manager (SCM). This module allows you to create, update, and delete address objects of various types 
-including IP/Netmask, IP Range, IP Wildcard, and FQDN (Fully Qualified Domain Name).
+The `address` Ansible module provides functionality to manage address objects in Palo Alto Networks'
+Strata Cloud Manager (SCM). This module allows you to create, update, and delete address objects of
+various types including IP/Netmask, IP Range, IP Wildcard, and FQDN (Fully Qualified Domain Name).
 
 ## Core Methods
 
-| Method     | Description                    | Parameters                     | Return Type                 |
-| ---------- | ------------------------------ | ------------------------------ | --------------------------- |
-| `create()` | Creates a new address object   | `data: Dict[str, Any]`         | `AddressResponseModel`      |
-| `update()` | Updates an existing address    | `address: AddressUpdateModel`  | `AddressResponseModel`      |
-| `delete()` | Removes an address             | `object_id: str`               | `None`                      |
-| `fetch()`  | Gets an address by name        | `name: str`, `container: str`  | `AddressResponseModel`      |
-| `list()`   | Lists addresses with filtering | `folder: str`, `**filters`     | `List[AddressResponseModel]`|
+| Method     | Description                    | Parameters                    | Return Type                  |
+| ---------- | ------------------------------ | ----------------------------- | ---------------------------- |
+| `create()` | Creates a new address object   | `data: Dict[str, Any]`        | `AddressResponseModel`       |
+| `update()` | Updates an existing address    | `address: AddressUpdateModel` | `AddressResponseModel`       |
+| `delete()` | Removes an address             | `object_id: str`              | `None`                       |
+| `fetch()`  | Gets an address by name        | `name: str`, `container: str` | `AddressResponseModel`       |
+| `list()`   | Lists addresses with filtering | `folder: str`, `**filters`    | `List[AddressResponseModel]` |
 
 ## Address Model Attributes
 
-| Attribute      | Type | Required      | Description                                               |
-| -------------- | ---- | ------------- | --------------------------------------------------------- |
-| `name`         | str  | Yes           | The name of the address object (max 63 chars)             |
-| `description`  | str  | No            | Description of the address object (max 1023 chars)        |
-| `tag`          | list | No            | List of tags associated with the address object           |
-| `fqdn`         | str  | One type only | Fully Qualified Domain Name (max 255 chars)               |
-| `ip_netmask`   | str  | One type only | IP address with CIDR notation (e.g. "192.168.1.0/24")     |
-| `ip_range`     | str  | One type only | IP address range (e.g. "192.168.1.100-192.168.1.200")     |
-| `ip_wildcard`  | str  | One type only | IP wildcard mask format (e.g. "10.20.1.0/0.0.248.255")    |
-| `folder`       | str  | One container | The folder in which the address is defined (max 64 chars) |
-| `snippet`      | str  | One container | The snippet in which the address is defined (max 64 chars)|
-| `device`       | str  | One container | The device in which the address is defined (max 64 chars) |
+| Attribute     | Type | Required      | Description                                                |
+| ------------- | ---- | ------------- | ---------------------------------------------------------- |
+| `name`        | str  | Yes           | The name of the address object (max 63 chars)              |
+| `description` | str  | No            | Description of the address object (max 1023 chars)         |
+| `tag`         | list | No            | List of tags associated with the address object            |
+| `fqdn`        | str  | One type only | Fully Qualified Domain Name (max 255 chars)                |
+| `ip_netmask`  | str  | One type only | IP address with CIDR notation (e.g. "192.168.1.0/24")      |
+| `ip_range`    | str  | One type only | IP address range (e.g. "192.168.1.100-192.168.1.200")      |
+| `ip_wildcard` | str  | One type only | IP wildcard mask format (e.g. "10.20.1.0/0.0.248.255")     |
+| `folder`      | str  | One container | The folder in which the address is defined (max 64 chars)  |
+| `snippet`     | str  | One container | The snippet in which the address is defined (max 64 chars) |
+| `device`      | str  | One container | The device in which the address is defined (max 64 chars)  |
 
 ## Exceptions
 
@@ -64,7 +64,8 @@ including IP/Netmask, IP Range, IP Wildcard, and FQDN (Fully Qualified Domain Na
 
 ## Basic Configuration
 
-The Address module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Address module requires proper authentication credentials to access the Strata Cloud Manager
+API.
 
 ```yaml
 - name: Basic Address Configuration
@@ -186,7 +187,8 @@ This example removes an address object.
 
 ## Managing Configuration Changes
 
-After creating, updating, or deleting address objects, you need to commit your changes to apply them.
+After creating, updating, or deleting address objects, you need to commit your changes to apply
+them.
 
 ```yaml
 - name: Commit changes

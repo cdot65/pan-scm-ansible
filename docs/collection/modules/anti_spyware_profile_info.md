@@ -21,51 +21,51 @@
 
 ## Overview
 
-The `anti_spyware_profile_info` Ansible module provides functionality to retrieve information about 
-anti-spyware profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only 
-module that can retrieve detailed information about a specific anti-spyware profile by name, or list 
-multiple profiles with various filtering options including cloud inline analysis, rules, and container-based 
-filtering.
+The `anti_spyware_profile_info` Ansible module provides functionality to retrieve information about
+anti-spyware profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only
+module that can retrieve detailed information about a specific anti-spyware profile by name, or list
+multiple profiles with various filtering options including cloud inline analysis, rules, and
+container-based filtering.
 
 ## Core Methods
 
-| Method     | Description                               | Parameters                                | Return Type                           |
-| ---------- | ----------------------------------------- | ----------------------------------------- | ------------------------------------- |
-| `get()`    | Gets a specific anti-spyware profile      | `name: str`, `container: str`             | `AntiSpywareProfileResponseModel`     |
-| `list()`   | Lists anti-spyware profiles with filtering| `folder: str`, `**filters`                | `List[AntiSpywareProfileResponseModel]`|
-| `filter()` | Applies filters to the results            | `profiles: List`, `filter_params: Dict`   | `List[AntiSpywareProfileResponseModel]`|
+| Method     | Description                                | Parameters                              | Return Type                             |
+| ---------- | ------------------------------------------ | --------------------------------------- | --------------------------------------- |
+| `get()`    | Gets a specific anti-spyware profile       | `name: str`, `container: str`           | `AntiSpywareProfileResponseModel`       |
+| `list()`   | Lists anti-spyware profiles with filtering | `folder: str`, `**filters`              | `List[AntiSpywareProfileResponseModel]` |
+| `filter()` | Applies filters to the results             | `profiles: List`, `filter_params: Dict` | `List[AntiSpywareProfileResponseModel]` |
 
 ## Anti Spyware Profile Info Model Attributes
 
-| Attribute             | Type | Required      | Description                                                      |
-| --------------------- | ---- | ------------- | ---------------------------------------------------------------- |
-| `name`                | str  | No            | The name of a specific anti-spyware profile to retrieve          |
-| `gather_subset`       | list | No            | Determines which information to gather (default: ['config'])     |
-| `folder`              | str  | One container | Filter profiles by folder (max 64 chars)                         |
-| `snippet`             | str  | One container | Filter profiles by snippet (max 64 chars)                        |
-| `device`              | str  | One container | Filter profiles by device (max 64 chars)                         |
-| `exact_match`         | bool | No            | When True, only return objects in the specified container        |
-| `exclude_folders`     | list | No            | List of folder names to exclude from results                     |
-| `exclude_snippets`    | list | No            | List of snippet values to exclude from results                   |
-| `exclude_devices`     | list | No            | List of device values to exclude from results                    |
-| `cloud_inline_analysis`| bool | No           | Filter by cloud inline analysis setting                          |
-| `rules`               | list | No            | Filter by rule names                                             |
+| Attribute               | Type | Required      | Description                                                  |
+| ----------------------- | ---- | ------------- | ------------------------------------------------------------ |
+| `name`                  | str  | No            | The name of a specific anti-spyware profile to retrieve      |
+| `gather_subset`         | list | No            | Determines which information to gather (default: ['config']) |
+| `folder`                | str  | One container | Filter profiles by folder (max 64 chars)                     |
+| `snippet`               | str  | One container | Filter profiles by snippet (max 64 chars)                    |
+| `device`                | str  | One container | Filter profiles by device (max 64 chars)                     |
+| `exact_match`           | bool | No            | When True, only return objects in the specified container    |
+| `exclude_folders`       | list | No            | List of folder names to exclude from results                 |
+| `exclude_snippets`      | list | No            | List of snippet values to exclude from results               |
+| `exclude_devices`       | list | No            | List of device values to exclude from results                |
+| `cloud_inline_analysis` | bool | No            | Filter by cloud inline analysis setting                      |
+| `rules`                 | list | No            | Filter by rule names                                         |
 
 ## Exceptions
 
-| Exception                    | Description                       |
-| ---------------------------- | --------------------------------- |
-| `ObjectNotPresentError`      | Profile not found                 |
-| `MissingQueryParameterError` | Missing required parameters       |
-| `InvalidFilterError`         | Invalid filter parameters         |
-| `AuthenticationError`        | Authentication failed             |
-| `ServerError`                | Internal server error             |
-| `MultipleMatchesError`       | Multiple profiles match criteria  |
+| Exception                    | Description                      |
+| ---------------------------- | -------------------------------- |
+| `ObjectNotPresentError`      | Profile not found                |
+| `MissingQueryParameterError` | Missing required parameters      |
+| `InvalidFilterError`         | Invalid filter parameters        |
+| `AuthenticationError`        | Authentication failed            |
+| `ServerError`                | Internal server error            |
+| `MultipleMatchesError`       | Multiple profiles match criteria |
 
 ## Basic Configuration
 
-The Anti-Spyware Profile Info module requires proper authentication credentials to access the 
-Strata Cloud Manager API.
+The Anti-Spyware Profile Info module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic Anti-Spyware Profile Info Configuration
@@ -93,7 +93,8 @@ Strata Cloud Manager API.
 
 ### Retrieving Anti Spyware Profile Information
 
-The module provides several ways to retrieve anti-spyware profile information based on your specific needs.
+The module provides several ways to retrieve anti-spyware profile information based on your specific
+needs.
 
 ### Getting a Specific Profile
 
@@ -189,8 +190,8 @@ This example illustrates more advanced filtering options including exact match a
 
 ## Processing Retrieved Information
 
-After retrieving anti-spyware profile information, you can process the data for various purposes such as 
-reporting, analysis, or integration with other systems.
+After retrieving anti-spyware profile information, you can process the data for various purposes
+such as reporting, analysis, or integration with other systems.
 
 ```yaml
 - name: Create a summary of anti-spyware profile information
@@ -303,5 +304,7 @@ It's important to handle potential errors when retrieving anti-spyware profile i
 
 - [anti_spyware_profile](anti_spyware_profile.md) - Manage anti-spyware profile objects
 - [security_rule](security_rule.md) - Manage security rules that use anti-spyware profiles
-- [security_rule_info](security_rule_info.md) - Retrieve information about security rules using profiles
-- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that include anti-spyware profiles
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules using
+  profiles
+- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that
+  include anti-spyware profiles

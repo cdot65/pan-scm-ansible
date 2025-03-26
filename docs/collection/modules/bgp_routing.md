@@ -20,64 +20,65 @@
 
 ## Overview
 
-The `bgp_routing` Ansible module provides functionality to manage BGP (Border Gateway Protocol) routing
-configuration in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to configure
-BGP routing preferences, backbone routing options, outbound routes for services, and other key BGP
-parameters to control traffic flow across your network.
+The `bgp_routing` Ansible module provides functionality to manage BGP (Border Gateway Protocol)
+routing configuration in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to
+configure BGP routing preferences, backbone routing options, outbound routes for services, and other
+key BGP parameters to control traffic flow across your network.
 
 ## Core Methods
 
-| Method     | Description                   | Parameters                | Return Type              |
-| ---------- | ----------------------------- | ------------------------- | ------------------------ |
-| `get()`    | Retrieves BGP configuration   | No parameters required    | `BgpRoutingResponseModel` |
-| `update()` | Updates BGP configuration     | `data: Dict[str, Any]`    | `BgpRoutingResponseModel` |
+| Method     | Description                 | Parameters             | Return Type               |
+| ---------- | --------------------------- | ---------------------- | ------------------------- |
+| `get()`    | Retrieves BGP configuration | No parameters required | `BgpRoutingResponseModel` |
+| `update()` | Updates BGP configuration   | `data: Dict[str, Any]` | `BgpRoutingResponseModel` |
 
 ## BGP Routing Model Attributes
 
-| Attribute                      | Type           | Required | Description                                                 |
-| ------------------------------ | -------------- | -------- | ----------------------------------------------------------- |
-| `routing_preference`           | Dict[str, Any] | No       | BGP routing preferences configuration (hot/cold potato)     |
-| `backbone_routing`             | str            | No       | Backbone routing mode selection                             |
-| `accept_route_over_SC`         | bool           | No       | Whether to accept routes over service connections           |
-| `outbound_routes_for_services` | List[str]      | No       | List of outbound routes to be advertised for services       |
-| `onboarding_status`            | str            | No       | Current BGP onboarding status (read-only)                   |
+| Attribute                      | Type           | Required | Description                                             |
+| ------------------------------ | -------------- | -------- | ------------------------------------------------------- |
+| `routing_preference`           | Dict[str, Any] | No       | BGP routing preferences configuration (hot/cold potato) |
+| `backbone_routing`             | str            | No       | Backbone routing mode selection                         |
+| `accept_route_over_SC`         | bool           | No       | Whether to accept routes over service connections       |
+| `outbound_routes_for_services` | List[str]      | No       | List of outbound routes to be advertised for services   |
+| `onboarding_status`            | str            | No       | Current BGP onboarding status (read-only)               |
 
 ### Routing Preference Options
 
-| Option                | Type           | Description                                       |
-| --------------------- | -------------- | ------------------------------------------------- |
-| `hot_potato_routing`  | Dict           | Exit traffic at closest point to source           |
-| `cold_potato_routing` | Dict           | Exit traffic at designated regions                |
+| Option                | Type | Description                             |
+| --------------------- | ---- | --------------------------------------- |
+| `hot_potato_routing`  | Dict | Exit traffic at closest point to source |
+| `cold_potato_routing` | Dict | Exit traffic at designated regions      |
 
 #### Cold Potato Routing Attributes
 
-| Attribute          | Type | Required | Description                        |
-| ------------------ | ---- | -------- | ---------------------------------- |
-| `primary_region`   | str  | Yes      | Primary exit region for traffic    |
-| `secondary_region` | str  | No       | Backup exit region for traffic     |
+| Attribute          | Type | Required | Description                     |
+| ------------------ | ---- | -------- | ------------------------------- |
+| `primary_region`   | str  | Yes      | Primary exit region for traffic |
+| `secondary_region` | str  | No       | Backup exit region for traffic  |
 
 ### Backbone Routing Options
 
-| Value                             | Description                                         |
-| --------------------------------- | --------------------------------------------------- |
-| `symmetric-routing`               | Traffic flows through same path in both directions   |
-| `asymmetric-routing`              | Traffic may flow through different paths            |
-| `asymmetric-routing-with-load-share` | Traffic distributed across multiple paths        |
+| Value                                | Description                                        |
+| ------------------------------------ | -------------------------------------------------- |
+| `symmetric-routing`                  | Traffic flows through same path in both directions |
+| `asymmetric-routing`                 | Traffic may flow through different paths           |
+| `asymmetric-routing-with-load-share` | Traffic distributed across multiple paths          |
 
 ## Exceptions
 
-| Exception                    | Description                        |
-| ---------------------------- | ---------------------------------- |
-| `InvalidConfigurationError`  | Invalid BGP configuration format   |
-| `ValidationError`            | Configuration validation failed    |
-| `MissingRequiredFieldError`  | Required parameter not provided    |
-| `InvalidRouteError`          | Invalid route format specified     |
-| `AuthenticationError`        | Authentication failed              |
-| `ServerError`                | Internal server error              |
+| Exception                   | Description                      |
+| --------------------------- | -------------------------------- |
+| `InvalidConfigurationError` | Invalid BGP configuration format |
+| `ValidationError`           | Configuration validation failed  |
+| `MissingRequiredFieldError` | Required parameter not provided  |
+| `InvalidRouteError`         | Invalid route format specified   |
+| `AuthenticationError`       | Authentication failed            |
+| `ServerError`               | Internal server error            |
 
 ## Basic Configuration
 
-The BGP Routing module requires proper authentication credentials to access the Strata Cloud Manager API.
+The BGP Routing module requires proper authentication credentials to access the Strata Cloud Manager
+API.
 
 ```yaml
 - name: Basic BGP Routing Configuration
@@ -106,7 +107,8 @@ The BGP Routing module requires proper authentication credentials to access the 
 
 ### Configuring BGP Routing
 
-BGP routing configuration enables you to control how traffic flows between your network and external networks.
+BGP routing configuration enables you to control how traffic flows between your network and external
+networks.
 
 ### Basic BGP Configuration
 
@@ -125,7 +127,8 @@ This example creates a simple BGP configuration with hot potato routing.
 
 ### Comprehensive BGP Configuration
 
-This example creates a more comprehensive BGP configuration with cold potato routing, specific backbone mode, and defined outbound routes.
+This example creates a more comprehensive BGP configuration with cold potato routing, specific
+backbone mode, and defined outbound routes.
 
 ```yaml
 - name: Configure comprehensive BGP routing
@@ -146,7 +149,8 @@ This example creates a more comprehensive BGP configuration with cold potato rou
 
 ### Updating BGP Configuration
 
-This example updates an existing BGP configuration by changing the routing preference and backbone routing options.
+This example updates an existing BGP configuration by changing the routing preference and backbone
+routing options.
 
 ```yaml
 - name: Update BGP routing configuration
@@ -180,7 +184,8 @@ This example retrieves the current BGP configuration without making any changes.
 
 ## Managing Configuration Changes
 
-After configuring or updating BGP routing, you may need to commit your changes to apply them across the network.
+After configuring or updating BGP routing, you may need to commit your changes to apply them across
+the network.
 
 ```yaml
 - name: Commit BGP configuration changes
@@ -251,7 +256,7 @@ It's important to handle potential errors when working with BGP routing configur
 - Understand the impact of each mode on troubleshooting and monitoring
 - Test backbone routing changes in a controlled environment before deployment
 
-### Route Advertisement 
+### Route Advertisement
 
 - Be selective about which networks to advertise over service connections
 - Avoid advertising overlapping routes which can lead to routing issues

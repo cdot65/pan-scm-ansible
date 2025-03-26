@@ -20,36 +20,40 @@
 
 ## Overview
 
-The `url_categories_info` module retrieves information about URL categories in Palo Alto Networks' Strata Cloud Manager (SCM). It allows you to fetch details about specific URL categories or list multiple URL categories with various filtering options. This information-gathering module is essential for auditing URL filtering configurations, preparing for policy updates, and understanding the current URL category landscape in your security environment.
+The `url_categories_info` module retrieves information about URL categories in Palo Alto Networks'
+Strata Cloud Manager (SCM). It allows you to fetch details about specific URL categories or list
+multiple URL categories with various filtering options. This information-gathering module is
+essential for auditing URL filtering configurations, preparing for policy updates, and understanding
+the current URL category landscape in your security environment.
 
 ## Core Methods
 
-| Method    | Description                      | Parameters                    | Return Type                    |
-| --------- | -------------------------------- | ----------------------------- | ------------------------------ |
-| `fetch()` | Gets a specific URL category     | `name: str`, `container: str` | `UrlCategoryResponseModel`     |
-| `list()`  | Lists URL categories with filters| `folder: str`, `**filters`    | `List[UrlCategoryResponseModel]` |
+| Method    | Description                       | Parameters                    | Return Type                      |
+| --------- | --------------------------------- | ----------------------------- | -------------------------------- |
+| `fetch()` | Gets a specific URL category      | `name: str`, `container: str` | `UrlCategoryResponseModel`       |
+| `list()`  | Lists URL categories with filters | `folder: str`, `**filters`    | `List[UrlCategoryResponseModel]` |
 
 ## URL Category Info Parameters
 
-| Parameter          | Type   | Required      | Description                                                    |
-| ------------------ | ------ | ------------- | -------------------------------------------------------------- |
-| `name`             | str    | No            | Name of a specific URL category to retrieve                    |
-| `gather_subset`    | list   | No            | Information to gather (default: ['config'])                    |
-| `folder`           | str    | One container* | Filter URL categories by folder container                      |
-| `snippet`          | str    | One container* | Filter URL categories by snippet container                     |
-| `device`           | str    | One container* | Filter URL categories by device container                      |
-| `exact_match`      | bool   | No            | Only return objects defined exactly in the specified container |
-| `exclude_folders`  | list   | No            | List of folder names to exclude from results                   |
-| `exclude_snippets` | list   | No            | List of snippet values to exclude                              |
-| `exclude_devices`  | list   | No            | List of device values to exclude                               |
-| `members`          | list   | No            | Filter by URLs or categories in the list                       |
+| Parameter          | Type | Required        | Description                                                    |
+| ------------------ | ---- | --------------- | -------------------------------------------------------------- |
+| `name`             | str  | No              | Name of a specific URL category to retrieve                    |
+| `gather_subset`    | list | No              | Information to gather (default: ['config'])                    |
+| `folder`           | str  | One container\* | Filter URL categories by folder container                      |
+| `snippet`          | str  | One container\* | Filter URL categories by snippet container                     |
+| `device`           | str  | One container\* | Filter URL categories by device container                      |
+| `exact_match`      | bool | No              | Only return objects defined exactly in the specified container |
+| `exclude_folders`  | list | No              | List of folder names to exclude from results                   |
+| `exclude_snippets` | list | No              | List of snippet values to exclude                              |
+| `exclude_devices`  | list | No              | List of device values to exclude                               |
+| `members`          | list | No              | Filter by URLs or categories in the list                       |
 
-*One container parameter is required when `name` is not specified.
+\*One container parameter is required when `name` is not specified.
 
 ### Provider Dictionary
 
-| Parameter       | Type | Required | Description                            |
-| --------------- | ---- | -------- | -------------------------------------- |
+| Parameter       | Type | Required | Description                             |
+| --------------- | ---- | -------- | --------------------------------------- |
 | `client_id`     | str  | Yes      | Client ID for SCM authentication        |
 | `client_secret` | str  | Yes      | Client secret for SCM authentication    |
 | `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
@@ -67,7 +71,8 @@ The `url_categories_info` module retrieves information about URL categories in P
 
 ## Basic Configuration
 
-The URL Categories Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The URL Categories Info module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic URL Categories Info Configuration
@@ -200,7 +205,8 @@ This example demonstrates how to use Ansible's built-in filters to process the r
 
 ## Managing Configuration Changes
 
-As an info module, `url_categories_info` does not make any configuration changes. However, you can use the information it retrieves to make decisions about other configuration operations.
+As an info module, `url_categories_info` does not make any configuration changes. However, you can
+use the information it retrieves to make decisions about other configuration operations.
 
 ```yaml
 - name: Use URL category information for security policy configuration
@@ -239,14 +245,14 @@ As an info module, `url_categories_info` does not make any configuration changes
 
 When retrieving a specific URL category:
 
-| Name         | Description                            | Type | Returned                      | Sample                                                                                                                                        |
-| ------------ | -------------------------------------- | ---- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name         | Description                              | Type | Returned                        | Sample                                                                                                                                                                                                                     |
+| ------------ | ---------------------------------------- | ---- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | url_category | Information about the requested category | dict | success, when name is specified | {"id": "123e4567-e89b-12d3-a456-426655440000", "name": "Malicious_URLs", "description": "List of known malicious URLs", "type": "URL List", "list": ["malware.example.com", "phishing.example.net"], "folder": "Security"} |
 
 When listing URL categories:
 
-| Name          | Description                                        | Type | Returned                          | Sample                                                                                                                                         |
-| ------------- | -------------------------------------------------- | ---- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name           | Description                                         | Type | Returned                            | Sample                                                                                           |
+| -------------- | --------------------------------------------------- | ---- | ----------------------------------- | ------------------------------------------------------------------------------------------------ |
 | url_categories | List of URL categories matching the filter criteria | list | success, when name is not specified | [{"id": "123...", "name": "Malicious_URLs", ...}, {"id": "234...", "name": "Social_Media", ...}] |
 
 ## Error Handling
@@ -330,4 +336,5 @@ It's important to handle potential errors when retrieving URL category informati
 - [security_rule](security_rule.md) - Configure security policies that use URL categories
 - [security_rule_info](security_rule_info.md) - Get information about security rules
 - [security_profiles_group](security_profiles_group.md) - Configure security profile groups
-- [log_forwarding_profile](log_forwarding_profile.md) - Configure log forwarding for URL filtering events
+- [log_forwarding_profile](log_forwarding_profile.md) - Configure log forwarding for URL filtering
+  events

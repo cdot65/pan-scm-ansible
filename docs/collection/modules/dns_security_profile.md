@@ -21,19 +21,19 @@
 ## Overview
 
 The `dns_security_profile` Ansible module provides functionality to manage DNS security profiles in
-Palo Alto Networks' Strata Cloud Manager (SCM). These profiles define DNS security settings including
-botnet domain filtering, DNS security categories, and sinkhole configurations to protect networks from
-DNS-based threats and malicious activities.
+Palo Alto Networks' Strata Cloud Manager (SCM). These profiles define DNS security settings
+including botnet domain filtering, DNS security categories, and sinkhole configurations to protect
+networks from DNS-based threats and malicious activities.
 
 ## Core Methods
 
-| Method     | Description                       | Parameters                             | Return Type                       |
-| ---------- | --------------------------------- | -------------------------------------- | --------------------------------- |
-| `create()` | Creates a new DNS security profile| `data: Dict[str, Any]`                 | `DnsSecurityProfileResponseModel` |
-| `update()` | Updates an existing profile       | `profile: DnsSecurityProfileUpdateModel` | `DnsSecurityProfileResponseModel` |
-| `delete()` | Removes a profile                 | `object_id: str`                       | `None`                            |
-| `fetch()`  | Gets a profile by name            | `name: str`, `container: str`          | `DnsSecurityProfileResponseModel` |
-| `list()`   | Lists profiles with filtering     | `folder: str`, `**filters`             | `List[DnsSecurityProfileResponseModel]` |
+| Method     | Description                        | Parameters                               | Return Type                             |
+| ---------- | ---------------------------------- | ---------------------------------------- | --------------------------------------- |
+| `create()` | Creates a new DNS security profile | `data: Dict[str, Any]`                   | `DnsSecurityProfileResponseModel`       |
+| `update()` | Updates an existing profile        | `profile: DnsSecurityProfileUpdateModel` | `DnsSecurityProfileResponseModel`       |
+| `delete()` | Removes a profile                  | `object_id: str`                         | `None`                                  |
+| `fetch()`  | Gets a profile by name             | `name: str`, `container: str`            | `DnsSecurityProfileResponseModel`       |
+| `list()`   | Lists profiles with filtering      | `folder: str`, `**filters`               | `List[DnsSecurityProfileResponseModel]` |
 
 ## DNS Security Profile Model Attributes
 
@@ -48,27 +48,27 @@ DNS-based threats and malicious activities.
 
 ### Botnet Domains Attributes
 
-| Attribute               | Type | Required | Description                           |
-| ----------------------- | ---- | -------- | ------------------------------------- |
-| `dns_security_categories` | list | No       | List of DNS security categories       |
-| `sinkhole`              | dict | No       | Sinkhole configuration                |
-| `whitelist`             | list | No       | List of whitelisted domains           |
+| Attribute                 | Type | Required | Description                     |
+| ------------------------- | ---- | -------- | ------------------------------- |
+| `dns_security_categories` | list | No       | List of DNS security categories |
+| `sinkhole`                | dict | No       | Sinkhole configuration          |
+| `whitelist`               | list | No       | List of whitelisted domains     |
 
 ### DNS Security Category Attributes
 
-| Attribute        | Type | Required | Description                      | Choices                                                      |
-| ---------------- | ---- | -------- | -------------------------------- | ------------------------------------------------------------ |
-| `name`           | str  | Yes      | DNS security category name       |                                                              |
-| `action`         | str  | No       | Action to take for the category  | `default`, `allow`, `block`, `sinkhole`                      |
-| `log_level`      | str  | No       | Log level for the category       | `default`, `none`, `low`, `informational`, `medium`, `high`, `critical` |
-| `packet_capture` | str  | No       | Packet capture option            | `disable`, `single-packet`, `extended-capture`               |
+| Attribute        | Type | Required | Description                     | Choices                                                                 |
+| ---------------- | ---- | -------- | ------------------------------- | ----------------------------------------------------------------------- |
+| `name`           | str  | Yes      | DNS security category name      |                                                                         |
+| `action`         | str  | No       | Action to take for the category | `default`, `allow`, `block`, `sinkhole`                                 |
+| `log_level`      | str  | No       | Log level for the category      | `default`, `none`, `low`, `informational`, `medium`, `high`, `critical` |
+| `packet_capture` | str  | No       | Packet capture option           | `disable`, `single-packet`, `extended-capture`                          |
 
 ### Sinkhole Attributes
 
-| Attribute       | Type | Required | Description                 | Choices                                |
-| --------------- | ---- | -------- | --------------------------- | -------------------------------------- |
-| `ipv4_address`  | str  | No       | IPv4 address for sinkhole   | `pan-sinkhole-default-ip`, `127.0.0.1` |
-| `ipv6_address`  | str  | No       | IPv6 address for sinkhole   | `::1`                                  |
+| Attribute      | Type | Required | Description               | Choices                                |
+| -------------- | ---- | -------- | ------------------------- | -------------------------------------- |
+| `ipv4_address` | str  | No       | IPv4 address for sinkhole | `pan-sinkhole-default-ip`, `127.0.0.1` |
+| `ipv6_address` | str  | No       | IPv6 address for sinkhole | `::1`                                  |
 
 ### Whitelist Domain Attributes
 
@@ -79,19 +79,20 @@ DNS-based threats and malicious activities.
 
 ## Exceptions
 
-| Exception                    | Description                        |
-| ---------------------------- | ---------------------------------- |
-| `InvalidObjectError`         | Invalid profile data or format     |
-| `NameNotUniqueError`         | Profile name already exists        |
-| `ObjectNotPresentError`      | Profile not found                  |
-| `MissingQueryParameterError` | Missing required parameters        |
-| `InvalidCategoryError`       | Invalid DNS security category      |
-| `AuthenticationError`        | Authentication failed              |
-| `ServerError`                | Internal server error              |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid profile data or format |
+| `NameNotUniqueError`         | Profile name already exists    |
+| `ObjectNotPresentError`      | Profile not found              |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `InvalidCategoryError`       | Invalid DNS security category  |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The DNS Security Profile module requires proper authentication credentials to access the Strata Cloud Manager API.
+The DNS Security Profile module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic DNS Security Profile Configuration
@@ -117,7 +118,8 @@ The DNS Security Profile module requires proper authentication credentials to ac
 
 ### Creating DNS Security Profiles
 
-DNS security profiles help protect your network from DNS-based threats by detecting and blocking malicious domains.
+DNS security profiles help protect your network from DNS-based threats by detecting and blocking
+malicious domains.
 
 ### Basic DNS Security Profile
 
@@ -135,7 +137,8 @@ This example creates a simple DNS security profile without specific configuratio
 
 ### Comprehensive DNS Security Profile
 
-This example creates a more comprehensive DNS security profile with botnet domain protection, security categories, and whitelist domains.
+This example creates a more comprehensive DNS security profile with botnet domain protection,
+security categories, and whitelist domains.
 
 ```yaml
 - name: Create a comprehensive DNS security profile
@@ -169,7 +172,8 @@ This example creates a more comprehensive DNS security profile with botnet domai
 
 ### Updating DNS Security Profiles
 
-This example updates an existing DNS security profile with modified security categories and settings.
+This example updates an existing DNS security profile with modified security categories and
+settings.
 
 ```yaml
 - name: Update an existing DNS security profile
@@ -213,7 +217,8 @@ This example removes a DNS security profile.
 
 ## Managing Configuration Changes
 
-After creating, updating, or deleting DNS security profiles, you need to commit your changes to apply them.
+After creating, updating, or deleting DNS security profiles, you need to commit your changes to
+apply them.
 
 ```yaml
 - name: Commit changes
@@ -301,7 +306,10 @@ It's important to handle potential errors when working with DNS security profile
 
 ## Related Modules
 
-- [dns_security_profile_info](dns_security_profile_info.md) - Retrieve information about DNS security profiles
+- [dns_security_profile_info](dns_security_profile_info.md) - Retrieve information about DNS
+  security profiles
 - [security_rule](security_rule.md) - Configure security policies that use DNS security profiles
-- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that include DNS security profiles
-- [external_dynamic_lists](external_dynamic_lists.md) - Manage external lists that can be used with DNS security
+- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that
+  include DNS security profiles
+- [external_dynamic_lists](external_dynamic_lists.md) - Manage external lists that can be used with
+  DNS security

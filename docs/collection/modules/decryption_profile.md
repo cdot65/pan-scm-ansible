@@ -20,86 +20,87 @@
 
 ## Overview
 
-The `decryption_profile` Ansible module provides functionality to manage decryption profiles in 
-Palo Alto Networks' Strata Cloud Manager (SCM). These profiles define SSL/TLS decryption settings 
-including SSL forward proxy, inbound inspection, and protocol configurations. Decryption profiles 
+The `decryption_profile` Ansible module provides functionality to manage decryption profiles in Palo
+Alto Networks' Strata Cloud Manager (SCM). These profiles define SSL/TLS decryption settings
+including SSL forward proxy, inbound inspection, and protocol configurations. Decryption profiles
 enable visibility into encrypted traffic while maintaining security controls.
 
 ## Core Methods
 
-| Method     | Description                       | Parameters                           | Return Type                      |
-| ---------- | --------------------------------- | ------------------------------------ | -------------------------------- |
-| `create()` | Creates a new decryption profile  | `data: Dict[str, Any]`               | `DecryptionProfileResponseModel` |
-| `update()` | Updates an existing profile       | `profile: DecryptionProfileUpdateModel` | `DecryptionProfileResponseModel` |
-| `delete()` | Removes a profile                 | `object_id: str`                     | `None`                           |
-| `fetch()`  | Gets a profile by name            | `name: str`, `container: str`        | `DecryptionProfileResponseModel` |
-| `list()`   | Lists profiles with filtering     | `folder: str`, `**filters`           | `List[DecryptionProfileResponseModel]` |
+| Method     | Description                      | Parameters                              | Return Type                            |
+| ---------- | -------------------------------- | --------------------------------------- | -------------------------------------- |
+| `create()` | Creates a new decryption profile | `data: Dict[str, Any]`                  | `DecryptionProfileResponseModel`       |
+| `update()` | Updates an existing profile      | `profile: DecryptionProfileUpdateModel` | `DecryptionProfileResponseModel`       |
+| `delete()` | Removes a profile                | `object_id: str`                        | `None`                                 |
+| `fetch()`  | Gets a profile by name           | `name: str`, `container: str`           | `DecryptionProfileResponseModel`       |
+| `list()`   | Lists profiles with filtering    | `folder: str`, `**filters`              | `List[DecryptionProfileResponseModel]` |
 
 ## Decryption Profile Model Attributes
 
-| Attribute              | Type | Required      | Description                                                |
-| ---------------------- | ---- | ------------- | ---------------------------------------------------------- |
-| `name`                 | str  | Yes           | Profile name. Must match pattern: ^[a-zA-Z0-9.\_-]+$       |
-| `description`          | str  | No            | Description of the profile                                 |
-| `ssl_forward_proxy`    | dict | No            | SSL Forward Proxy settings                                 |
-| `ssl_inbound_inspection` | dict | No          | SSL Inbound Inspection settings                            |
-| `ssl_no_proxy`         | dict | No            | SSL No Proxy settings                                      |
-| `ssl_protocol_settings` | dict | No           | SSL Protocol settings                                      |
-| `folder`               | str  | One container | The folder in which the profile is defined (max 64 chars)  |
-| `snippet`              | str  | One container | The snippet in which the profile is defined (max 64 chars) |
-| `device`               | str  | One container | The device in which the profile is defined (max 64 chars)  |
+| Attribute                | Type | Required      | Description                                                |
+| ------------------------ | ---- | ------------- | ---------------------------------------------------------- |
+| `name`                   | str  | Yes           | Profile name. Must match pattern: ^[a-zA-Z0-9.\_-]+$       |
+| `description`            | str  | No            | Description of the profile                                 |
+| `ssl_forward_proxy`      | dict | No            | SSL Forward Proxy settings                                 |
+| `ssl_inbound_inspection` | dict | No            | SSL Inbound Inspection settings                            |
+| `ssl_no_proxy`           | dict | No            | SSL No Proxy settings                                      |
+| `ssl_protocol_settings`  | dict | No            | SSL Protocol settings                                      |
+| `folder`                 | str  | One container | The folder in which the profile is defined (max 64 chars)  |
+| `snippet`                | str  | One container | The snippet in which the profile is defined (max 64 chars) |
+| `device`                 | str  | One container | The device in which the profile is defined (max 64 chars)  |
 
 ### SSL Forward Proxy Attributes
 
-| Attribute                  | Type | Required | Description                                        |
-| -------------------------- | ---- | -------- | -------------------------------------------------- |
-| `enabled`                  | bool | No       | Enable SSL Forward Proxy (default: false)          |
-| `block_unsupported_cipher` | bool | No       | Block sessions with unsupported ciphers            |
-| `block_unknown_cert`       | bool | No       | Block sessions with unknown certificates           |
-| `block_expired_cert`       | bool | No       | Block sessions with expired certificates           |
-| `block_timeoff_cert`       | bool | No       | Block sessions with certificates not yet valid     |
-| `block_untrusted_issuer`   | bool | No       | Block sessions with untrusted issuer certificates  |
-| `block_unknown_status`     | bool | No       | Block sessions with unknown certificate status     |
+| Attribute                  | Type | Required | Description                                       |
+| -------------------------- | ---- | -------- | ------------------------------------------------- |
+| `enabled`                  | bool | No       | Enable SSL Forward Proxy (default: false)         |
+| `block_unsupported_cipher` | bool | No       | Block sessions with unsupported ciphers           |
+| `block_unknown_cert`       | bool | No       | Block sessions with unknown certificates          |
+| `block_expired_cert`       | bool | No       | Block sessions with expired certificates          |
+| `block_timeoff_cert`       | bool | No       | Block sessions with certificates not yet valid    |
+| `block_untrusted_issuer`   | bool | No       | Block sessions with untrusted issuer certificates |
+| `block_unknown_status`     | bool | No       | Block sessions with unknown certificate status    |
 
 ### SSL No Proxy Attributes
 
-| Attribute                        | Type | Required | Description                                      |
-| -------------------------------- | ---- | -------- | ------------------------------------------------ |
-| `enabled`                        | bool | No       | Enable SSL No Proxy (default: false)             |
-| `block_session_expired_cert`     | bool | No       | Block sessions with expired certificates         |
-| `block_session_untrusted_issuer` | bool | No       | Block sessions with untrusted issuer certificates|
+| Attribute                        | Type | Required | Description                                       |
+| -------------------------------- | ---- | -------- | ------------------------------------------------- |
+| `enabled`                        | bool | No       | Enable SSL No Proxy (default: false)              |
+| `block_session_expired_cert`     | bool | No       | Block sessions with expired certificates          |
+| `block_session_untrusted_issuer` | bool | No       | Block sessions with untrusted issuer certificates |
 
 ### SSL Inbound Inspection Attributes
 
-| Attribute | Type | Required | Description                           |
-| --------- | ---- | -------- | ------------------------------------- |
+| Attribute | Type | Required | Description                                    |
+| --------- | ---- | -------- | ---------------------------------------------- |
 | `enabled` | bool | No       | Enable SSL Inbound Inspection (default: false) |
 
 ### SSL Protocol Settings Attributes
 
-| Attribute          | Type | Required | Description                    | Choices                                              |
-| ------------------ | ---- | -------- | ------------------------------ | ---------------------------------------------------- |
-| `min_version`      | str  | No       | Minimum TLS version to support | `"tls1-0"`, `"tls1-1"`, `"tls1-2"`, `"tls1-3"`       |
-| `max_version`      | str  | No       | Maximum TLS version to support | `"tls1-0"`, `"tls1-1"`, `"tls1-2"`, `"tls1-3"`       |
-| `keyxchg_algorithm` | list | No      | Key exchange algorithms        | `"dhe"`, `"ecdhe"`                                   |
-| `encrypt_algorithm` | list | No      | Encryption algorithms          | `"rc4"`, `"rc4-md5"`, `"aes-128-cbc"`, `"aes-128-gcm"`, `"aes-256-cbc"`, `"aes-256-gcm"`, `"3des"` |
-| `auth_algorithm`   | list | No       | Authentication algorithms      | `"sha1"`, `"sha256"`, `"sha384"`                     |
+| Attribute           | Type | Required | Description                    | Choices                                                                                            |
+| ------------------- | ---- | -------- | ------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `min_version`       | str  | No       | Minimum TLS version to support | `"tls1-0"`, `"tls1-1"`, `"tls1-2"`, `"tls1-3"`                                                     |
+| `max_version`       | str  | No       | Maximum TLS version to support | `"tls1-0"`, `"tls1-1"`, `"tls1-2"`, `"tls1-3"`                                                     |
+| `keyxchg_algorithm` | list | No       | Key exchange algorithms        | `"dhe"`, `"ecdhe"`                                                                                 |
+| `encrypt_algorithm` | list | No       | Encryption algorithms          | `"rc4"`, `"rc4-md5"`, `"aes-128-cbc"`, `"aes-128-gcm"`, `"aes-256-cbc"`, `"aes-256-gcm"`, `"3des"` |
+| `auth_algorithm`    | list | No       | Authentication algorithms      | `"sha1"`, `"sha256"`, `"sha384"`                                                                   |
 
 ## Exceptions
 
-| Exception                    | Description                           |
-| ---------------------------- | ------------------------------------- |
-| `InvalidObjectError`         | Invalid profile data or format        |
-| `NameNotUniqueError`         | Profile name already exists           |
-| `ObjectNotPresentError`      | Profile not found                     |
-| `MissingQueryParameterError` | Missing required parameters           |
-| `InvalidSSLConfigError`      | Invalid SSL configuration             |
-| `AuthenticationError`        | Authentication failed                 |
-| `ServerError`                | Internal server error                 |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid profile data or format |
+| `NameNotUniqueError`         | Profile name already exists    |
+| `ObjectNotPresentError`      | Profile not found              |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `InvalidSSLConfigError`      | Invalid SSL configuration      |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The Decryption Profile module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Decryption Profile module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Decryption Profile Configuration
@@ -131,7 +132,8 @@ The Decryption Profile module requires proper authentication credentials to acce
 
 ### Creating Decryption Profiles
 
-Decryption profiles define how SSL/TLS traffic should be decrypted and what certificate validation checks should be performed.
+Decryption profiles define how SSL/TLS traffic should be decrypted and what certificate validation
+checks should be performed.
 
 ### Basic Decryption Profile
 
@@ -156,7 +158,8 @@ This example creates a simple decryption profile with SSL Forward Proxy enabled.
 
 ### Comprehensive Decryption Profile
 
-This example creates a more comprehensive decryption profile with multiple proxy types and extensive protocol settings.
+This example creates a more comprehensive decryption profile with multiple proxy types and extensive
+protocol settings.
 
 ```yaml
 - name: Create a comprehensive decryption profile
@@ -225,7 +228,8 @@ This example removes a decryption profile.
 
 ## Managing Configuration Changes
 
-After creating, updating, or deleting decryption profiles, you need to commit your changes to apply them.
+After creating, updating, or deleting decryption profiles, you need to commit your changes to apply
+them.
 
 ```yaml
 - name: Commit changes
@@ -313,6 +317,8 @@ It's important to handle potential errors when working with decryption profiles.
 
 ## Related Modules
 
-- [decryption_profile_info](decryption_profile_info.md) - Retrieve information about decryption profiles
+- [decryption_profile_info](decryption_profile_info.md) - Retrieve information about decryption
+  profiles
 - [security_rule](security_rule.md) - Configure security policies that use decryption profiles
-- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that can include decryption settings
+- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that can
+  include decryption settings

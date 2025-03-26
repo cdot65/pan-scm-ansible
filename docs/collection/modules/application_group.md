@@ -20,46 +20,47 @@
 
 ## Overview
 
-The `application_group` Ansible module provides functionality to manage application group objects in 
+The `application_group` Ansible module provides functionality to manage application group objects in
 Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and delete
 application groups that can contain multiple application objects. Application groups simplify
 security policy configuration by allowing you to reference multiple applications as a single object.
 
 ## Core Methods
 
-| Method     | Description                         | Parameters                          | Return Type                      |
-| ---------- | ----------------------------------- | ----------------------------------- | -------------------------------- |
-| `create()` | Creates a new application group     | `data: Dict[str, Any]`              | `ApplicationGroupResponseModel`  |
-| `update()` | Updates an existing group           | `group: ApplicationGroupUpdateModel`| `ApplicationGroupResponseModel`  |
-| `delete()` | Removes an application group        | `object_id: str`                    | `None`                           |
-| `fetch()`  | Gets an application group by name   | `name: str`, `container: str`       | `ApplicationGroupResponseModel`  |
-| `list()`   | Lists application groups            | `folder: str`, `**filters`          | `List[ApplicationGroupResponseModel]`|
+| Method     | Description                       | Parameters                           | Return Type                           |
+| ---------- | --------------------------------- | ------------------------------------ | ------------------------------------- |
+| `create()` | Creates a new application group   | `data: Dict[str, Any]`               | `ApplicationGroupResponseModel`       |
+| `update()` | Updates an existing group         | `group: ApplicationGroupUpdateModel` | `ApplicationGroupResponseModel`       |
+| `delete()` | Removes an application group      | `object_id: str`                     | `None`                                |
+| `fetch()`  | Gets an application group by name | `name: str`, `container: str`        | `ApplicationGroupResponseModel`       |
+| `list()`   | Lists application groups          | `folder: str`, `**filters`           | `List[ApplicationGroupResponseModel]` |
 
 ## Application Group Model Attributes
 
-| Attribute     | Type | Required       | Description                                                 |
-| ------------- | ---- | -------------- | ----------------------------------------------------------- |
-| `name`        | str  | Yes            | The name of the application group                           |
-| `members`     | list | Yes            | List of application names to include in the group           |
-| `folder`      | str  | One container  | The folder in which the group is defined (max 64 chars)     |
-| `snippet`     | str  | One container  | The snippet in which the group is defined (max 64 chars)    |
-| `device`      | str  | One container  | The device in which the group is defined (max 64 chars)     |
+| Attribute | Type | Required      | Description                                              |
+| --------- | ---- | ------------- | -------------------------------------------------------- |
+| `name`    | str  | Yes           | The name of the application group                        |
+| `members` | list | Yes           | List of application names to include in the group        |
+| `folder`  | str  | One container | The folder in which the group is defined (max 64 chars)  |
+| `snippet` | str  | One container | The snippet in which the group is defined (max 64 chars) |
+| `device`  | str  | One container | The device in which the group is defined (max 64 chars)  |
 
 ## Exceptions
 
-| Exception                    | Description                         |
-| ---------------------------- | ----------------------------------- |
-| `InvalidObjectError`         | Invalid group data or format        |
-| `NameNotUniqueError`         | Group name already exists           |
+| Exception                    | Description                           |
+| ---------------------------- | ------------------------------------- |
+| `InvalidObjectError`         | Invalid group data or format          |
+| `NameNotUniqueError`         | Group name already exists             |
 | `ObjectNotPresentError`      | Group or member application not found |
-| `MissingQueryParameterError` | Missing required parameters         |
-| `EmptyMembersError`          | Application group cannot be empty   |
-| `AuthenticationError`        | Authentication failed               |
-| `ServerError`                | Internal server error               |
+| `MissingQueryParameterError` | Missing required parameters           |
+| `EmptyMembersError`          | Application group cannot be empty     |
+| `AuthenticationError`        | Authentication failed                 |
+| `ServerError`                | Internal server error                 |
 
 ## Basic Configuration
 
-The Application Group module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Application Group module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Application Group Configuration
@@ -87,7 +88,8 @@ The Application Group module requires proper authentication credentials to acces
 
 ### Creating Application Groups
 
-Application groups allow you to organize related applications together for simplified policy management.
+Application groups allow you to organize related applications together for simplified policy
+management.
 
 ### Basic Application Group
 
@@ -163,7 +165,8 @@ This example removes application groups from the system.
 
 ## Managing Configuration Changes
 
-After creating, updating, or deleting application groups, you need to commit your changes to apply them.
+After creating, updating, or deleting application groups, you need to commit your changes to apply
+them.
 
 ```yaml
 - name: Commit changes
@@ -260,6 +263,8 @@ It's important to handle potential errors when working with application group ob
 
 - [application](application.md) - Manage application objects
 - [application_info](application_info.md) - Retrieve information about application objects
-- [application_group_info](application_group_info.md) - Retrieve information about application groups
+- [application_group_info](application_group_info.md) - Retrieve information about application
+  groups
 - [security_rule](security_rule.md) - Configure security policies that reference application groups
-- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that may be applied to application traffic
+- [security_profiles_group](security_profiles_group.md) - Manage security profile groups that may be
+  applied to application traffic

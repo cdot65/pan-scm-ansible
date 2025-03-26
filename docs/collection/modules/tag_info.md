@@ -20,40 +20,48 @@
 
 ## Overview
 
-The `tag_info` module provides functionality to gather information about tag objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an information-gathering module that doesn't make any changes to the system. It supports retrieving a specific tag by name or listing all tags with various filter options including color, container type, and exclusion filters. The module is essential for inventory management, policy planning, and auditing tag usage across the organization.
+The `tag_info` module provides functionality to gather information about tag objects in Palo Alto
+Networks' Strata Cloud Manager (SCM). This is an information-gathering module that doesn't make any
+changes to the system. It supports retrieving a specific tag by name or listing all tags with
+various filter options including color, container type, and exclusion filters. The module is
+essential for inventory management, policy planning, and auditing tag usage across the organization.
 
 ## Core Methods
 
-| Method    | Description                  | Parameters                    | Return Type           |
-| --------- | ---------------------------- | ----------------------------- | --------------------- |
-| `fetch()` | Gets a specific tag by name  | `name: str`, `container: str` | `TagResponseModel`    |
-| `list()`  | Lists tags with filtering    | `folder: str`, `**filters`    | `List[TagResponseModel]` |
+| Method    | Description                 | Parameters                    | Return Type              |
+| --------- | --------------------------- | ----------------------------- | ------------------------ |
+| `fetch()` | Gets a specific tag by name | `name: str`, `container: str` | `TagResponseModel`       |
+| `list()`  | Lists tags with filtering   | `folder: str`, `**filters`    | `List[TagResponseModel]` |
 
 ## Tag Info Parameters
 
-| Parameter          | Type   | Required      | Description                                                    |
-| ------------------ | ------ | ------------- | -------------------------------------------------------------- |
-| `name`             | str    | No            | The name of a specific tag object to retrieve                   |
-| `gather_subset`    | list   | No            | Determines which information to gather (default: ['config'])    |
-| `folder`           | str    | One container* | Filter tags by folder container                                 |
-| `snippet`          | str    | One container* | Filter tags by snippet container                                |
-| `device`           | str    | One container* | Filter tags by device container                                 |
-| `exact_match`      | bool   | No            | Only return objects defined exactly in the specified container  |
-| `exclude_folders`  | list   | No            | List of folder names to exclude from results                    |
-| `exclude_snippets` | list   | No            | List of snippet values to exclude from results                  |
-| `exclude_devices`  | list   | No            | List of device values to exclude from results                   |
-| `colors`           | list   | No            | Filter by tag colors                                            |
+| Parameter          | Type | Required        | Description                                                    |
+| ------------------ | ---- | --------------- | -------------------------------------------------------------- |
+| `name`             | str  | No              | The name of a specific tag object to retrieve                  |
+| `gather_subset`    | list | No              | Determines which information to gather (default: ['config'])   |
+| `folder`           | str  | One container\* | Filter tags by folder container                                |
+| `snippet`          | str  | One container\* | Filter tags by snippet container                               |
+| `device`           | str  | One container\* | Filter tags by device container                                |
+| `exact_match`      | bool | No              | Only return objects defined exactly in the specified container |
+| `exclude_folders`  | list | No              | List of folder names to exclude from results                   |
+| `exclude_snippets` | list | No              | List of snippet values to exclude from results                 |
+| `exclude_devices`  | list | No              | List of device values to exclude from results                  |
+| `colors`           | list | No              | Filter by tag colors                                           |
 
-*One container parameter is required when `name` is not specified.
+\*One container parameter is required when `name` is not specified.
 
 ### Available Tag Colors
 
-Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, Burnt Sienna, Cerulean Blue, Chestnut, Cobalt Blue, Copper, Cyan, Forest Green, Gold, Gray, Green, Lavender, Light Gray, Light Green, Lime, Magenta, Mahogany, Maroon, Medium Blue, Medium Rose, Medium Violet, Midnight Blue, Olive, Orange, Orchid, Peach, Purple, Red, Red Violet, Red-Orange, Salmon, Thistle, Turquoise Blue, Violet Blue, Yellow, Yellow-Orange
+Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, Burnt Sienna, Cerulean Blue, Chestnut,
+Cobalt Blue, Copper, Cyan, Forest Green, Gold, Gray, Green, Lavender, Light Gray, Light Green, Lime,
+Magenta, Mahogany, Maroon, Medium Blue, Medium Rose, Medium Violet, Midnight Blue, Olive, Orange,
+Orchid, Peach, Purple, Red, Red Violet, Red-Orange, Salmon, Thistle, Turquoise Blue, Violet Blue,
+Yellow, Yellow-Orange
 
 ### Provider Dictionary
 
-| Parameter       | Type | Required | Description                            |
-| --------------- | ---- | -------- | -------------------------------------- |
+| Parameter       | Type | Required | Description                             |
+| --------------- | ---- | -------- | --------------------------------------- |
 | `client_id`     | str  | Yes      | Client ID for SCM authentication        |
 | `client_secret` | str  | Yes      | Client secret for SCM authentication    |
 | `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
@@ -61,17 +69,18 @@ Azure Blue, Black, Blue, Blue Gray, Blue Violet, Brown, Burnt Sienna, Cerulean B
 
 ## Exceptions
 
-| Exception                    | Description                     |
-| ---------------------------- | ------------------------------- |
-| `InvalidObjectError`         | Invalid request data or format  |
-| `MissingQueryParameterError` | Missing required parameters     |
-| `ObjectNotPresentError`      | Tag not found                   |
-| `AuthenticationError`        | Authentication failed           |
-| `ServerError`                | Internal server error           |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid request data or format |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `ObjectNotPresentError`      | Tag not found                  |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The Tag Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Tag Info module requires proper authentication credentials to access the Strata Cloud Manager
+API.
 
 ```yaml
 - name: Basic Tag Info Configuration
@@ -224,7 +233,8 @@ The Tag Info module requires proper authentication credentials to access the Str
 
 ## Managing Configuration Changes
 
-As an info module, `tag_info` does not make any configuration changes. However, you can use the information it retrieves to make decisions about other configuration operations.
+As an info module, `tag_info` does not make any configuration changes. However, you can use the
+information it retrieves to make decisions about other configuration operations.
 
 ```yaml
 - name: Use tag information for dynamic address group configuration

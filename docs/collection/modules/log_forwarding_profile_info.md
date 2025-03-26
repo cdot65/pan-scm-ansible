@@ -25,26 +25,26 @@ various filtering options.
 
 ## Core Methods
 
-| Method    | Description                                    | Parameters                       | Return Type                            |
-| --------- | ---------------------------------------------- | -------------------------------- | -------------------------------------- |
-| `fetch()` | Gets a specific log forwarding profile by name | `name: str`, `container: str`    | `LogForwardingProfileResponseModel`    |
-| `list()`  | Lists log forwarding profiles with filtering   | `folder: str`, `**filters`       | `List[LogForwardingProfileResponseModel]` |
+| Method    | Description                                    | Parameters                    | Return Type                               |
+| --------- | ---------------------------------------------- | ----------------------------- | ----------------------------------------- |
+| `fetch()` | Gets a specific log forwarding profile by name | `name: str`, `container: str` | `LogForwardingProfileResponseModel`       |
+| `list()`  | Lists log forwarding profiles with filtering   | `folder: str`, `**filters`    | `List[LogForwardingProfileResponseModel]` |
 
 ## Log Forwarding Profile Info Parameters
 
-| Parameter          | Type   | Required      | Description                                                               |
-| ------------------ | ------ | ------------- | ------------------------------------------------------------------------- |
-| `name`             | str    | No            | Name of a specific log forwarding profile to retrieve                     |
-| `gather_subset`    | list   | No            | Determines which information to gather (default: config)                  |
-| `folder`           | str    | One container* | Filter log forwarding profiles by folder container                        |
-| `snippet`          | str    | One container* | Filter log forwarding profiles by snippet container                       |
-| `device`           | str    | One container* | Filter log forwarding profiles by device container                        |
-| `exact_match`      | bool   | No            | When True, only return objects defined exactly in the specified container |
-| `exclude_folders`  | list   | No            | List of folder names to exclude from results                              |
-| `exclude_snippets` | list   | No            | List of snippet values to exclude from results                            |
-| `exclude_devices`  | list   | No            | List of device values to exclude from results                             |
+| Parameter          | Type | Required        | Description                                                               |
+| ------------------ | ---- | --------------- | ------------------------------------------------------------------------- |
+| `name`             | str  | No              | Name of a specific log forwarding profile to retrieve                     |
+| `gather_subset`    | list | No              | Determines which information to gather (default: config)                  |
+| `folder`           | str  | One container\* | Filter log forwarding profiles by folder container                        |
+| `snippet`          | str  | One container\* | Filter log forwarding profiles by snippet container                       |
+| `device`           | str  | One container\* | Filter log forwarding profiles by device container                        |
+| `exact_match`      | bool | No              | When True, only return objects defined exactly in the specified container |
+| `exclude_folders`  | list | No              | List of folder names to exclude from results                              |
+| `exclude_snippets` | list | No              | List of snippet values to exclude from results                            |
+| `exclude_devices`  | list | No              | List of device values to exclude from results                             |
 
-*One container parameter is required when `name` is not specified.
+\*One container parameter is required when `name` is not specified.
 
 ## Exceptions
 
@@ -169,8 +169,8 @@ Use advanced filtering options to refine your query results.
 ## Managing Configuration Changes
 
 For info modules like `log_forwarding_profile_info`, no commit is needed since these modules only
-retrieve information and do not modify the configuration. However, you may need to commit changes
-if you use the retrieved information to make configuration changes with other modules.
+retrieve information and do not modify the configuration. However, you may need to commit changes if
+you use the retrieved information to make configuration changes with other modules.
 
 ```yaml
 - name: Use info results to make configuration changes
@@ -246,7 +246,8 @@ It's important to handle potential errors when retrieving information about log 
 ### Efficient Querying
 
 - Use specific filters to reduce API load and improve performance
-- When looking for a specific log forwarding profile, use the `name` parameter instead of filtering results
+- When looking for a specific log forwarding profile, use the `name` parameter instead of filtering
+  results
 - Use container parameters consistently across queries
 - Leverage exclusion filters to refine results without complex queries
 
@@ -259,7 +260,8 @@ It's important to handle potential errors when retrieving information about log 
 
 ### Filter Usage
 
-- Use `exact_match` when you only want log forwarding profiles defined directly in the specified container
+- Use `exact_match` when you only want log forwarding profiles defined directly in the specified
+  container
 - Use exclusion filters to refine results without overcomplicating queries
 - Combine multiple filters for more precise results
 - Document the purpose of complex filters for maintainability
@@ -287,8 +289,12 @@ It's important to handle potential errors when retrieving information about log 
 
 ## Related Modules
 
-- [log_forwarding_profile](log_forwarding_profile.md) - Create, update, and delete log forwarding profiles
-- [http_server_profiles](http_server_profiles.md) - Manage HTTP server profiles used in log forwarding
-- [http_server_profiles_info](http_server_profiles_info.md) - Retrieve information about HTTP server profiles
-- [syslog_server_profiles](syslog_server_profiles.md) - Manage syslog server profiles for log forwarding
+- [log_forwarding_profile](log_forwarding_profile.md) - Create, update, and delete log forwarding
+  profiles
+- [http_server_profiles](http_server_profiles.md) - Manage HTTP server profiles used in log
+  forwarding
+- [http_server_profiles_info](http_server_profiles_info.md) - Retrieve information about HTTP server
+  profiles
+- [syslog_server_profiles](syslog_server_profiles.md) - Manage syslog server profiles for log
+  forwarding
 - [security_rule](security_rule.md) - Configure security policies that use log forwarding profiles

@@ -20,51 +20,56 @@
 
 ## Overview
 
-The `security_profiles_group` Ansible module provides functionality to manage Security Profiles Groups in Palo Alto Networks' Strata Cloud Manager (SCM). Security Profiles Groups allow you to bundle multiple security profiles (Anti-Spyware, Vulnerability Protection, URL Filtering, etc.) into a single group that can be applied to security rules, simplifying policy management and ensuring consistent security controls.
+The `security_profiles_group` Ansible module provides functionality to manage Security Profiles
+Groups in Palo Alto Networks' Strata Cloud Manager (SCM). Security Profiles Groups allow you to
+bundle multiple security profiles (Anti-Spyware, Vulnerability Protection, URL Filtering, etc.) into
+a single group that can be applied to security rules, simplifying policy management and ensuring
+consistent security controls.
 
 ## Core Methods
 
-| Method     | Description                              | Parameters                    | Return Type                          |
-| ---------- | ---------------------------------------- | ----------------------------- | ------------------------------------ |
-| `create()` | Creates a new Security Profiles Group    | `data: Dict[str, Any]`        | `SecurityProfilesGroupResponseModel` |
-| `update()` | Updates an existing group                | `group: SecurityProfilesGroupUpdateModel` | `SecurityProfilesGroupResponseModel` |
-| `delete()` | Removes a group                          | `object_id: str`              | `None`                               |
-| `fetch()`  | Gets a group by name                     | `name: str`, `container: str` | `SecurityProfilesGroupResponseModel` |
-| `list()`   | Lists groups with filtering              | `folder: str`, `**filters`    | `List[SecurityProfilesGroupResponseModel]` |
+| Method     | Description                           | Parameters                                | Return Type                                |
+| ---------- | ------------------------------------- | ----------------------------------------- | ------------------------------------------ |
+| `create()` | Creates a new Security Profiles Group | `data: Dict[str, Any]`                    | `SecurityProfilesGroupResponseModel`       |
+| `update()` | Updates an existing group             | `group: SecurityProfilesGroupUpdateModel` | `SecurityProfilesGroupResponseModel`       |
+| `delete()` | Removes a group                       | `object_id: str`                          | `None`                                     |
+| `fetch()`  | Gets a group by name                  | `name: str`, `container: str`             | `SecurityProfilesGroupResponseModel`       |
+| `list()`   | Lists groups with filtering           | `folder: str`, `**filters`                | `List[SecurityProfilesGroupResponseModel]` |
 
 ## Security Profiles Group Model Attributes
 
-| Attribute                   | Type   | Required      | Description                                             |
-| --------------------------- | ------ | ------------- | ------------------------------------------------------- |
-| `name`                      | str    | Yes           | Name of the Security Profiles Group                     |
-| `description`               | str    | No            | Description of the Security Profiles Group              |
-| `anti_spyware_profile`      | str    | No            | Name of the Anti-Spyware profile to include             |
-| `anti_virus_profile`        | str    | No            | Name of the Anti-Virus profile to include               |
-| `vulnerability_profile`     | str    | No            | Name of the Vulnerability profile to include            |
-| `url_filtering_profile`     | str    | No            | Name of the URL Filtering profile to include            |
-| `file_blocking_profile`     | str    | No            | Name of the File Blocking profile to include            |
-| `wildfire_analysis_profile` | str    | No            | Name of the WildFire Analysis profile to include        |
-| `data_filtering_profile`    | str    | No            | Name of the Data Filtering profile to include           |
-| `tags`                      | list   | No            | List of tags to apply to the group                      |
-| `folder`                    | str    | One container | The folder in which the group is defined (max 64 chars) |
-| `snippet`                   | str    | One container | The snippet in which the group is defined (max 64 chars)|
-| `device`                    | str    | One container | The device in which the group is defined (max 64 chars) |
+| Attribute                   | Type | Required      | Description                                              |
+| --------------------------- | ---- | ------------- | -------------------------------------------------------- |
+| `name`                      | str  | Yes           | Name of the Security Profiles Group                      |
+| `description`               | str  | No            | Description of the Security Profiles Group               |
+| `anti_spyware_profile`      | str  | No            | Name of the Anti-Spyware profile to include              |
+| `anti_virus_profile`        | str  | No            | Name of the Anti-Virus profile to include                |
+| `vulnerability_profile`     | str  | No            | Name of the Vulnerability profile to include             |
+| `url_filtering_profile`     | str  | No            | Name of the URL Filtering profile to include             |
+| `file_blocking_profile`     | str  | No            | Name of the File Blocking profile to include             |
+| `wildfire_analysis_profile` | str  | No            | Name of the WildFire Analysis profile to include         |
+| `data_filtering_profile`    | str  | No            | Name of the Data Filtering profile to include            |
+| `tags`                      | list | No            | List of tags to apply to the group                       |
+| `folder`                    | str  | One container | The folder in which the group is defined (max 64 chars)  |
+| `snippet`                   | str  | One container | The snippet in which the group is defined (max 64 chars) |
+| `device`                    | str  | One container | The device in which the group is defined (max 64 chars)  |
 
 ## Exceptions
 
-| Exception                    | Description                             |
-| ---------------------------- | --------------------------------------- |
-| `InvalidObjectError`         | Invalid group data or format            |
-| `NameNotUniqueError`         | Group name already exists               |
-| `ObjectNotPresentError`      | Group not found                         |
-| `MissingQueryParameterError` | Missing required parameters             |
-| `AuthenticationError`        | Authentication failed                   |
-| `ServerError`                | Internal server error                   |
-| `ReferenceNotFoundError`     | Referenced security profile doesn't exist|
+| Exception                    | Description                               |
+| ---------------------------- | ----------------------------------------- |
+| `InvalidObjectError`         | Invalid group data or format              |
+| `NameNotUniqueError`         | Group name already exists                 |
+| `ObjectNotPresentError`      | Group not found                           |
+| `MissingQueryParameterError` | Missing required parameters               |
+| `AuthenticationError`        | Authentication failed                     |
+| `ServerError`                | Internal server error                     |
+| `ReferenceNotFoundError`     | Referenced security profile doesn't exist |
 
 ## Basic Configuration
 
-The Security Profiles Group module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Security Profiles Group module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic Security Profiles Group Configuration
@@ -92,7 +97,8 @@ The Security Profiles Group module requires proper authentication credentials to
 
 ### Creating Security Profiles Groups
 
-Security Profiles Groups allow you to bundle multiple security profiles together for consistent application in security policies.
+Security Profiles Groups allow you to bundle multiple security profiles together for consistent
+application in security policies.
 
 ### Standard Security Profiles Group
 
@@ -115,7 +121,8 @@ This example creates a standard security profiles group with basic protection.
 
 ### Enhanced Security Profiles Group
 
-This example creates a more comprehensive security profiles group with enhanced protection for sensitive assets.
+This example creates a more comprehensive security profiles group with enhanced protection for
+sensitive assets.
 
 ```yaml
 - name: Create Enhanced Security Profiles Group
@@ -173,7 +180,8 @@ This example removes a security profiles group that is no longer needed.
 
 ## Managing Configuration Changes
 
-After creating, updating, or deleting security profiles groups, you need to commit your changes to apply them.
+After creating, updating, or deleting security profiles groups, you need to commit your changes to
+apply them.
 
 ```yaml
 - name: Commit changes
@@ -263,8 +271,12 @@ It's important to handle potential errors when working with security profiles gr
 
 ## Related Modules
 
+- [security_profiles_group_info](security_profiles_group_info.md) - Retrieve information about
+  security profiles groups
 - [anti_spyware_profile](anti_spyware_profile.md) - Manage anti-spyware profiles
-- [vulnerability_protection_profile](vulnerability_protection_profile.md) - Manage vulnerability protection profiles
+- [vulnerability_protection_profile](vulnerability_protection_profile.md) - Manage vulnerability
+  protection profiles
 - [wildfire_antivirus_profiles](wildfire_antivirus_profiles.md) - Manage WildFire antivirus profiles
-- [security_rule](security_rule.md) - Configure security policies that reference security profiles groups
+- [security_rule](security_rule.md) - Configure security policies that reference security profiles
+  groups
 - [url_categories](url_categories.md) - Define URL categories for URL filtering profiles

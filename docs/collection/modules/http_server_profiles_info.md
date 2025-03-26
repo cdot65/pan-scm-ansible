@@ -1,48 +1,51 @@
 # Http Server Profiles Information Object
 
-## 01. Table of Contents
+## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [HTTP Server Profile Info Model Attributes](#http-server-profile-info-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
-   - [Getting Information about a Specific HTTP Server Profile](#getting-information-about-a-specific-http-server-profile)
-   - [Listing All HTTP Server Profiles in a Folder](#listing-all-http-server-profiles-in-a-folder)
-   - [Using Advanced Filtering Options](#using-advanced-filtering-options)
-   - [Filtering by Server Configuration](#filtering-by-server-configuration)
-7. [Processing Retrieved Information](#processing-retrieved-information)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [HTTP Server Profile Info Model Attributes](#http-server-profile-info-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Getting Information about a Specific HTTP Server Profile](#getting-information-about-a-specific-http-server-profile)
+    - [Listing All HTTP Server Profiles in a Folder](#listing-all-http-server-profiles-in-a-folder)
+    - [Using Advanced Filtering Options](#using-advanced-filtering-options)
+    - [Filtering by Server Configuration](#filtering-by-server-configuration)
+07. [Processing Retrieved Information](#processing-retrieved-information)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
-## 02. Overview
+## Overview
 
-The `http_server_profiles_info` Ansible module provides functionality to gather information about HTTP Server Profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an info module that allows fetching details about specific HTTP server profiles or listing profiles with various filtering options, without making any changes to the system.
+The `http_server_profiles_info` Ansible module provides functionality to gather information about
+HTTP Server Profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an info
+module that allows fetching details about specific HTTP server profiles or listing profiles with
+various filtering options, without making any changes to the system.
 
-## 03. Core Methods
+## Core Methods
 
-| Method    | Description                              | Parameters                    | Return Type                          |
-| --------- | ---------------------------------------- | ----------------------------- | ------------------------------------ |
-| `fetch()` | Gets a specific HTTP server profile by name | `name: str`, `container: str` | `HttpServerProfileResponseModel`     |
+| Method    | Description                                 | Parameters                    | Return Type                            |
+| --------- | ------------------------------------------- | ----------------------------- | -------------------------------------- |
+| `fetch()` | Gets a specific HTTP server profile by name | `name: str`, `container: str` | `HttpServerProfileResponseModel`       |
 | `list()`  | Lists HTTP server profiles with filtering   | `folder: str`, `**filters`    | `List[HttpServerProfileResponseModel]` |
 
-## 04. HTTP Server Profile Info Model Attributes
+## HTTP Server Profile Info Model Attributes
 
-| Parameter          | Type   | Required | Description                                                 |
-| ------------------ | ------ | -------- | ----------------------------------------------------------- |
-| `name`             | str    | No       | Name of a specific HTTP server profile to retrieve          |
-| `gather_subset`    | list   | No       | Determines which information to gather (default: config)    |
-| `folder`           | str    | No\*     | Filter profiles by folder container                         |
-| `snippet`          | str    | No\*     | Filter profiles by snippet container                        |
-| `device`           | str    | No\*     | Filter profiles by device container                         |
-| `exact_match`      | bool   | No       | When True, only return objects defined exactly in container |
-| `exclude_folders`  | list   | No       | List of folder names to exclude from results                |
-| `exclude_snippets` | list   | No       | List of snippet values to exclude from results              |
-| `exclude_devices`  | list   | No       | List of device values to exclude from results               |
-| `protocol`         | str    | No       | Filter by server protocol ("HTTP" or "HTTPS")              |
-| `tag_registration` | bool   | No       | Filter by tag registration setting                          |
+| Parameter          | Type | Required | Description                                                 |
+| ------------------ | ---- | -------- | ----------------------------------------------------------- |
+| `name`             | str  | No       | Name of a specific HTTP server profile to retrieve          |
+| `gather_subset`    | list | No       | Determines which information to gather (default: config)    |
+| `folder`           | str  | No\*     | Filter profiles by folder container                         |
+| `snippet`          | str  | No\*     | Filter profiles by snippet container                        |
+| `device`           | str  | No\*     | Filter profiles by device container                         |
+| `exact_match`      | bool | No       | When True, only return objects defined exactly in container |
+| `exclude_folders`  | list | No       | List of folder names to exclude from results                |
+| `exclude_snippets` | list | No       | List of snippet values to exclude from results              |
+| `exclude_devices`  | list | No       | List of device values to exclude from results               |
+| `protocol`         | str  | No       | Filter by server protocol ("HTTP" or "HTTPS")               |
+| `tag_registration` | bool | No       | Filter by tag registration setting                          |
 
 \*One container parameter is required when `name` is not specified.
 
@@ -55,7 +58,7 @@ The `http_server_profiles_info` Ansible module provides functionality to gather 
 | `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
 | `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
 
-## 05. Exceptions
+## Exceptions
 
 | Exception                    | Description                    |
 | ---------------------------- | ------------------------------ |
@@ -65,10 +68,10 @@ The `http_server_profiles_info` Ansible module provides functionality to gather 
 | `AuthenticationError`        | Authentication failed          |
 | `ServerError`                | Internal server error          |
 
-## 06. Basic Configuration
+## Basic Configuration
 
-The HTTP Server Profiles Info module requires proper authentication credentials to access the
-Strata Cloud Manager API.
+The HTTP Server Profiles Info module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic HTTP Server Profiles Info Configuration
@@ -92,7 +95,7 @@ Strata Cloud Manager API.
         var: profiles_result
 ```
 
-## 07. Usage Examples
+## Usage Examples
 
 ### Getting Information about a Specific HTTP Server Profile
 
@@ -185,7 +188,7 @@ Filter HTTP server profiles by specific server configuration parameters.
   register: tag_profiles
 ```
 
-## 08. Processing Retrieved Information
+## Processing Retrieved Information
 
 Example of processing and utilizing the retrieved HTTP server profile information.
 
@@ -238,7 +241,7 @@ Example of processing and utilizing the retrieved HTTP server profile informatio
         msg: "Profiles with multiple servers: {{ multi_server_profiles | map(attribute='name') | list }}"
 ```
 
-## 09. Error Handling
+## Error Handling
 
 It's important to handle potential errors when retrieving information about HTTP server profiles.
 
@@ -267,14 +270,15 @@ It's important to handle potential errors when retrieving information about HTTP
       when: "'not found' in ansible_failed_result.msg"
 ```
 
-## 10. Best Practices
+## Best Practices
 
 ### Efficient Querying
 
 - Use specific filters to reduce API load and improve performance
 - When looking for a specific profile, use the `name` parameter instead of filtering results
 - Use container parameters consistently across queries
-- Filter by protocol or other attributes when you need to find profiles with specific characteristics
+- Filter by protocol or other attributes when you need to find profiles with specific
+  characteristics
 
 ### Result Processing
 
@@ -311,8 +315,10 @@ It's important to handle potential errors when retrieving information about HTTP
 - Check HTTPS configurations for proper TLS versions and certificate profiles
 - Document your HTTP server profile inventory and their purposes
 
-## 11. Related Modules
+## Related Modules
 
 - [http_server_profiles](http_server_profiles.md) - Create, update, and delete HTTP server profiles
-- [log_forwarding_profile_info](log_forwarding_profile_info.md) - Retrieve information about log forwarding profiles that may use HTTP server profiles
-- [syslog_server_profiles_info](syslog_server_profiles_info.md) - Retrieve information about syslog server profiles
+- [log_forwarding_profile_info](log_forwarding_profile_info.md) - Retrieve information about log
+  forwarding profiles that may use HTTP server profiles
+- [syslog_server_profiles_info](syslog_server_profiles_info.md) - Retrieve information about syslog
+  server profiles

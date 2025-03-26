@@ -1,62 +1,66 @@
 # Ipsec Crypto Profile Configuration Object
 
-## 01. Table of Contents
+## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [IPSec Crypto Profile Model Attributes](#ipsec-crypto-profile-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
-   - [Creating IPSec Crypto Profiles](#creating-ipsec-crypto-profiles)
-   - [Basic IPSec Crypto Profile](#basic-ipsec-crypto-profile)
-   - [Suite-B IPSec Crypto Profile](#suite-b-ipsec-crypto-profile)
-   - [Updating IPSec Crypto Profiles](#updating-ipsec-crypto-profiles)
-   - [Deleting IPSec Crypto Profiles](#deleting-ipsec-crypto-profiles)
-7. [Managing Configuration Changes](#managing-configuration-changes)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [IPSec Crypto Profile Model Attributes](#ipsec-crypto-profile-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Creating IPSec Crypto Profiles](#creating-ipsec-crypto-profiles)
+    - [Basic IPSec Crypto Profile](#basic-ipsec-crypto-profile)
+    - [Suite-B IPSec Crypto Profile](#suite-b-ipsec-crypto-profile)
+    - [Updating IPSec Crypto Profiles](#updating-ipsec-crypto-profiles)
+    - [Deleting IPSec Crypto Profiles](#deleting-ipsec-crypto-profiles)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
-## 02. Overview
+## Overview
 
-The `ipsec_crypto_profile` Ansible module provides functionality to manage IPSec Crypto Profiles in Palo Alto Networks' Strata Cloud Manager (SCM). IPSec Crypto Profiles define the encryption and authentication algorithms to be used during the IPSec Phase-2 negotiation when establishing a secure VPN tunnel.
+The `ipsec_crypto_profile` Ansible module provides functionality to manage IPSec Crypto Profiles in
+Palo Alto Networks' Strata Cloud Manager (SCM). IPSec Crypto Profiles define the encryption and
+authentication algorithms to be used during the IPSec Phase-2 negotiation when establishing a secure
+VPN tunnel.
 
-## 03. Core Methods
+## Core Methods
 
-| Method     | Description                              | Parameters                              | Return Type                          |
-| ---------- | ---------------------------------------- | --------------------------------------- | ------------------------------------ |
-| `create()` | Creates a new IPSec Crypto Profile       | `data: Dict[str, Any]`                  | `IpsecCryptoProfileResponseModel`    |
-| `update()` | Updates an existing profile              | `profile: IpsecCryptoProfileUpdateModel` | `IpsecCryptoProfileResponseModel`   |
-| `delete()` | Removes a profile                        | `object_id: str`                        | `None`                               |
-| `fetch()`  | Gets a profile by name                   | `name: str`, `container: str`           | `IpsecCryptoProfileResponseModel`    |
-| `list()`   | Lists profiles with filtering            | `folder: str`, `**filters`              | `List[IpsecCryptoProfileResponseModel]` |
+| Method     | Description                        | Parameters                               | Return Type                             |
+| ---------- | ---------------------------------- | ---------------------------------------- | --------------------------------------- |
+| `create()` | Creates a new IPSec Crypto Profile | `data: Dict[str, Any]`                   | `IpsecCryptoProfileResponseModel`       |
+| `update()` | Updates an existing profile        | `profile: IpsecCryptoProfileUpdateModel` | `IpsecCryptoProfileResponseModel`       |
+| `delete()` | Removes a profile                  | `object_id: str`                         | `None`                                  |
+| `fetch()`  | Gets a profile by name             | `name: str`, `container: str`            | `IpsecCryptoProfileResponseModel`       |
+| `list()`   | Lists profiles with filtering      | `folder: str`, `**filters`               | `List[IpsecCryptoProfileResponseModel]` |
 
-## 04. IPSec Crypto Profile Model Attributes
+## IPSec Crypto Profile Model Attributes
 
-| Attribute            | Type   | Required      | Description                                      |
-| -------------------- | ------ | ------------- | ------------------------------------------------ |
-| `name`               | str    | Yes           | Name of the IPSec Crypto Profile                 |
-| `description`        | str    | No            | Description of the profile                       |
-| `esp_encryption`     | list   | Yes           | List of ESP encryption algorithms                |
-| `esp_authentication` | list   | No*           | List of ESP authentication algorithms            |
-| `ah_authentication`  | list   | No*           | List of AH authentication algorithms             |
-| `dh_group`           | str    | No            | Diffie-Hellman group for Perfect Forward Secrecy |
-| `lifetime`           | dict   | No            | IPSec SA lifetime settings                       |
-| `folder`             | str    | One container | The folder in which the profile is defined       |
-| `snippet`            | str    | One container | The snippet in which the profile is defined      |
-| `device`             | str    | One container | The device in which the profile is defined       |
+| Attribute            | Type | Required      | Description                                      |
+| -------------------- | ---- | ------------- | ------------------------------------------------ |
+| `name`               | str  | Yes           | Name of the IPSec Crypto Profile                 |
+| `description`        | str  | No            | Description of the profile                       |
+| `esp_encryption`     | list | Yes           | List of ESP encryption algorithms                |
+| `esp_authentication` | list | No\*          | List of ESP authentication algorithms            |
+| `ah_authentication`  | list | No\*          | List of AH authentication algorithms             |
+| `dh_group`           | str  | No            | Diffie-Hellman group for Perfect Forward Secrecy |
+| `lifetime`           | dict | No            | IPSec SA lifetime settings                       |
+| `folder`             | str  | One container | The folder in which the profile is defined       |
+| `snippet`            | str  | One container | The snippet in which the profile is defined      |
+| `device`             | str  | One container | The device in which the profile is defined       |
 
-*Note: When using GCM encryption algorithms, esp_authentication should not be specified as authentication is built into GCM.
+\*Note: When using GCM encryption algorithms, esp_authentication should not be specified as
+authentication is built into GCM.
 
 ### Lifetime Attributes
 
-| Attribute | Type | Required | Description                            |
-| --------- | ---- | -------- | -------------------------------------- |
-| `days`    | int  | No       | Number of days for lifetime (0-365)    |
-| `hours`   | int  | No       | Number of hours for lifetime (0-24)    |
-| `minutes` | int  | No       | Number of minutes for lifetime (0-60)  |
-| `seconds` | int  | No       | Number of seconds for lifetime (0-60)  |
+| Attribute | Type | Required | Description                           |
+| --------- | ---- | -------- | ------------------------------------- |
+| `days`    | int  | No       | Number of days for lifetime (0-365)   |
+| `hours`   | int  | No       | Number of hours for lifetime (0-24)   |
+| `minutes` | int  | No       | Number of minutes for lifetime (0-60) |
+| `seconds` | int  | No       | Number of seconds for lifetime (0-60) |
 
 ### Provider Dictionary Attributes
 
@@ -67,7 +71,7 @@ The `ipsec_crypto_profile` Ansible module provides functionality to manage IPSec
 | `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
 | `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
 
-## 05. Exceptions
+## Exceptions
 
 | Exception                    | Description                    |
 | ---------------------------- | ------------------------------ |
@@ -79,9 +83,10 @@ The `ipsec_crypto_profile` Ansible module provides functionality to manage IPSec
 | `ServerError`                | Internal server error          |
 | `InvalidAlgorithmError`      | Invalid algorithm specified    |
 
-## 06. Basic Configuration
+## Basic Configuration
 
-The IPSec Crypto Profile module requires proper authentication credentials to access the Strata Cloud Manager API.
+The IPSec Crypto Profile module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic IPSec Crypto Profile Configuration
@@ -110,11 +115,12 @@ The IPSec Crypto Profile module requires proper authentication credentials to ac
         state: "present"
 ```
 
-## 07. Usage Examples
+## Usage Examples
 
 ### Creating IPSec Crypto Profiles
 
-IPSec Crypto Profiles define the security parameters for Phase-2 IPSec negotiation when establishing a VPN tunnel. Different profiles can be created for different security requirements.
+IPSec Crypto Profiles define the security parameters for Phase-2 IPSec negotiation when establishing
+a VPN tunnel. Different profiles can be created for different security requirements.
 
 ### Basic IPSec Crypto Profile
 
@@ -190,9 +196,10 @@ This example removes an IPSec Crypto Profile.
     state: "absent"
 ```
 
-## 08. Managing Configuration Changes
+## Managing Configuration Changes
 
-After creating, updating, or deleting IPSec Crypto Profiles, you need to commit your changes to apply them.
+After creating, updating, or deleting IPSec Crypto Profiles, you need to commit your changes to
+apply them.
 
 ```yaml
 - name: Commit changes
@@ -202,7 +209,7 @@ After creating, updating, or deleting IPSec Crypto Profiles, you need to commit 
     description: "Updated IPSec Crypto Profiles"
 ```
 
-## 09. Error Handling
+## Error Handling
 
 It's important to handle potential errors when working with IPSec Crypto Profiles.
 
@@ -241,7 +248,7 @@ It's important to handle potential errors when working with IPSec Crypto Profile
       when: "'algorithm' in ansible_failed_result.msg"
 ```
 
-## 10. Best Practices
+## Best Practices
 
 ### Algorithm Selection
 
@@ -288,9 +295,10 @@ It's important to handle potential errors when working with IPSec Crypto Profile
 - Have a rollback plan for unsuccessful implementations
 - Monitor VPN connections after implementation
 
-## 11. Related Modules
+## Related Modules
 
-- [ike_crypto_profile](ike_crypto_profile.md) - Configure IKE Crypto profiles for Phase-1 negotiations
+- [ike_crypto_profile](ike_crypto_profile.md) - Configure IKE Crypto profiles for Phase-1
+  negotiations
 - [ike_gateway](ike_gateway.md) - Configure IKE gateways that use IPSec Crypto profiles
 - [ipsec_tunnel](ipsec_tunnel.md) - Configure IPsec tunnels that reference IPSec Crypto profiles
 - [remote_networks](remote_networks.md) - Configure remote networks that use IPSec tunnels

@@ -21,19 +21,19 @@
 
 ## Overview
 
-The `address_info` Ansible module provides functionality to retrieve information about address objects in 
-Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can retrieve detailed 
-information about a specific address object by name, or list multiple address objects with various 
-filtering options. It supports advanced filtering capabilities including container-based filtering, 
-address type filtering, tag-based filtering, and exclusion filters.
+The `address_info` Ansible module provides functionality to retrieve information about address
+objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can
+retrieve detailed information about a specific address object by name, or list multiple address
+objects with various filtering options. It supports advanced filtering capabilities including
+container-based filtering, address type filtering, tag-based filtering, and exclusion filters.
 
 ## Core Methods
 
-| Method     | Description                      | Parameters                                | Return Type               |
-| ---------- | -------------------------------- | ----------------------------------------- | ------------------------- |
-| `get()`    | Gets a specific address by name  | `name: str`, `container: str`             | `AddressResponseModel`    |
-| `list()`   | Lists addresses with filtering   | `folder: str`, `**filters`                | `List[AddressResponseModel]`|
-| `filter()` | Applies filters to the results   | `addresses: List`, `filter_params: Dict`  | `List[AddressResponseModel]`|
+| Method     | Description                     | Parameters                               | Return Type                  |
+| ---------- | ------------------------------- | ---------------------------------------- | ---------------------------- |
+| `get()`    | Gets a specific address by name | `name: str`, `container: str`            | `AddressResponseModel`       |
+| `list()`   | Lists addresses with filtering  | `folder: str`, `**filters`               | `List[AddressResponseModel]` |
+| `filter()` | Applies filters to the results  | `addresses: List`, `filter_params: Dict` | `List[AddressResponseModel]` |
 
 ## Address Info Model Attributes
 
@@ -54,18 +54,19 @@ address type filtering, tag-based filtering, and exclusion filters.
 
 ## Exceptions
 
-| Exception                    | Description                     |
-| ---------------------------- | ------------------------------- |
-| `ObjectNotPresentError`      | Address not found               |
-| `MissingQueryParameterError` | Missing required parameters     |
-| `InvalidFilterError`         | Invalid filter parameters       |
-| `AuthenticationError`        | Authentication failed           |
-| `ServerError`                | Internal server error           |
+| Exception                    | Description                       |
+| ---------------------------- | --------------------------------- |
+| `ObjectNotPresentError`      | Address not found                 |
+| `MissingQueryParameterError` | Missing required parameters       |
+| `InvalidFilterError`         | Invalid filter parameters         |
+| `AuthenticationError`        | Authentication failed             |
+| `ServerError`                | Internal server error             |
 | `MultipleMatchesError`       | Multiple addresses match criteria |
 
 ## Basic Configuration
 
-The Address Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Address Info module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Address Info Configuration
@@ -193,8 +194,8 @@ These examples illustrate more advanced filtering options including exact match 
 
 ## Processing Retrieved Information
 
-After retrieving address information, you can process the data for various purposes such as reporting, 
-inventory management, or integration with other systems.
+After retrieving address information, you can process the data for various purposes such as
+reporting, inventory management, or integration with other systems.
 
 ```yaml
 - name: Create a summary of address information
@@ -303,4 +304,5 @@ It's important to handle potential errors when retrieving address information.
 - [address_group_info](address_group_info.md) - Retrieve information about address groups
 - [address_group](address_group.md) - Manage address group objects
 - [tag_info](tag_info.md) - Retrieve information about tags used with address objects
-- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that use addresses
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that use
+  addresses

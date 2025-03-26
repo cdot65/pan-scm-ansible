@@ -21,36 +21,36 @@
 
 ## Overview
 
-The `address_group_info` Ansible module provides functionality to retrieve information about address group
-objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can retrieve
-detailed information about a specific address group object by name, or list multiple address group
-objects with various filtering options. It supports advanced filtering capabilities including group
-type filtering (static or dynamic), tag-based filtering, and exclusion filters.
+The `address_group_info` Ansible module provides functionality to retrieve information about address
+group objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is a read-only module that can
+retrieve detailed information about a specific address group object by name, or list multiple
+address group objects with various filtering options. It supports advanced filtering capabilities
+including group type filtering (static or dynamic), tag-based filtering, and exclusion filters.
 
 ## Core Methods
 
-| Method     | Description                           | Parameters                                     | Return Type                      |
-| ---------- | ------------------------------------- | ---------------------------------------------- | -------------------------------- |
-| `get()`    | Gets a specific address group by name | `name: str`, `container: str`                  | `AddressGroupResponseModel`      |
-| `list()`   | Lists address groups with filtering   | `folder: str`, `**filters`                     | `List[AddressGroupResponseModel]`|
-| `filter()` | Applies filters to the results        | `address_groups: List`, `filter_params: Dict`  | `List[AddressGroupResponseModel]`|
+| Method     | Description                           | Parameters                                    | Return Type                       |
+| ---------- | ------------------------------------- | --------------------------------------------- | --------------------------------- |
+| `get()`    | Gets a specific address group by name | `name: str`, `container: str`                 | `AddressGroupResponseModel`       |
+| `list()`   | Lists address groups with filtering   | `folder: str`, `**filters`                    | `List[AddressGroupResponseModel]` |
+| `filter()` | Applies filters to the results        | `address_groups: List`, `filter_params: Dict` | `List[AddressGroupResponseModel]` |
 
 ## Address Group Info Model Attributes
 
-| Attribute          | Type | Required      | Description                                                      |
-| ------------------ | ---- | ------------- | ---------------------------------------------------------------- |
-| `name`             | str  | No            | The name of a specific address group to retrieve                 |
-| `gather_subset`    | list | No            | Determines which information to gather (default: ['config'])     |
-| `folder`           | str  | One container | Filter address groups by folder (max 64 chars)                   |
-| `snippet`          | str  | One container | Filter address groups by snippet (max 64 chars)                  |
-| `device`           | str  | One container | Filter address groups by device (max 64 chars)                   |
-| `exact_match`      | bool | No            | When True, only return objects in the specified container        |
-| `exclude_folders`  | list | No            | List of folder names to exclude from results                     |
-| `exclude_snippets` | list | No            | List of snippet values to exclude from results                   |
-| `exclude_devices`  | list | No            | List of device values to exclude from results                    |
-| `types`            | list | No            | Filter by address group types ("static", "dynamic")              |
-| `values`           | list | No            | Filter by address group values (members or filter)               |
-| `tags`             | list | No            | Filter by tags                                                   |
+| Attribute          | Type | Required      | Description                                                  |
+| ------------------ | ---- | ------------- | ------------------------------------------------------------ |
+| `name`             | str  | No            | The name of a specific address group to retrieve             |
+| `gather_subset`    | list | No            | Determines which information to gather (default: ['config']) |
+| `folder`           | str  | One container | Filter address groups by folder (max 64 chars)               |
+| `snippet`          | str  | One container | Filter address groups by snippet (max 64 chars)              |
+| `device`           | str  | One container | Filter address groups by device (max 64 chars)               |
+| `exact_match`      | bool | No            | When True, only return objects in the specified container    |
+| `exclude_folders`  | list | No            | List of folder names to exclude from results                 |
+| `exclude_snippets` | list | No            | List of snippet values to exclude from results               |
+| `exclude_devices`  | list | No            | List of device values to exclude from results                |
+| `types`            | list | No            | Filter by address group types ("static", "dynamic")          |
+| `values`           | list | No            | Filter by address group values (members or filter)           |
+| `tags`             | list | No            | Filter by tags                                               |
 
 ## Exceptions
 
@@ -65,7 +65,8 @@ type filtering (static or dynamic), tag-based filtering, and exclusion filters.
 
 ## Basic Configuration
 
-The Address Group Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Address Group Info module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Address Group Info Configuration

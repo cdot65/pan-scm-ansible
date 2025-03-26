@@ -1,59 +1,62 @@
 # Ike Crypto Profile Configuration Object
 
-## 01. Table of Contents
+## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [IKE Crypto Profile Model Attributes](#ike-crypto-profile-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
-   - [Creating IKE Crypto Profiles](#creating-ike-crypto-profiles)
-   - [Basic IKE Crypto Profile](#basic-ike-crypto-profile)
-   - [Strong Encryption IKE Crypto Profile](#strong-encryption-ike-crypto-profile)
-   - [Updating IKE Crypto Profiles](#updating-ike-crypto-profiles)
-   - [Deleting IKE Crypto Profiles](#deleting-ike-crypto-profiles)
-7. [Managing Configuration Changes](#managing-configuration-changes)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [IKE Crypto Profile Model Attributes](#ike-crypto-profile-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Creating IKE Crypto Profiles](#creating-ike-crypto-profiles)
+    - [Basic IKE Crypto Profile](#basic-ike-crypto-profile)
+    - [Strong Encryption IKE Crypto Profile](#strong-encryption-ike-crypto-profile)
+    - [Updating IKE Crypto Profiles](#updating-ike-crypto-profiles)
+    - [Deleting IKE Crypto Profiles](#deleting-ike-crypto-profiles)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
-## 02. Overview
+## Overview
 
-The `ike_crypto_profile` Ansible module provides functionality to manage Internet Key Exchange (IKE) Crypto Profiles in Palo Alto Networks' Strata Cloud Manager (SCM). IKE Crypto Profiles define the encryption and authentication algorithms to be used during the IKE Phase-1 negotiation when establishing a secure VPN tunnel.
+The `ike_crypto_profile` Ansible module provides functionality to manage Internet Key Exchange (IKE)
+Crypto Profiles in Palo Alto Networks' Strata Cloud Manager (SCM). IKE Crypto Profiles define the
+encryption and authentication algorithms to be used during the IKE Phase-1 negotiation when
+establishing a secure VPN tunnel.
 
-## 03. Core Methods
+## Core Methods
 
-| Method     | Description                              | Parameters                            | Return Type                        |
-| ---------- | ---------------------------------------- | ------------------------------------- | ---------------------------------- |
-| `create()` | Creates a new IKE Crypto Profile         | `data: Dict[str, Any]`                | `IkeCryptoProfileResponseModel`    |
-| `update()` | Updates an existing profile              | `profile: IkeCryptoProfileUpdateModel` | `IkeCryptoProfileResponseModel`    |
-| `delete()` | Removes a profile                        | `object_id: str`                      | `None`                             |
-| `fetch()`  | Gets a profile by name                   | `name: str`, `container: str`         | `IkeCryptoProfileResponseModel`    |
-| `list()`   | Lists profiles with filtering            | `folder: str`, `**filters`            | `List[IkeCryptoProfileResponseModel]` |
+| Method     | Description                      | Parameters                             | Return Type                           |
+| ---------- | -------------------------------- | -------------------------------------- | ------------------------------------- |
+| `create()` | Creates a new IKE Crypto Profile | `data: Dict[str, Any]`                 | `IkeCryptoProfileResponseModel`       |
+| `update()` | Updates an existing profile      | `profile: IkeCryptoProfileUpdateModel` | `IkeCryptoProfileResponseModel`       |
+| `delete()` | Removes a profile                | `object_id: str`                       | `None`                                |
+| `fetch()`  | Gets a profile by name           | `name: str`, `container: str`          | `IkeCryptoProfileResponseModel`       |
+| `list()`   | Lists profiles with filtering    | `folder: str`, `**filters`             | `List[IkeCryptoProfileResponseModel]` |
 
-## 04. IKE Crypto Profile Model Attributes
+## IKE Crypto Profile Model Attributes
 
-| Attribute        | Type   | Required      | Description                                                |
-| ---------------- | ------ | ------------- | ---------------------------------------------------------- |
-| `name`           | str    | Yes           | Name of the IKE Crypto Profile                             |
-| `description`    | str    | No            | Description of the profile                                 |
-| `encryption`     | list   | Yes           | List of encryption algorithms                              |
-| `authentication` | list   | Yes           | List of authentication algorithms                          |
-| `dh_group`       | list   | Yes           | List of Diffie-Hellman groups                             |
-| `lifetime`       | dict   | No            | IKE SA lifetime settings                                   |
-| `folder`         | str    | One container | The folder in which the profile is defined (max 64 chars)  |
-| `snippet`        | str    | One container | The snippet in which the profile is defined (max 64 chars) |
-| `device`         | str    | One container | The device in which the profile is defined (max 64 chars)  |
+| Attribute        | Type | Required      | Description                                                |
+| ---------------- | ---- | ------------- | ---------------------------------------------------------- |
+| `name`           | str  | Yes           | Name of the IKE Crypto Profile                             |
+| `description`    | str  | No            | Description of the profile                                 |
+| `encryption`     | list | Yes           | List of encryption algorithms                              |
+| `authentication` | list | Yes           | List of authentication algorithms                          |
+| `dh_group`       | list | Yes           | List of Diffie-Hellman groups                              |
+| `lifetime`       | dict | No            | IKE SA lifetime settings                                   |
+| `folder`         | str  | One container | The folder in which the profile is defined (max 64 chars)  |
+| `snippet`        | str  | One container | The snippet in which the profile is defined (max 64 chars) |
+| `device`         | str  | One container | The device in which the profile is defined (max 64 chars)  |
 
 ### Lifetime Attributes
 
-| Attribute | Type | Required | Description                            |
-| --------- | ---- | -------- | -------------------------------------- |
-| `days`    | int  | No       | Number of days for lifetime (0-365)    |
-| `hours`   | int  | No       | Number of hours for lifetime (0-24)    |
-| `minutes` | int  | No       | Number of minutes for lifetime (0-60)  |
-| `seconds` | int  | No       | Number of seconds for lifetime (0-60)  |
+| Attribute | Type | Required | Description                           |
+| --------- | ---- | -------- | ------------------------------------- |
+| `days`    | int  | No       | Number of days for lifetime (0-365)   |
+| `hours`   | int  | No       | Number of hours for lifetime (0-24)   |
+| `minutes` | int  | No       | Number of minutes for lifetime (0-60) |
+| `seconds` | int  | No       | Number of seconds for lifetime (0-60) |
 
 ### Provider Dictionary Attributes
 
@@ -64,7 +67,7 @@ The `ike_crypto_profile` Ansible module provides functionality to manage Interne
 | `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
 | `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
 
-## 05. Exceptions
+## Exceptions
 
 | Exception                    | Description                    |
 | ---------------------------- | ------------------------------ |
@@ -76,9 +79,10 @@ The `ike_crypto_profile` Ansible module provides functionality to manage Interne
 | `ServerError`                | Internal server error          |
 | `InvalidAlgorithmError`      | Invalid algorithm specified    |
 
-## 06. Basic Configuration
+## Basic Configuration
 
-The IKE Crypto Profile module requires proper authentication credentials to access the Strata Cloud Manager API.
+The IKE Crypto Profile module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic IKE Crypto Profile Configuration
@@ -110,11 +114,12 @@ The IKE Crypto Profile module requires proper authentication credentials to acce
         state: "present"
 ```
 
-## 07. Usage Examples
+## Usage Examples
 
 ### Creating IKE Crypto Profiles
 
-IKE Crypto Profiles define the security parameters for IKE negotiation when establishing a VPN tunnel. Different profiles can be created for different security requirements.
+IKE Crypto Profiles define the security parameters for IKE negotiation when establishing a VPN
+tunnel. Different profiles can be created for different security requirements.
 
 ### Basic IKE Crypto Profile
 
@@ -201,9 +206,10 @@ This example removes an IKE Crypto Profile.
     state: "absent"
 ```
 
-## 08. Managing Configuration Changes
+## Managing Configuration Changes
 
-After creating, updating, or deleting IKE Crypto Profiles, you need to commit your changes to apply them.
+After creating, updating, or deleting IKE Crypto Profiles, you need to commit your changes to apply
+them.
 
 ```yaml
 - name: Commit changes
@@ -213,7 +219,7 @@ After creating, updating, or deleting IKE Crypto Profiles, you need to commit yo
     description: "Updated IKE Crypto Profiles"
 ```
 
-## 09. Error Handling
+## Error Handling
 
 It's important to handle potential errors when working with IKE Crypto Profiles.
 
@@ -257,7 +263,7 @@ It's important to handle potential errors when working with IKE Crypto Profiles.
       when: "'algorithm' in ansible_failed_result.msg"
 ```
 
-## 10. Best Practices
+## Best Practices
 
 ### Algorithm Selection
 
@@ -297,8 +303,10 @@ It's important to handle potential errors when working with IKE Crypto Profiles.
 - Document profiles for compliance and audit purposes
 - Maintain an inventory of profiles and their applications
 
-## 11. Related Modules
+## Related Modules
 
 - [ike_gateway](ike_gateway.md) - Configure IKE gateways that reference IKE Crypto profiles
-- [ipsec_crypto_profile](ipsec_crypto_profile.md) - Configure IPsec Crypto profiles for Phase-2 negotiations
-- [ipsec_tunnel](ipsec_tunnel.md) - Configure IPsec tunnels that use IKE gateways and crypto profiles
+- [ipsec_crypto_profile](ipsec_crypto_profile.md) - Configure IPsec Crypto profiles for Phase-2
+  negotiations
+- [ipsec_tunnel](ipsec_tunnel.md) - Configure IPsec tunnels that use IKE gateways and crypto
+  profiles

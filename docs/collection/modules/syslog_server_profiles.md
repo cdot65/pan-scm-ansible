@@ -20,65 +20,69 @@
 
 ## Overview
 
-The `syslog_server_profiles` module provides functionality to manage syslog server profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and delete syslog server profiles with specific configurations for transport protocol, port, format, and facility settings. Syslog server profiles are essential for forwarding logs from the firewall to external syslog collectors for analysis, retention, and compliance purposes.
+The `syslog_server_profiles` module provides functionality to manage syslog server profile objects
+in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to create, update, and
+delete syslog server profiles with specific configurations for transport protocol, port, format, and
+facility settings. Syslog server profiles are essential for forwarding logs from the firewall to
+external syslog collectors for analysis, retention, and compliance purposes.
 
 ## Core Methods
 
-| Method     | Description                            | Parameters                               | Return Type                          |
-| ---------- | -------------------------------------- | ---------------------------------------- | ------------------------------------ |
-| `create()` | Creates a new syslog server profile    | `data: Dict[str, Any]`                   | `SyslogServerProfileResponseModel`   |
-| `update()` | Updates an existing profile            | `profile: SyslogServerProfileUpdateModel`| `SyslogServerProfileResponseModel`   |
-| `delete()` | Removes a profile                      | `object_id: str`                         | `None`                               |
-| `fetch()`  | Gets a profile by name                 | `name: str`, `container: str`            | `SyslogServerProfileResponseModel`   |
-| `list()`   | Lists profiles with filtering          | `folder: str`, `**filters`               | `List[SyslogServerProfileResponseModel]` |
+| Method     | Description                         | Parameters                                | Return Type                              |
+| ---------- | ----------------------------------- | ----------------------------------------- | ---------------------------------------- |
+| `create()` | Creates a new syslog server profile | `data: Dict[str, Any]`                    | `SyslogServerProfileResponseModel`       |
+| `update()` | Updates an existing profile         | `profile: SyslogServerProfileUpdateModel` | `SyslogServerProfileResponseModel`       |
+| `delete()` | Removes a profile                   | `object_id: str`                          | `None`                                   |
+| `fetch()`  | Gets a profile by name              | `name: str`, `container: str`             | `SyslogServerProfileResponseModel`       |
+| `list()`   | Lists profiles with filtering       | `folder: str`, `**filters`                | `List[SyslogServerProfileResponseModel]` |
 
 ## Syslog Server Profile Model Attributes
 
-| Attribute              | Type   | Required      | Description                                                |
-| ---------------------- | ------ | ------------- | ---------------------------------------------------------- |
-| `name`                 | str    | Yes           | Profile name (max 31 chars). Must match pattern: ^[a-zA-Z0-9.\_-]+$ |
-| `servers`              | dict   | Yes           | Dictionary of server configurations                         |
-| `format`               | dict   | No            | Format settings for different log types                     |
-| `folder`               | str    | One container* | The folder in which the profile is defined (max 64 chars)  |
-| `snippet`              | str    | One container* | The snippet in which the profile is defined (max 64 chars) |
-| `device`               | str    | One container* | The device in which the profile is defined (max 64 chars)  |
-| `state`                | str    | Yes           | Desired state of the profile ("present" or "absent")        |
+| Attribute | Type | Required        | Description                                                         |
+| --------- | ---- | --------------- | ------------------------------------------------------------------- |
+| `name`    | str  | Yes             | Profile name (max 31 chars). Must match pattern: ^[a-zA-Z0-9.\_-]+$ |
+| `servers` | dict | Yes             | Dictionary of server configurations                                 |
+| `format`  | dict | No              | Format settings for different log types                             |
+| `folder`  | str  | One container\* | The folder in which the profile is defined (max 64 chars)           |
+| `snippet` | str  | One container\* | The snippet in which the profile is defined (max 64 chars)          |
+| `device`  | str  | One container\* | The device in which the profile is defined (max 64 chars)           |
+| `state`   | str  | Yes             | Desired state of the profile ("present" or "absent")                |
 
-*Exactly one container parameter must be provided.
+\*Exactly one container parameter must be provided.
 
 ### Server Attributes
 
-| Attribute    | Type | Required | Description                                                       |
-| ------------ | ---- | -------- | ----------------------------------------------------------------- |
-| `name`       | str  | Yes      | Syslog server name                                                |
-| `server`     | str  | Yes      | Syslog server address                                             |
-| `transport`  | str  | Yes      | Transport protocol for the syslog server (UDP, TCP)               |
-| `port`       | int  | Yes      | Syslog server port (1-65535)                                      |
-| `format`     | str  | Yes      | Syslog format (BSD, IETF)                                         |
-| `facility`   | str  | Yes      | Syslog facility (LOG_USER, LOG_LOCAL0 through LOG_LOCAL7)         |
+| Attribute   | Type | Required | Description                                               |
+| ----------- | ---- | -------- | --------------------------------------------------------- |
+| `name`      | str  | Yes      | Syslog server name                                        |
+| `server`    | str  | Yes      | Syslog server address                                     |
+| `transport` | str  | Yes      | Transport protocol for the syslog server (UDP, TCP)       |
+| `port`      | int  | Yes      | Syslog server port (1-65535)                              |
+| `format`    | str  | Yes      | Syslog format (BSD, IETF)                                 |
+| `facility`  | str  | Yes      | Syslog facility (LOG_USER, LOG_LOCAL0 through LOG_LOCAL7) |
 
 ### Format Attributes
 
-| Attribute | Type | Required | Description                                  |
-| --------- | ---- | -------- | -------------------------------------------- |
-| `config`  | str  | No       | Format string for configuration logs         |
-| `system`  | str  | No       | Format string for system logs                |
-| `threat`  | str  | No       | Format string for threat logs                |
-| `traffic` | str  | No       | Format string for traffic logs               |
-| `hip`     | str  | No       | Format string for host information logs      |
-| `url`     | str  | No       | Format string for URL filtering logs         |
-| `data`    | str  | No       | Format string for data filtering logs        |
-| `wildfire` | str | No       | Format string for WildFire submission logs   |
-| `tunnel`  | str  | No       | Format string for tunnel inspection logs     |
-| `userid`  | str  | No       | Format string for user identification logs   |
-| `gtp`     | str  | No       | Format string for GPRS tunneling protocol logs |
-| `auth`    | str  | No       | Format string for authentication logs        |
-| `sctp`    | str  | No       | Format string for SCTP logs                  |
+| Attribute  | Type | Required | Description                                    |
+| ---------- | ---- | -------- | ---------------------------------------------- |
+| `config`   | str  | No       | Format string for configuration logs           |
+| `system`   | str  | No       | Format string for system logs                  |
+| `threat`   | str  | No       | Format string for threat logs                  |
+| `traffic`  | str  | No       | Format string for traffic logs                 |
+| `hip`      | str  | No       | Format string for host information logs        |
+| `url`      | str  | No       | Format string for URL filtering logs           |
+| `data`     | str  | No       | Format string for data filtering logs          |
+| `wildfire` | str  | No       | Format string for WildFire submission logs     |
+| `tunnel`   | str  | No       | Format string for tunnel inspection logs       |
+| `userid`   | str  | No       | Format string for user identification logs     |
+| `gtp`      | str  | No       | Format string for GPRS tunneling protocol logs |
+| `auth`     | str  | No       | Format string for authentication logs          |
+| `sctp`     | str  | No       | Format string for SCTP logs                    |
 
 ### Provider Dictionary
 
-| Parameter       | Type | Required | Description                            |
-| --------------- | ---- | -------- | -------------------------------------- |
+| Parameter       | Type | Required | Description                             |
+| --------------- | ---- | -------- | --------------------------------------- |
 | `client_id`     | str  | Yes      | Client ID for SCM authentication        |
 | `client_secret` | str  | Yes      | Client secret for SCM authentication    |
 | `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
@@ -86,18 +90,19 @@ The `syslog_server_profiles` module provides functionality to manage syslog serv
 
 ## Exceptions
 
-| Exception                    | Description                      |
-| ---------------------------- | -------------------------------- |
-| `InvalidObjectError`         | Invalid profile data or format   |
-| `NameNotUniqueError`         | Profile name already exists      |
-| `ObjectNotPresentError`      | Profile not found                |
-| `MissingQueryParameterError` | Missing required parameters      |
-| `AuthenticationError`        | Authentication failed            |
-| `ServerError`                | Internal server error            |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid profile data or format |
+| `NameNotUniqueError`         | Profile name already exists    |
+| `ObjectNotPresentError`      | Profile not found              |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The Syslog Server Profile module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Syslog Server Profile module requires proper authentication credentials to access the Strata
+Cloud Manager API.
 
 ```yaml
 - name: Basic Syslog Server Profile Configuration
@@ -129,7 +134,8 @@ The Syslog Server Profile module requires proper authentication credentials to a
 
 ### Creating Syslog Server Profiles
 
-Syslog server profiles can be configured with different transport protocols, formats, and log format templates to match the requirements of your log collection infrastructure.
+Syslog server profiles can be configured with different transport protocols, formats, and log format
+templates to match the requirements of your log collection infrastructure.
 
 ### Basic Syslog Server Profile
 
@@ -153,7 +159,8 @@ This example creates a simple syslog server profile with UDP transport.
 
 ### Advanced Syslog Server Profile
 
-This example creates a more advanced syslog server profile with TCP transport and custom format settings for different log types.
+This example creates a more advanced syslog server profile with TCP transport and custom format
+settings for different log types.
 
 ```yaml
 - name: Create a syslog server profile with custom format settings
@@ -209,7 +216,8 @@ This example creates a more advanced syslog server profile with TCP transport an
 
 ## Managing Configuration Changes
 
-After creating, updating, or deleting syslog server profiles, you need to commit your changes to apply them.
+After creating, updating, or deleting syslog server profiles, you need to commit your changes to
+apply them.
 
 ```yaml
 - name: Commit changes
@@ -266,7 +274,8 @@ Common errors you might encounter when using this module:
 
 ### Server Configuration
 
-- Use appropriate transport protocols based on your requirements (TCP for reliability, UDP for performance)
+- Use appropriate transport protocols based on your requirements (TCP for reliability, UDP for
+  performance)
 - Choose appropriate syslog formats based on your syslog server's capabilities
 - Configure suitable facility values to properly categorize logs
 - Consider implementing redundant syslog servers for high availability

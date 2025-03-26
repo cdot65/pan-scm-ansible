@@ -20,7 +20,12 @@
 
 ## Overview
 
-The `service_group_info` module provides functionality to gather information about service group objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an information-gathering module that doesn't make any changes to the system. It supports retrieving a specific service group by name or listing all service groups with various filter options including members, tags, and container filters. The module is useful for inventory management, dependency analysis, and preparing for configuration changes.
+The `service_group_info` module provides functionality to gather information about service group
+objects in Palo Alto Networks' Strata Cloud Manager (SCM). This is an information-gathering module
+that doesn't make any changes to the system. It supports retrieving a specific service group by name
+or listing all service groups with various filter options including members, tags, and container
+filters. The module is useful for inventory management, dependency analysis, and preparing for
+configuration changes.
 
 ## Core Methods
 
@@ -31,26 +36,26 @@ The `service_group_info` module provides functionality to gather information abo
 
 ## Service Group Info Parameters
 
-| Parameter          | Type   | Required      | Description                                                               |
-| ------------------ | ------ | ------------- | ------------------------------------------------------------------------- |
-| `name`             | str    | No            | The name of a specific service group object to retrieve                   |
-| `gather_subset`    | list   | No            | Determines which information to gather (default: ['config'])              |
-| `folder`           | str    | One container* | Filter service groups by folder container                                 |
-| `snippet`          | str    | One container* | Filter service groups by snippet container                                |
-| `device`           | str    | One container* | Filter service groups by device container                                 |
-| `exact_match`      | bool   | No            | Only return objects defined exactly in the specified container            |
-| `exclude_folders`  | list   | No            | List of folder names to exclude from results                              |
-| `exclude_snippets` | list   | No            | List of snippet values to exclude from results                            |
-| `exclude_devices`  | list   | No            | List of device values to exclude from results                             |
-| `members`          | list   | No            | Filter by service members contained in the groups                         |
-| `tags`             | list   | No            | Filter by tags associated with service groups                             |
+| Parameter          | Type | Required        | Description                                                    |
+| ------------------ | ---- | --------------- | -------------------------------------------------------------- |
+| `name`             | str  | No              | The name of a specific service group object to retrieve        |
+| `gather_subset`    | list | No              | Determines which information to gather (default: ['config'])   |
+| `folder`           | str  | One container\* | Filter service groups by folder container                      |
+| `snippet`          | str  | One container\* | Filter service groups by snippet container                     |
+| `device`           | str  | One container\* | Filter service groups by device container                      |
+| `exact_match`      | bool | No              | Only return objects defined exactly in the specified container |
+| `exclude_folders`  | list | No              | List of folder names to exclude from results                   |
+| `exclude_snippets` | list | No              | List of snippet values to exclude from results                 |
+| `exclude_devices`  | list | No              | List of device values to exclude from results                  |
+| `members`          | list | No              | Filter by service members contained in the groups              |
+| `tags`             | list | No              | Filter by tags associated with service groups                  |
 
-*One container parameter is required when `name` is not specified.
+\*One container parameter is required when `name` is not specified.
 
 ### Provider Dictionary
 
-| Parameter       | Type | Required | Description                            |
-| --------------- | ---- | -------- | -------------------------------------- |
+| Parameter       | Type | Required | Description                             |
+| --------------- | ---- | -------- | --------------------------------------- |
 | `client_id`     | str  | Yes      | Client ID for SCM authentication        |
 | `client_secret` | str  | Yes      | Client secret for SCM authentication    |
 | `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
@@ -64,17 +69,18 @@ The `service_group_info` module provides functionality to gather information abo
 
 ## Exceptions
 
-| Exception                    | Description                     |
-| ---------------------------- | ------------------------------- |
-| `InvalidObjectError`         | Invalid request data or format  |
-| `MissingQueryParameterError` | Missing required parameters     |
-| `ObjectNotPresentError`      | Service group not found         |
-| `AuthenticationError`        | Authentication failed           |
-| `ServerError`                | Internal server error           |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid request data or format |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `ObjectNotPresentError`      | Service group not found        |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
 
 ## Basic Configuration
 
-The Service Group Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Service Group Info module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic Service Group Info Configuration
@@ -175,7 +181,8 @@ The Service Group Info module requires proper authentication credentials to acce
 
 ## Managing Configuration Changes
 
-As an info module, `service_group_info` does not make any configuration changes. However, you can use the information it retrieves to make decisions about other configuration operations.
+As an info module, `service_group_info` does not make any configuration changes. However, you can
+use the information it retrieves to make decisions about other configuration operations.
 
 ```yaml
 - name: Use service group information for security rule creation

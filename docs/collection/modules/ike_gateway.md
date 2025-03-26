@@ -1,64 +1,67 @@
 # Ike Gateway Configuration Object
 
-## 01. Table of Contents
+## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [IKE Gateway Model Attributes](#ike-gateway-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
-   - [Creating IKE Gateways](#creating-ike-gateways)
-   - [IKE Gateway with Pre-Shared Key](#ike-gateway-with-pre-shared-key)
-   - [IKE Gateway with Certificate Authentication](#ike-gateway-with-certificate-authentication)
-   - [Updating IKE Gateways](#updating-ike-gateways)
-   - [Deleting IKE Gateways](#deleting-ike-gateways)
-7. [Managing Configuration Changes](#managing-configuration-changes)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [IKE Gateway Model Attributes](#ike-gateway-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Creating IKE Gateways](#creating-ike-gateways)
+    - [IKE Gateway with Pre-Shared Key](#ike-gateway-with-pre-shared-key)
+    - [IKE Gateway with Certificate Authentication](#ike-gateway-with-certificate-authentication)
+    - [Updating IKE Gateways](#updating-ike-gateways)
+    - [Deleting IKE Gateways](#deleting-ike-gateways)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
-## 02. Overview
+## Overview
 
-The `ike_gateway` Ansible module provides functionality to manage Internet Key Exchange (IKE) gateway configuration objects in Palo Alto Networks' Strata Cloud Manager (SCM). IKE gateways define the parameters for establishing IPsec VPN tunnels with remote endpoints, including authentication methods, encryption settings, and peer identities.
+The `ike_gateway` Ansible module provides functionality to manage Internet Key Exchange (IKE)
+gateway configuration objects in Palo Alto Networks' Strata Cloud Manager (SCM). IKE gateways define
+the parameters for establishing IPsec VPN tunnels with remote endpoints, including authentication
+methods, encryption settings, and peer identities.
 
-## 03. Core Methods
+## Core Methods
 
-| Method     | Description                         | Parameters                    | Return Type                 |
-| ---------- | ----------------------------------- | ----------------------------- | --------------------------- |
-| `create()` | Creates a new IKE gateway           | `data: Dict[str, Any]`        | `IkeGatewayResponseModel`   |
-| `update()` | Updates an existing gateway         | `gateway: IkeGatewayUpdateModel` | `IkeGatewayResponseModel` |
-| `delete()` | Removes an IKE gateway              | `object_id: str`              | `None`                      |
-| `fetch()`  | Gets a gateway by name              | `name: str`, `container: str` | `IkeGatewayResponseModel`   |
-| `list()`   | Lists gateways with filtering       | `folder: str`, `**filters`    | `List[IkeGatewayResponseModel]` |
+| Method     | Description                   | Parameters                       | Return Type                     |
+| ---------- | ----------------------------- | -------------------------------- | ------------------------------- |
+| `create()` | Creates a new IKE gateway     | `data: Dict[str, Any]`           | `IkeGatewayResponseModel`       |
+| `update()` | Updates an existing gateway   | `gateway: IkeGatewayUpdateModel` | `IkeGatewayResponseModel`       |
+| `delete()` | Removes an IKE gateway        | `object_id: str`                 | `None`                          |
+| `fetch()`  | Gets a gateway by name        | `name: str`, `container: str`    | `IkeGatewayResponseModel`       |
+| `list()`   | Lists gateways with filtering | `folder: str`, `**filters`       | `List[IkeGatewayResponseModel]` |
 
-## 04. IKE Gateway Model Attributes
+## IKE Gateway Model Attributes
 
-| Attribute                           | Type   | Required      | Description                                        |
-| ----------------------------------- | ------ | ------------- | -------------------------------------------------- |
-| `name`                              | str    | Yes           | Name of the IKE gateway                            |
-| `description`                       | str    | No            | Description of the IKE gateway                     |
-| `version`                           | str    | Yes           | IKE version (ikev1, ikev2, or ikev2-preferred)     |
-| `peer_address`                      | str    | Yes           | Peer IP address or FQDN                            |
-| `interface`                         | str    | Yes           | Interface for the connection                       |
-| `local_id_type`                     | str    | No            | Local identifier type (ipaddr, fqdn, ufqdn, keyid) |
-| `local_id_value`                    | str    | No            | Local identifier value                             |
-| `peer_id_type`                      | str    | No            | Peer identifier type (ipaddr, fqdn, ufqdn, keyid)  |
-| `peer_id_value`                     | str    | No            | Peer identifier value                              |
-| `pre_shared_key`                    | str    | Yes*          | Pre-shared key for authentication                  |
-| `certificate_name`                  | str    | Yes*          | Certificate name for authentication                |
-| `crypto_profile`                    | str    | No            | IKE crypto profile name                            |
-| `enable_nat_traversal`              | bool   | No            | Enable NAT traversal                               |
-| `nat_traversal_keep_alive`          | int    | No            | NAT traversal keepalive interval                   |
-| `nat_traversal_enable_udp_checksum` | bool   | No            | Enable UDP checksum for NAT traversal              |
-| `enable_fragmentation`              | bool   | No            | Enable IKE fragmentation                           |
-| `enable_liveness_check`             | bool   | No            | Enable IKE liveness check                          |
-| `liveness_check_interval`           | int    | No            | Liveness check interval                            |
-| `folder`                            | str    | One container | The folder in which the resource is defined        |
-| `snippet`                           | str    | One container | The snippet in which the resource is defined       |
-| `device`                            | str    | One container | The device in which the resource is defined        |
+| Attribute                           | Type | Required      | Description                                        |
+| ----------------------------------- | ---- | ------------- | -------------------------------------------------- |
+| `name`                              | str  | Yes           | Name of the IKE gateway                            |
+| `description`                       | str  | No            | Description of the IKE gateway                     |
+| `version`                           | str  | Yes           | IKE version (ikev1, ikev2, or ikev2-preferred)     |
+| `peer_address`                      | str  | Yes           | Peer IP address or FQDN                            |
+| `interface`                         | str  | Yes           | Interface for the connection                       |
+| `local_id_type`                     | str  | No            | Local identifier type (ipaddr, fqdn, ufqdn, keyid) |
+| `local_id_value`                    | str  | No            | Local identifier value                             |
+| `peer_id_type`                      | str  | No            | Peer identifier type (ipaddr, fqdn, ufqdn, keyid)  |
+| `peer_id_value`                     | str  | No            | Peer identifier value                              |
+| `pre_shared_key`                    | str  | Yes\*         | Pre-shared key for authentication                  |
+| `certificate_name`                  | str  | Yes\*         | Certificate name for authentication                |
+| `crypto_profile`                    | str  | No            | IKE crypto profile name                            |
+| `enable_nat_traversal`              | bool | No            | Enable NAT traversal                               |
+| `nat_traversal_keep_alive`          | int  | No            | NAT traversal keepalive interval                   |
+| `nat_traversal_enable_udp_checksum` | bool | No            | Enable UDP checksum for NAT traversal              |
+| `enable_fragmentation`              | bool | No            | Enable IKE fragmentation                           |
+| `enable_liveness_check`             | bool | No            | Enable IKE liveness check                          |
+| `liveness_check_interval`           | int  | No            | Liveness check interval                            |
+| `folder`                            | str  | One container | The folder in which the resource is defined        |
+| `snippet`                           | str  | One container | The snippet in which the resource is defined       |
+| `device`                            | str  | One container | The device in which the resource is defined        |
 
-*Exactly one of `pre_shared_key` or `certificate_name` must be provided.
+\*Exactly one of `pre_shared_key` or `certificate_name` must be provided.
 
 ### Provider Dictionary Attributes
 
@@ -69,21 +72,22 @@ The `ike_gateway` Ansible module provides functionality to manage Internet Key E
 | `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
 | `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
 
-## 05. Exceptions
+## Exceptions
 
-| Exception                    | Description                     |
-| ---------------------------- | ------------------------------- |
-| `InvalidObjectError`         | Invalid gateway data or format  |
-| `NameNotUniqueError`         | Gateway name already exists     |
-| `ObjectNotPresentError`      | Gateway not found               |
-| `MissingQueryParameterError` | Missing required parameters     |
-| `AuthenticationError`        | Authentication failed           |
-| `ServerError`                | Internal server error           |
-| `InvalidParameterError`      | Invalid parameter value         |
+| Exception                    | Description                    |
+| ---------------------------- | ------------------------------ |
+| `InvalidObjectError`         | Invalid gateway data or format |
+| `NameNotUniqueError`         | Gateway name already exists    |
+| `ObjectNotPresentError`      | Gateway not found              |
+| `MissingQueryParameterError` | Missing required parameters    |
+| `AuthenticationError`        | Authentication failed          |
+| `ServerError`                | Internal server error          |
+| `InvalidParameterError`      | Invalid parameter value        |
 
-## 06. Basic Configuration
+## Basic Configuration
 
-The IKE Gateway module requires proper authentication credentials to access the Strata Cloud Manager API.
+The IKE Gateway module requires proper authentication credentials to access the Strata Cloud Manager
+API.
 
 ```yaml
 - name: Basic IKE Gateway Configuration
@@ -109,11 +113,12 @@ The IKE Gateway module requires proper authentication credentials to access the 
         state: "present"
 ```
 
-## 07. Usage Examples
+## Usage Examples
 
 ### Creating IKE Gateways
 
-IKE gateways define the parameters for establishing VPN tunnels with remote endpoints. Different authentication methods and settings can be used based on requirements.
+IKE gateways define the parameters for establishing VPN tunnels with remote endpoints. Different
+authentication methods and settings can be used based on requirements.
 
 ### IKE Gateway with Pre-Shared Key
 
@@ -198,7 +203,7 @@ This example removes an IKE gateway.
     state: "absent"
 ```
 
-## 08. Managing Configuration Changes
+## Managing Configuration Changes
 
 After creating, updating, or deleting IKE gateways, you need to commit your changes to apply them.
 
@@ -210,7 +215,7 @@ After creating, updating, or deleting IKE gateways, you need to commit your chan
     description: "Updated IKE gateways"
 ```
 
-## 09. Error Handling
+## Error Handling
 
 It's important to handle potential errors when working with IKE gateways.
 
@@ -248,7 +253,7 @@ It's important to handle potential errors when working with IKE gateways.
       when: "'crypto_profile' in ansible_failed_result.msg"
 ```
 
-## 10. Best Practices
+## Best Practices
 
 ### Authentication
 
@@ -297,7 +302,7 @@ It's important to handle potential errors when working with IKE gateways.
 - Maintain consistent naming conventions
 - Document IKE gateway configurations and their relationships to tunnels
 
-## 11. Related Modules
+## Related Modules
 
 - [ike_crypto_profile](ike_crypto_profile.md) - Configure encryption profiles for IKE gateways
 - [ipsec_crypto_profile](ipsec_crypto_profile.md) - Configure encryption profiles for IPsec tunnels

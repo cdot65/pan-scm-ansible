@@ -1,47 +1,50 @@
 # Hip Profile Information Object
 
-## 01. Table of Contents
+## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [HIP Profile Info Model Attributes](#hip-profile-info-model-attributes)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
-   - [Getting Information about a Specific HIP Profile](#getting-information-about-a-specific-hip-profile)
-   - [Listing All HIP Profiles in a Folder](#listing-all-hip-profiles-in-a-folder)
-   - [Using Advanced Filtering Options](#using-advanced-filtering-options)
-   - [Filtering by HIP Objects](#filtering-by-hip-objects)
-7. [Processing Retrieved Information](#processing-retrieved-information)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [HIP Profile Info Model Attributes](#hip-profile-info-model-attributes)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Getting Information about a Specific HIP Profile](#getting-information-about-a-specific-hip-profile)
+    - [Listing All HIP Profiles in a Folder](#listing-all-hip-profiles-in-a-folder)
+    - [Using Advanced Filtering Options](#using-advanced-filtering-options)
+    - [Filtering by HIP Objects](#filtering-by-hip-objects)
+07. [Processing Retrieved Information](#processing-retrieved-information)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
 10. [Related Modules](#related-modules)
 
-## 02. Overview
+## Overview
 
-The `hip_profile_info` Ansible module provides functionality to gather information about Host Information Profile (HIP) profiles in Palo Alto Networks' Strata Cloud Manager (SCM). This is an info module that allows fetching details about specific HIP profiles or listing profiles with various filtering options, including by HIP objects used in match expressions.
+The `hip_profile_info` Ansible module provides functionality to gather information about Host
+Information Profile (HIP) profiles in Palo Alto Networks' Strata Cloud Manager (SCM). This is an
+info module that allows fetching details about specific HIP profiles or listing profiles with
+various filtering options, including by HIP objects used in match expressions.
 
-## 03. Core Methods
+## Core Methods
 
-| Method    | Description                         | Parameters                    | Return Type                       |
-| --------- | ----------------------------------- | ----------------------------- | --------------------------------- |
-| `fetch()` | Gets a specific HIP profile by name | `name: str`, `container: str` | `HipProfileResponseModel`         |
-| `list()`  | Lists HIP profiles with filtering   | `folder: str`, `**filters`    | `List[HipProfileResponseModel]`   |
+| Method    | Description                         | Parameters                    | Return Type                     |
+| --------- | ----------------------------------- | ----------------------------- | ------------------------------- |
+| `fetch()` | Gets a specific HIP profile by name | `name: str`, `container: str` | `HipProfileResponseModel`       |
+| `list()`  | Lists HIP profiles with filtering   | `folder: str`, `**filters`    | `List[HipProfileResponseModel]` |
 
-## 04. HIP Profile Info Model Attributes
+## HIP Profile Info Model Attributes
 
-| Parameter          | Type   | Required | Description                                                 |
-| ------------------ | ------ | -------- | ----------------------------------------------------------- |
-| `name`             | str    | No       | Name of a specific HIP profile to retrieve                  |
-| `gather_subset`    | list   | No       | Determines which information to gather (default: config)    |
-| `folder`           | str    | No\*     | Filter HIP profiles by folder container                     |
-| `snippet`          | str    | No\*     | Filter HIP profiles by snippet container                    |
-| `device`           | str    | No\*     | Filter HIP profiles by device container                     |
-| `exact_match`      | bool   | No       | When True, only return objects defined exactly in container |
-| `exclude_folders`  | list   | No       | List of folder names to exclude from results                |
-| `exclude_snippets` | list   | No       | List of snippet values to exclude from results              |
-| `exclude_devices`  | list   | No       | List of device values to exclude from results               |
-| `hip_objects`      | list   | No       | Filter by HIP objects used in the profile                   |
+| Parameter          | Type | Required | Description                                                 |
+| ------------------ | ---- | -------- | ----------------------------------------------------------- |
+| `name`             | str  | No       | Name of a specific HIP profile to retrieve                  |
+| `gather_subset`    | list | No       | Determines which information to gather (default: config)    |
+| `folder`           | str  | No\*     | Filter HIP profiles by folder container                     |
+| `snippet`          | str  | No\*     | Filter HIP profiles by snippet container                    |
+| `device`           | str  | No\*     | Filter HIP profiles by device container                     |
+| `exact_match`      | bool | No       | When True, only return objects defined exactly in container |
+| `exclude_folders`  | list | No       | List of folder names to exclude from results                |
+| `exclude_snippets` | list | No       | List of snippet values to exclude from results              |
+| `exclude_devices`  | list | No       | List of device values to exclude from results               |
+| `hip_objects`      | list | No       | Filter by HIP objects used in the profile                   |
 
 \*One container parameter is required when `name` is not specified.
 
@@ -54,7 +57,7 @@ The `hip_profile_info` Ansible module provides functionality to gather informati
 | `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
 | `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
 
-## 05. Exceptions
+## Exceptions
 
 | Exception                    | Description                    |
 | ---------------------------- | ------------------------------ |
@@ -64,10 +67,10 @@ The `hip_profile_info` Ansible module provides functionality to gather informati
 | `AuthenticationError`        | Authentication failed          |
 | `ServerError`                | Internal server error          |
 
-## 06. Basic Configuration
+## Basic Configuration
 
-The HIP Profile Info module requires proper authentication credentials to access the
-Strata Cloud Manager API.
+The HIP Profile Info module requires proper authentication credentials to access the Strata Cloud
+Manager API.
 
 ```yaml
 - name: Basic HIP Profile Info Configuration
@@ -91,7 +94,7 @@ Strata Cloud Manager API.
         var: profiles_result
 ```
 
-## 07. Usage Examples
+## Usage Examples
 
 ### Getting Information about a Specific HIP Profile
 
@@ -177,7 +180,7 @@ Filter HIP profiles by specific HIP objects used in match expressions.
     msg: "Profiles using specified HIP objects: {{ object_filtered_profiles.hip_profiles | map(attribute='name') | list }}"
 ```
 
-## 08. Processing Retrieved Information
+## Processing Retrieved Information
 
 Example of processing and utilizing the retrieved HIP profile information.
 
@@ -229,7 +232,7 @@ Example of processing and utilizing the retrieved HIP profile information.
         msg: "Profiles with complex match expressions: {{ complex_profiles | map(attribute='name') | list }}"
 ```
 
-## 09. Error Handling
+## Error Handling
 
 It's important to handle potential errors when retrieving information about HIP profiles.
 
@@ -258,7 +261,7 @@ It's important to handle potential errors when retrieving information about HIP 
       when: "'not found' in ansible_failed_result.msg"
 ```
 
-## 10. Best Practices
+## Best Practices
 
 ### Efficient Querying
 
@@ -302,9 +305,10 @@ It's important to handle potential errors when retrieving information about HIP 
 - Document your HIP profile inventory and their purposes
 - Maintain a clear mapping between HIP profiles and security policies
 
-## 11. Related Modules
+## Related Modules
 
 - [hip_profile](hip_profile.md) - Create, update, and delete HIP profiles
 - [hip_object_info](hip_object_info.md) - Retrieve information about HIP objects used in profiles
 - [hip_object](hip_object.md) - Create, update, and delete HIP objects
-- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that use HIP profiles
+- [security_rule_info](security_rule_info.md) - Retrieve information about security rules that use
+  HIP profiles

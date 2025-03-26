@@ -19,36 +19,40 @@
 
 ## Overview
 
-The `syslog_server_profiles_info` module provides functionality to retrieve information about syslog server profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to fetch details about a specific syslog server profile by name or list multiple profiles with various filtering options. It's a read-only module that helps with inventory management, auditing configurations, and collecting information needed for other operations.
+The `syslog_server_profiles_info` module provides functionality to retrieve information about syslog
+server profile objects in Palo Alto Networks' Strata Cloud Manager (SCM). This module allows you to
+fetch details about a specific syslog server profile by name or list multiple profiles with various
+filtering options. It's a read-only module that helps with inventory management, auditing
+configurations, and collecting information needed for other operations.
 
 ## Core Methods
 
-| Method    | Description                             | Parameters                    | Return Type                              |
-| --------- | --------------------------------------- | ----------------------------- | ---------------------------------------- |
-| `fetch()` | Gets a specific syslog server profile   | `name: str`, `container: str` | `SyslogServerProfileResponseModel`       |
+| Method    | Description                                 | Parameters                    | Return Type                              |
+| --------- | ------------------------------------------- | ----------------------------- | ---------------------------------------- |
+| `fetch()` | Gets a specific syslog server profile       | `name: str`, `container: str` | `SyslogServerProfileResponseModel`       |
 | `list()`  | Lists syslog server profiles with filtering | `folder: str`, `**filters`    | `List[SyslogServerProfileResponseModel]` |
 
 ## Syslog Server Profile Info Parameters
 
-| Parameter          | Type   | Required      | Description                                                    |
-| ------------------ | ------ | ------------- | -------------------------------------------------------------- |
-| `name`             | str    | No            | The name of a specific syslog server profile to retrieve       |
-| `gather_subset`    | list   | No            | Determines which information to gather (default: ['config'])   |
-| `folder`           | str    | One container* | Filter syslog server profiles by folder container              |
-| `snippet`          | str    | One container* | Filter syslog server profiles by snippet container             |
-| `device`           | str    | One container* | Filter syslog server profiles by device container              |
-| `exact_match`      | bool   | No            | Only return objects defined exactly in the specified container |
-| `exclude_folders`  | list   | No            | List of folder names to exclude from results                   |
-| `exclude_snippets` | list   | No            | List of snippet values to exclude from results                 |
-| `exclude_devices`  | list   | No            | List of device values to exclude from results                  |
-| `transport`        | list   | No            | Filter by transport protocol used (UDP, TCP)                   |
+| Parameter          | Type | Required        | Description                                                    |
+| ------------------ | ---- | --------------- | -------------------------------------------------------------- |
+| `name`             | str  | No              | The name of a specific syslog server profile to retrieve       |
+| `gather_subset`    | list | No              | Determines which information to gather (default: ['config'])   |
+| `folder`           | str  | One container\* | Filter syslog server profiles by folder container              |
+| `snippet`          | str  | One container\* | Filter syslog server profiles by snippet container             |
+| `device`           | str  | One container\* | Filter syslog server profiles by device container              |
+| `exact_match`      | bool | No              | Only return objects defined exactly in the specified container |
+| `exclude_folders`  | list | No              | List of folder names to exclude from results                   |
+| `exclude_snippets` | list | No              | List of snippet values to exclude from results                 |
+| `exclude_devices`  | list | No              | List of device values to exclude from results                  |
+| `transport`        | list | No              | Filter by transport protocol used (UDP, TCP)                   |
 
-*One container parameter is required when `name` is not specified.
+\*One container parameter is required when `name` is not specified.
 
 ### Provider Dictionary
 
-| Parameter       | Type | Required | Description                            |
-| --------------- | ---- | -------- | -------------------------------------- |
+| Parameter       | Type | Required | Description                             |
+| --------------- | ---- | -------- | --------------------------------------- |
 | `client_id`     | str  | Yes      | Client ID for SCM authentication        |
 | `client_secret` | str  | Yes      | Client secret for SCM authentication    |
 | `tsg_id`        | str  | Yes      | Tenant Service Group ID                 |
@@ -66,7 +70,8 @@ The `syslog_server_profiles_info` module provides functionality to retrieve info
 
 ## Basic Configuration
 
-The Syslog Server Profiles Info module requires proper authentication credentials to access the Strata Cloud Manager API.
+The Syslog Server Profiles Info module requires proper authentication credentials to access the
+Strata Cloud Manager API.
 
 ```yaml
 - name: Basic Syslog Server Profiles Info Configuration
@@ -190,7 +195,8 @@ This example shows how to use Ansible's filters to further process results.
 
 ## Managing Configuration Changes
 
-As an info module, `syslog_server_profiles_info` does not make any configuration changes. However, you can use the information it retrieves to make decisions about other configuration operations.
+As an info module, `syslog_server_profiles_info` does not make any configuration changes. However,
+you can use the information it retrieves to make decisions about other configuration operations.
 
 ```yaml
 - name: Use syslog server profile information for log forwarding configuration
@@ -308,10 +314,14 @@ Common errors you might encounter when using this module:
 
 ## Related Modules
 
-- [syslog_server_profiles](syslog_server_profiles.md) - Manage syslog server profiles (create, update, delete)
-- [log_forwarding_profile](log_forwarding_profile.md) - Manage log forwarding profiles that use syslog server profiles
-- [log_forwarding_profile_info](log_forwarding_profile_info.md) - Retrieve information about log forwarding profiles
-- [security_rule](security_rule.md) - Configure security policies that might reference log forwarding profiles
+- [syslog_server_profiles](syslog_server_profiles.md) - Manage syslog server profiles (create,
+  update, delete)
+- [log_forwarding_profile](log_forwarding_profile.md) - Manage log forwarding profiles that use
+  syslog server profiles
+- [log_forwarding_profile_info](log_forwarding_profile_info.md) - Retrieve information about log
+  forwarding profiles
+- [security_rule](security_rule.md) - Configure security policies that might reference log
+  forwarding profiles
 - [security_rule_info](security_rule_info.md) - Retrieve information about security rules
 
 ## Author
