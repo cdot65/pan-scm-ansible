@@ -2,18 +2,19 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [Log Forwarding Profile Info Parameters](#log-forwarding-profile-info-parameters)
-4. [Exceptions](#exceptions)
-5. [Basic Configuration](#basic-configuration)
-6. [Usage Examples](#usage-examples)
-   - [Getting Information about a Specific Log Forwarding Profile](#getting-information-about-a-specific-log-forwarding-profile)
-   - [Listing All Log Forwarding Profiles in a Folder](#listing-all-log-forwarding-profiles-in-a-folder)
-   - [Using Advanced Filtering Options](#using-advanced-filtering-options)
-7. [Error Handling](#error-handling)
-8. [Best Practices](#best-practices)
-9. [Related Modules](#related-modules)
+01. [Overview](#overview)
+02. [Core Methods](#core-methods)
+03. [Log Forwarding Profile Info Parameters](#log-forwarding-profile-info-parameters)
+04. [Exceptions](#exceptions)
+05. [Basic Configuration](#basic-configuration)
+06. [Usage Examples](#usage-examples)
+    - [Getting Information about a Specific Log Forwarding Profile](#getting-information-about-a-specific-log-forwarding-profile)
+    - [Listing All Log Forwarding Profiles in a Folder](#listing-all-log-forwarding-profiles-in-a-folder)
+    - [Using Advanced Filtering Options](#using-advanced-filtering-options)
+07. [Managing Configuration Changes](#managing-configuration-changes)
+08. [Error Handling](#error-handling)
+09. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
 
 ## Overview
 
@@ -24,26 +25,26 @@ various filtering options.
 
 ## Core Methods
 
-| Method  | Description                                    | Parameters                      | Returned                              |
-| ------- | ---------------------------------------------- | ------------------------------- | ------------------------------------- |
-| `fetch` | Gets a specific log forwarding profile by name | Name and container parameters   | Single log forwarding profile details |
-| `list`  | Lists log forwarding profiles with filtering   | Container and filter parameters | List of log forwarding profiles       |
+| Method    | Description                                    | Parameters                       | Return Type                            |
+| --------- | ---------------------------------------------- | -------------------------------- | -------------------------------------- |
+| `fetch()` | Gets a specific log forwarding profile by name | `name: str`, `container: str`    | `LogForwardingProfileResponseModel`    |
+| `list()`  | Lists log forwarding profiles with filtering   | `folder: str`, `**filters`       | `List[LogForwardingProfileResponseModel]` |
 
 ## Log Forwarding Profile Info Parameters
 
-| Parameter          | Type | Required | Description                                                               |
-| ------------------ | ---- | -------- | ------------------------------------------------------------------------- |
-| `name`             | str  | No       | Name of a specific log forwarding profile to retrieve                     |
-| `gather_subset`    | list | No       | Determines which information to gather (default: config)                  |
-| `folder`           | str  | No\*     | Filter log forwarding profiles by folder container                        |
-| `snippet`          | str  | No\*     | Filter log forwarding profiles by snippet container                       |
-| `device`           | str  | No\*     | Filter log forwarding profiles by device container                        |
-| `exact_match`      | bool | No       | When True, only return objects defined exactly in the specified container |
-| `exclude_folders`  | list | No       | List of folder names to exclude from results                              |
-| `exclude_snippets` | list | No       | List of snippet values to exclude from results                            |
-| `exclude_devices`  | list | No       | List of device values to exclude from results                             |
+| Parameter          | Type   | Required      | Description                                                               |
+| ------------------ | ------ | ------------- | ------------------------------------------------------------------------- |
+| `name`             | str    | No            | Name of a specific log forwarding profile to retrieve                     |
+| `gather_subset`    | list   | No            | Determines which information to gather (default: config)                  |
+| `folder`           | str    | One container* | Filter log forwarding profiles by folder container                        |
+| `snippet`          | str    | One container* | Filter log forwarding profiles by snippet container                       |
+| `device`           | str    | One container* | Filter log forwarding profiles by device container                        |
+| `exact_match`      | bool   | No            | When True, only return objects defined exactly in the specified container |
+| `exclude_folders`  | list   | No            | List of folder names to exclude from results                              |
+| `exclude_snippets` | list   | No            | List of snippet values to exclude from results                            |
+| `exclude_devices`  | list   | No            | List of device values to exclude from results                             |
 
-\*One container parameter is required when `name` is not specified.
+*One container parameter is required when `name` is not specified.
 
 ## Exceptions
 
@@ -59,8 +60,6 @@ various filtering options.
 
 The Log Forwarding Profile Info module requires proper authentication credentials to access the
 Strata Cloud Manager API.
-
-
 
 ```yaml
 - name: Basic Log Forwarding Profile Info Configuration
@@ -84,14 +83,11 @@ Strata Cloud Manager API.
         var: log_profiles_result
 ```
 
-
 ## Usage Examples
 
 ### Getting Information about a Specific Log Forwarding Profile
 
 Retrieve details about a specific log forwarding profile by name and container.
-
-
 
 ```yaml
 - name: Get information about a specific log forwarding profile
@@ -113,12 +109,9 @@ Retrieve details about a specific log forwarding profile by name and container.
     log_profile_info.log_forwarding_profile.filter | selectattr('name', 'equalto', 'critical-events') | list | length > 0
 ```
 
-
 ### Listing All Log Forwarding Profiles in a Folder
 
 List all log forwarding profiles in a specific folder.
-
-
 
 ```yaml
 - name: List all log forwarding profiles in a folder
@@ -140,12 +133,9 @@ List all log forwarding profiles in a specific folder.
     msg: "{{ all_log_profiles.log_forwarding_profiles | map(attribute='name') | list }}"
 ```
 
-
 ### Using Advanced Filtering Options
 
 Use advanced filtering options to refine your query results.
-
-
 
 ```yaml
 - name: List log forwarding profiles with exact match and exclusions
@@ -176,12 +166,55 @@ Use advanced filtering options to refine your query results.
     msg: "Found {{ panorama_profiles | length }} profiles that forward to Panorama"
 ```
 
+## Managing Configuration Changes
+
+For info modules like `log_forwarding_profile_info`, no commit is needed since these modules only
+retrieve information and do not modify the configuration. However, you may need to commit changes
+if you use the retrieved information to make configuration changes with other modules.
+
+```yaml
+- name: Use info results to make configuration changes
+  block:
+    - name: Get existing log forwarding profiles
+      cdot65.scm.log_forwarding_profile_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: existing_profiles
+      
+    - name: Create new profile if specific one doesn't exist
+      cdot65.scm.log_forwarding_profile:
+        provider: "{{ provider }}"
+        name: "new-log-profile"
+        description: "New log forwarding profile"
+        folder: "Texas"
+        filter:
+          - name: "critical-events"
+            filter: "severity eq critical"
+        match_list:
+          - name: "forward-critical-threats"
+            action: "forwarding"
+            send_http: ["secure-profile"]
+            log_type: "threat"
+            filter: "critical-events"
+            send_to_panorama: true
+        state: "present"
+      when: >
+        existing_profiles.log_forwarding_profiles | 
+        selectattr('name', 'equalto', 'new-log-profile') | 
+        list | length == 0
+      register: profile_created
+      
+    - name: Commit changes if profile was created
+      cdot65.scm.commit:
+        provider: "{{ provider }}"
+        folders: ["Texas"]
+        description: "Created new log forwarding profile"
+      when: profile_created is changed
+```
 
 ## Error Handling
 
 It's important to handle potential errors when retrieving information about log forwarding profiles.
-
-
 
 ```yaml
 - name: Get information about log forwarding profiles with error handling
@@ -208,53 +241,54 @@ It's important to handle potential errors when retrieving information about log 
       when: "'not found' in ansible_failed_result.msg"
 ```
 
-
 ## Best Practices
 
-1. **Efficient Querying**
+### Efficient Querying
 
-   - Use specific filters to reduce API load and improve performance
-   - When looking for a specific log forwarding profile, use the `name` parameter instead of
-     filtering results
-   - Use container parameters consistently across queries
+- Use specific filters to reduce API load and improve performance
+- When looking for a specific log forwarding profile, use the `name` parameter instead of filtering results
+- Use container parameters consistently across queries
+- Leverage exclusion filters to refine results without complex queries
 
-2. **Result Processing**
+### Result Processing
 
-   - Always register the module output to a variable for later use
-   - Check if the expected data is present before processing it
-   - Use appropriate Ansible filters and tests when processing complex nested structures
+- Always register the module output to a variable for later use
+- Check if the expected data is present before processing it
+- Use appropriate Ansible filters and tests when processing complex nested structures
+- Consider using set_fact to create simplified data structures for complex results
 
-3. **Filter Usage**
+### Filter Usage
 
-   - Use `exact_match` when you only want log forwarding profiles defined directly in the specified
-     container
-   - Use exclusion filters to refine results without overcomplicating queries
-   - Combine multiple filters for more precise results
+- Use `exact_match` when you only want log forwarding profiles defined directly in the specified container
+- Use exclusion filters to refine results without overcomplicating queries
+- Combine multiple filters for more precise results
+- Document the purpose of complex filters for maintainability
 
-4. **Error Handling**
+### Error Handling
 
-   - Implement try/except blocks to handle potential errors
-   - Verify that the log forwarding profiles exist before attempting operations on them
-   - Provide meaningful error messages for troubleshooting
+- Implement try/except blocks to handle potential errors
+- Verify that the log forwarding profiles exist before attempting operations on them
+- Provide meaningful error messages for troubleshooting
+- Consider fallback mechanisms when expected data is not available
 
-5. **Integration with Other Modules**
+### Integration with Other Modules
 
-   - Use the info module to check for existing profiles before creating new ones
-   - Combine with the log_forwarding_profile module for complete profile management
-   - Use the retrieved information to make decisions in your playbooks
+- Use the info module to check for existing profiles before creating new ones
+- Combine with the log_forwarding_profile module for complete profile management
+- Use the retrieved information to make decisions in your playbooks
+- Keep conditional logic simple and readable
 
-6. **Performance Considerations**
+### Performance Considerations
 
-   - Cache results when making multiple queries for the same information
-   - Limit the data retrieved to only what's needed for your task
-   - Consider batching operations when processing multiple profiles
+- Cache results when making multiple queries for the same information
+- Limit the data retrieved to only what's needed for your task
+- Consider batching operations when processing multiple profiles
+- For large environments, use appropriate pagination techniques
 
 ## Related Modules
 
-- [log_forwarding_profile](log_forwarding_profile.md) - Create, update, and delete log forwarding
-  profiles
-- [http_server_profiles](http_server_profiles.md) - Manage HTTP server profiles used in log
-  forwarding
-- [http_server_profiles_info](http_server_profiles_info.md) - Retrieve information about HTTP server
-  profiles
-- commit - Commit configuration changes
+- [log_forwarding_profile](log_forwarding_profile.md) - Create, update, and delete log forwarding profiles
+- [http_server_profiles](http_server_profiles.md) - Manage HTTP server profiles used in log forwarding
+- [http_server_profiles_info](http_server_profiles_info.md) - Retrieve information about HTTP server profiles
+- [syslog_server_profiles](syslog_server_profiles.md) - Manage syslog server profiles for log forwarding
+- [security_rule](security_rule.md) - Configure security policies that use log forwarding profiles
