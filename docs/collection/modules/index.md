@@ -48,11 +48,12 @@ These modules configure the network infrastructure and connectivity:
 
 These modules manage deployment-related configurations:
 
-| Module                                        | Description                |
-| --------------------------------------------- | -------------------------- |
-| [remote_networks](remote_networks.md)         | Manage remote networks     |
-| [network_locations](network_locations.md)     | Manage network locations   |
-| [service_connections](service_connections.md) | Manage service connections |
+| Module                                            | Description                       | Info Module                                           |
+| ------------------------------------------------- | --------------------------------- | ----------------------------------------------------- |
+| [bandwidth_allocations](bandwidth_allocations.md) | Manage bandwidth allocations      | [bandwidth_allocations_info](bandwidth_allocations_info.md) |
+| [remote_networks](remote_networks.md)             | Manage remote networks            |                                                       |
+| [network_locations](network_locations.md)         | Manage network locations          |                                                       |
+| [service_connections](service_connections.md)     | Manage service connections        |                                                       |
 
 ### Security Services
 

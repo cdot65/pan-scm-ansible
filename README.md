@@ -90,11 +90,12 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ### Deployment
 
-| Module                                                                                                  | Description                |
-|---------------------------------------------------------------------------------------------------------|----------------------------|
-| [remote_networks](https://cdot65.github.io/pan-scm-ansible/collection/modules/remote_networks/)         | Manage remote networks     |
-| [network_locations](https://cdot65.github.io/pan-scm-ansible/collection/modules/network_locations/)     | Manage network locations   |
-| [service_connections](https://cdot65.github.io/pan-scm-ansible/collection/modules/service_connections/) | Manage service connections |
+| Module                                                                                                        | Description                       | Info Module                                                                                                             |
+|---------------------------------------------------------------------------------------------------------------|-----------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| [bandwidth_allocations](https://cdot65.github.io/pan-scm-ansible/collection/modules/bandwidth_allocations/)   | Manage bandwidth allocations      | [bandwidth_allocations_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/bandwidth_allocations_info/)   |
+| [remote_networks](https://cdot65.github.io/pan-scm-ansible/collection/modules/remote_networks/)               | Manage remote networks            |                                                                                                                        |
+| [network_locations](https://cdot65.github.io/pan-scm-ansible/collection/modules/network_locations/)           | Manage network locations          |                                                                                                                        |
+| [service_connections](https://cdot65.github.io/pan-scm-ansible/collection/modules/service_connections/)       | Manage service connections        |                                                                                                                        |
 
 ### Security Services
 

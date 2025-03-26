@@ -95,6 +95,8 @@ nav:
       - Modules:
           - Overview: collection/modules/index.md
           - Deployment:
+              - Bandwidth Allocations: collection/modules/bandwidth_allocations.md
+              - Bandwidth Allocations Info: collection/modules/bandwidth_allocations_info.md
               - Remote Networks: collection/modules/remote_networks.md
               - Network Locations: collection/modules/network_locations.md
               - Service Connections: collection/modules/service_connections.md
