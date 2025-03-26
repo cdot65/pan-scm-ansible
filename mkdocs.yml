@@ -152,6 +152,8 @@ nav:
               - URL Categories Info: collection/modules/url_categories_info.md
               - Vulnerability Protection Profile: collection/modules/vulnerability_protection_profile.md
               - Vulnerability Protection Profile Info: collection/modules/vulnerability_protection_profile_info.md
+              - WildFire Antivirus Profiles: collection/modules/wildfire_antivirus_profiles.md
+              - WildFire Antivirus Profiles Info: collection/modules/wildfire_antivirus_profiles_info.md
       - Roles:
           - Overview: collection/roles/index.md
       - Plugins:

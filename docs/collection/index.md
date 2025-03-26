@@ -145,6 +145,7 @@ The collection includes modules for managing various SCM configuration objects:
 | [Security Profiles Group](modules/security_profiles_group.md) | Manage security profile groups | - |
 | [URL Categories](modules/url_categories.md) | Manage URL categories | [URL Categories Info](modules/url_categories_info.md) |
 | [Vulnerability Protection Profile](modules/vulnerability_protection_profile.md) | Manage vulnerability protection profiles | [Vulnerability Protection Profile Info](modules/vulnerability_protection_profile_info.md) |
+| [WildFire Antivirus Profiles](modules/wildfire_antivirus_profiles.md) | Manage WildFire antivirus profiles | [WildFire Antivirus Profiles Info](modules/wildfire_antivirus_profiles_info.md) |
 
 [View All Modules →](modules/index.md)
 

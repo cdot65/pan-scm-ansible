@@ -1,0 +1,260 @@
+---
+# Test playbook for wildfire_antivirus_profiles_info module
+- name: Test SCM WildFire Antivirus Profiles Info Module Operations
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    timestamp: "{{ '%y%m%d%H%M'|strftime }}"
+    profile_name: "WF_AV_Info_{{ timestamp }}"
+    profile_name2: "WF_AV_Info2_{{ timestamp }}"
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+
+  tasks:
+    # ==========================================
+    # INITIAL CLEANUP
+    # ==========================================
+    - name: Remove test WildFire antivirus profile objects if they exist
+      cdot65.scm.wildfire_antivirus_profiles:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas" 
+        state: "absent"
+        rules:
+          - name: "Dummy-Rule"
+            direction: "both"
+            application: ["any"]
+            file_type: ["any"]
+      loop:
+        - "{{ profile_name }}"
+        - "{{ profile_name2 }}"
+      ignore_errors: yes
+      tags: 
+        - dev-cleanup
+
+    - name: Set task tags
+      set_fact:
+        task_tags: 
+          - "dev-ansible"
+          - "dev-automation"
+          - "dev-test"
+          - "wildfire-av-info"
+
+    # ==========================================
+    # CREATE TEST PROFILES FOR INFO TESTING
+    # ==========================================
+    - name: Create a WildFire antivirus profile for testing direction filtering
+      cdot65.scm.wildfire_antivirus_profiles:
+        provider: "{{ provider }}"
+        name: "{{ profile_name }}"
+        description: "Test WildFire antivirus profile for info module"
+        folder: "Texas"
+        packet_capture: false
+        rules:
+          - name: "Download-Rule"
+            direction: "download"
+            analysis: "public-cloud"
+            application: ["web-browsing"]
+            file_type: ["any"]
+        state: "present"
+      tags:
+        - dev-ansible
+        - dev-test
+
+    - name: Create a WildFire antivirus profile for testing application filtering
+      cdot65.scm.wildfire_antivirus_profiles:
+        provider: "{{ provider }}"
+        name: "{{ profile_name2 }}"
+        description: "Second test profile for info module"
+        folder: "Texas"
+        packet_capture: true
+        rules:
+          - name: "FTP-Rule"
+            direction: "upload"
+            analysis: "private-cloud"
+            application: ["ftp"]
+            file_type: ["any"]
+          - name: "Both-Rule"
+            direction: "both"
+            analysis: "public-cloud"
+            application: ["any"]
+            file_type: ["any"]
+        state: "present"
+      tags:
+        - dev-ansible
+        - dev-test
+
+    # ==========================================
+    # INFO OPERATIONS - SPECIFIC PROFILE
+    # ==========================================
+    - name: Get information about a specific WildFire antivirus profile
+      cdot65.scm.wildfire_antivirus_profiles_info:
+        provider: "{{ provider }}"
+        name: "{{ profile_name }}"
+        folder: "Texas"
+      register: info_result
+      tags:
+        - dev-ansible
+        - dev-test
+
+    - name: Debug specific profile info result
+      debug:
+        var: info_result
+        verbosity: 1
+      tags:
+        - dev-test
+
+    - name: Verify WildFire antivirus profile info retrieval
+      assert:
+        that:
+          - info_result.wildfire_antivirus_profile is defined
+          - info_result.wildfire_antivirus_profile.name is defined
+          - info_result.wildfire_antivirus_profile.description == "Test WildFire antivirus profile for info module"
+          - info_result.wildfire_antivirus_profile.rules[0].direction == "download"
+        fail_msg: "Profile info retrieval failed"
+        success_msg: "Successfully retrieved WildFire antivirus profile info"
+      tags:
+        - dev-test
+
+    # ==========================================
+    # INFO OPERATIONS - LIST ALL PROFILES
+    # ==========================================
+    - name: List all WildFire antivirus profiles in folder
+      cdot65.scm.wildfire_antivirus_profiles_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+      register: list_result
+      tags:
+        - dev-ansible
+        - dev-test
+
+    - name: Debug all profiles result
+      debug:
+        var: list_result
+        verbosity: 1
+      tags:
+        - dev-test
+
+    - name: Verify all profiles list
+      assert:
+        that:
+          - list_result.wildfire_antivirus_profiles is defined
+          - list_result.wildfire_antivirus_profiles | length >= 2
+          - list_result.wildfire_antivirus_profiles | selectattr('name', 'equalto', profile_name) | list | length == 1
+          - list_result.wildfire_antivirus_profiles | selectattr('name', 'equalto', profile_name2) | list | length == 1
+        fail_msg: "List all profiles failed"
+        success_msg: "Successfully listed all WildFire antivirus profiles"
+      tags:
+        - dev-test
+
+    # ==========================================
+    # INFO OPERATIONS - FILTER BY RULE
+    # ==========================================
+    - name: Filter WildFire antivirus profiles by rule name
+      cdot65.scm.wildfire_antivirus_profiles_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        rules: ["FTP-Rule"]
+      register: rule_result
+      tags:
+        - dev-ansible
+        - dev-test
+
+    - name: Debug rule filtered profiles result
+      debug:
+        var: rule_result
+        verbosity: 1
+      tags:
+        - dev-test
+
+    - name: Verify filtered profiles by rule
+      assert:
+        that:
+          - rule_result.wildfire_antivirus_profiles is defined
+          - rule_result.wildfire_antivirus_profiles | length > 0
+        fail_msg: "Filtering by rule failed"
+        success_msg: "Successfully filtered WildFire antivirus profiles by rule"
+      tags:
+        - dev-test
+
+    # ==========================================
+    # INFO OPERATIONS - EXACT MATCH PARAMETER
+    # ==========================================
+    - name: Test with exact match parameter
+      cdot65.scm.wildfire_antivirus_profiles_info:
+        provider: "{{ provider }}"
+        folder: "Texas"
+        exact_match: true
+      register: exact_match_result
+      tags:
+        - dev-ansible
+        - dev-test
+
+    - name: Debug exact match profiles result
+      debug:
+        var: exact_match_result
+        verbosity: 1
+      tags:
+        - dev-test
+
+    - name: Verify exact match profiles list
+      assert:
+        that:
+          - exact_match_result.wildfire_antivirus_profiles is defined
+          - exact_match_result.wildfire_antivirus_profiles | length >= 2
+        fail_msg: "Listing profiles with exact match failed"
+        success_msg: "Successfully listed WildFire antivirus profiles with exact match"
+      tags:
+        - dev-test
+
+    # ==========================================
+    # DELETE OPERATIONS
+    # ==========================================
+    - name: Delete test WildFire antivirus profiles
+      cdot65.scm.wildfire_antivirus_profiles:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Texas"
+        state: "absent"
+        rules:
+          - name: "Dummy-Rule"
+            direction: "both"
+            application: ["any"]
+            file_type: ["any"]
+      loop:
+        - "{{ profile_name }}"
+        - "{{ profile_name2 }}"
+      register: delete_result
+      tags:
+        - dev-ansible
+        - dev-test
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+        verbosity: 1
+      tags:
+        - dev-test
+
+    - name: Verify profiles were deleted
+      assert:
+        that:
+          - delete_result is defined
+        fail_msg: "Profile deletion failed"
+        success_msg: "Successfully deleted all test WildFire antivirus profiles"
+      tags:
+        - dev-test
+
+    # ==========================================
+    # FINAL CLEANUP
+    # ==========================================
+    - name: Cleanup completed
+      debug:
+        msg: "Test cleanup completed"
+      tags:
+        - dev-test
