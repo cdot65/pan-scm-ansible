@@ -135,9 +135,10 @@ The collection includes modules for managing various SCM configuration objects:
 | Module                                                    | Description                       | Info Module                                               |
 | --------------------------------------------------------- | --------------------------------- | --------------------------------------------------------- |
 | [Bandwidth Allocations](modules/bandwidth_allocations.md) | Manage bandwidth allocations      | [Bandwidth Allocations Info](modules/bandwidth_allocations_info.md) |
-| [Remote Networks](modules/remote_networks.md)             | Manage remote networks            |                                                           |
+| [Internal DNS Servers](modules/internal_dns_servers.md)   | Manage internal DNS servers       | [Internal DNS Servers Info](modules/internal_dns_servers_info.md) |
+| [Remote Networks](modules/remote_networks.md)             | Manage remote networks            | [Remote Networks Info](modules/remote_networks_info.md)   |
 | [Network Locations](modules/network_locations.md)         | Manage network locations          |                                                           |
-| [Service Connections](modules/service_connections.md)     | Manage service connections        |                                                           |
+| [Service Connections](modules/service_connections.md)     | Manage service connections        | [Service Connections Info](modules/service_connections_info.md) |
 
 #### Security Services
 
@@ -147,7 +148,7 @@ The collection includes modules for managing various SCM configuration objects:
 | [Anti-Spyware Profile](modules/anti_spyware_profile.md)                         | Manage anti-spyware profiles             | [Anti-Spyware Profile Info](modules/anti_spyware_profile_info.md)                         |
 | [Decryption Profile](modules/decryption_profile.md)                             | Manage decryption profiles               | [Decryption Profile Info](modules/decryption_profile_info.md)                             |
 | [DNS Security Profile](modules/dns_security_profile.md)                         | Manage DNS security profiles             | [DNS Security Profile Info](modules/dns_security_profile_info.md)                         |
-| [Security Profiles Group](modules/security_profiles_group.md)                   | Manage security profile groups           | -                                                                                         |
+| [Security Profiles Group](modules/security_profiles_group.md)                   | Manage security profile groups           | [Security Profiles Group Info](modules/security_profiles_group_info.md)                   |
 | [URL Categories](modules/url_categories.md)                                     | Manage URL categories                    | [URL Categories Info](modules/url_categories_info.md)                                     |
 | [Vulnerability Protection Profile](modules/vulnerability_protection_profile.md) | Manage vulnerability protection profiles | [Vulnerability Protection Profile Info](modules/vulnerability_protection_profile_info.md) |
 | [WildFire Antivirus Profiles](modules/wildfire_antivirus_profiles.md)           | Manage WildFire antivirus profiles       | [WildFire Antivirus Profiles Info](modules/wildfire_antivirus_profiles_info.md)           |

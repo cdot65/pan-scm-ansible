@@ -1,219 +1,176 @@
-# Remote Networks Configuration Object
+# remote_networks
 
-## 1. Overview
+Manage remote networks in SCM.
 
-The Remote Networks module allows you to manage remote network connections within Strata Cloud
-Manager (SCM). Remote networks enable secure connectivity between your SCM-managed infrastructure
-and external networks, typically through IPsec VPN tunnels. This module helps you create, configure,
-and manage these connections.
+## Synopsis
 
-## 2. Core Methods
+- Manage remote networks within Strata Cloud Manager (SCM).
+- Create, update, and delete remote networks that establish site-to-site VPN connections.
+- Configure remote networks with various settings including ECMP load balancing and BGP.
+- Support for different license types (FWAAS-AGGREGATE, FWAAS-BYOL, CN-SERIES, FWAAS-PAYG).
 
-| Method     | Description                  | Parameters                | Return Type           |
-| ---------- | ---------------------------- | ------------------------- | --------------------- |
-| `create()` | Creates a new remote network | `data: Dict[str, Any]`    | `ResponseModel`       |
-| `get()`    | Retrieves network by name    | `name: str`               | `ResponseModel`       |
-| `update()` | Updates an existing network  | `network: Model`          | `ResponseModel`       |
-| `delete()` | Deletes a remote network     | `id: str`                 | `None`                |
-| `list()`   | Lists remote networks        | `filters: Dict[str, Any]` | `List[ResponseModel]` |
+## Parameters
 
-## 3. Model Attributes
+| Parameter | Choices/Defaults | Comments |
+| --- | --- | --- |
+| name |  | The name of the remote network.<br>*Required* |
+| description |  | Description of the remote network. |
+| region |  | The AWS region where the remote network is located.<br>*Required* |
+| license_type | <ul><li>FWAAS-AGGREGATE *default*</li><li>FWAAS-BYOL</li><li>CN-SERIES</li><li>FWAAS-PAYG</li></ul> | The license type for the remote network. |
+| spn_name |  | The SPN name, required when license_type is FWAAS-AGGREGATE. |
+| subnets |  | List of subnet CIDR ranges for the remote network. |
+| folder |  | The folder in which the resource is defined. |
+| ecmp_load_balancing | <ul><li>enable</li><li>disable</li></ul> | Enable or disable ECMP load balancing for the remote network.<br>*Required* |
+| ecmp_tunnels |  | List of ECMP tunnels when ecmp_load_balancing is enabled.<br>See [sub-options](#parameter-ecmp_tunnels). |
+| ipsec_tunnel |  | The IPsec tunnel name when ecmp_load_balancing is disabled. |
+| protocol |  | Protocol configuration for the remote network.<br>See [sub-options](#parameter-protocol). |
+| provider |  | Authentication credentials.<br>*Required*<br>See [sub-options](#parameter-provider). |
+| state | <ul><li>present</li><li>absent</li></ul> | Desired state of the remote network.<br>*Required* |
 
-| Attribute              | Type      | Required | Description                               |
-| ---------------------- | --------- | -------- | ----------------------------------------- |
-| `name`                 | str       | Yes      | Name of the remote network                |
-| `description`          | str       | No       | Description of the remote network         |
-| `status`               | str       | No       | Status of the remote network (read-only)  |
-| `license_type`         | str       | No       | License type for the remote network       |
-| `region`               | str       | Yes      | Region where the network is located       |
-| `spn_name`             | str       | No       | Service provider name                     |
-| `ike_gateway`          | str       | Yes      | IKE gateway for the VPN connection        |
-| `ipsec_crypto_profile` | str       | Yes      | IPsec crypto profile for encryption       |
-| `tunnel_interface`     | str       | Yes      | Tunnel interface name                     |
-| `subnets`              | List[str] | No       | Subnets within the remote network         |
-| `bgp_peer`             | Dict      | No       | BGP peer configuration                    |
-| `ecmp_load_balancing`  | bool      | No       | Enable ECMP load balancing                |
-| `protocol`             | Dict      | No       | Protocol configuration for the connection |
-| `secondary_wan_config` | Dict      | No       | Secondary WAN configuration               |
+### Parameter: ecmp_tunnels
 
-## 4. Basic Configuration
+| Parameter | Comments |
+| --- | --- |
+| name | Name of the ECMP tunnel.<br>*Required* |
+| ipsec_tunnel | The IPsec tunnel name for this ECMP tunnel.<br>*Required* |
+| local_ip_address | The local IP address for this tunnel.<br>*Required* |
+| peer_ip_address | The peer IP address for this tunnel.<br>*Required* |
+| peer_as | The peer AS number for BGP.<br>*Required* |
+
+### Parameter: protocol
+
+| Parameter | Comments |
+| --- | --- |
+| bgp | BGP configuration for the remote network.<br>See [sub-options](#parameter-protocol-bgp). |
+
+#### Parameter: protocol bgp
+
+| Parameter | Comments |
+| --- | --- |
+| enable | Enable or disable BGP. |
+| local_ip_address | The local IP address for BGP. |
+| peer_ip_address | The peer IP address for BGP. |
+| peer_as | The peer AS number for BGP. |
+| local_as | The local AS number for BGP. |
+| secret | The BGP authentication secret. |
+
+### Parameter: provider
+
+| Parameter | Comments |
+| --- | --- |
+| client_id | Client ID for authentication.<br>*Required* |
+| client_secret | Client secret for authentication.<br>*Required* |
+| tsg_id | Tenant Service Group ID.<br>*Required* |
+| log_level | Log level for the SDK.<br>Default: "INFO" |
+
+## Examples
+
+<div class="termy">
 
 ```yaml
-- name: Create a remote network
-  cdot65.scm.remote_networks:
+- name: Manage Remote Networks in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
     provider:
       client_id: "{{ client_id }}"
       client_secret: "{{ client_secret }}"
       tsg_id: "{{ tsg_id }}"
-    name: "branch-office"
-    description: "Branch Office VPN Connection"
-    region: "us-east-1"
-    ike_gateway: "branch-gateway"
-    ipsec_crypto_profile: "standard-ipsec-profile"
-    tunnel_interface: "tunnel.1"
-    subnets:
-      - "192.168.10.0/24"
-      - "192.168.11.0/24"
-    state: "present"
-```
+      log_level: "INFO"
+  tasks:
 
-## 5. Usage Examples
-
-### Creating a Basic Remote Network
-
-```yaml
-- name: Create a basic remote network
-  cdot65.scm.remote_networks:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-    name: "site-a-vpn"
-    description: "Site A VPN Connection"
-    region: "us-east-1"
-    ike_gateway: "site-a-gateway"
-    ipsec_crypto_profile: "default-ipsec-crypto-profile"
-    tunnel_interface: "tunnel.1"
-    subnets:
-      - "10.1.0.0/16"
-    state: "present"
-```
-
-### Creating a Remote Network with BGP
-
-```yaml
-- name: Create a remote network with BGP peering
-  cdot65.scm.remote_networks:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-    name: "site-b-vpn"
-    description: "Site B VPN with BGP"
-    region: "us-west-1"
-    ike_gateway: "site-b-gateway"
-    ipsec_crypto_profile: "strong-ipsec-profile"
-    tunnel_interface: "tunnel.2"
-    protocol:
-      bgp:
-        enable: true
-        peer_as: 65001
-        local_address_ip: "169.254.0.1/30"
-        peer_address_ip: "169.254.0.2"
-    state: "present"
-```
-
-### Updating a Remote Network
-
-```yaml
-- name: Update a remote network
-  cdot65.scm.remote_networks:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-    name: "site-a-vpn"
-    description: "Updated Site A VPN Connection"
-    region: "us-east-1"
-    ike_gateway: "site-a-gateway"
-    ipsec_crypto_profile: "default-ipsec-crypto-profile"
-    tunnel_interface: "tunnel.1"
-    subnets:
-      - "10.1.0.0/16"
-      - "10.2.0.0/16"  # Added subnet
-    state: "present"
-```
-
-### Deleting a Remote Network
-
-```yaml
-- name: Delete a remote network
-  cdot65.scm.remote_networks:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-    name: "decommissioned-site"
-    state: "absent"
-```
-
-### Listing Remote Networks
-
-```yaml
-- name: List all remote networks
-  cdot65.scm.remote_networks_info:
-    provider:
-      client_id: "{{ client_id }}"
-      client_secret: "{{ client_secret }}"
-      tsg_id: "{{ tsg_id }}"
-  register: networks
-
-- name: Display remote networks
-  debug:
-    msg: "{{ item.name }} - {{ item.status }}"
-  loop: "{{ networks.remote_networks }}"
-```
-
-## 6. Error Handling
-
-```yaml
-- name: Create remote network with error handling
-  block:
-    - name: Attempt to create remote network
+    - name: Create a remote network with standard IPsec tunnel
       cdot65.scm.remote_networks:
         provider: "{{ provider }}"
-        name: "new-branch"
+        name: "Branch-Office-1"
+        description: "Remote network for Branch Office 1"
         region: "us-east-1"
-        ike_gateway: "non-existent-gateway"  # Gateway doesn't exist
-        ipsec_crypto_profile: "default-ipsec-crypto-profile"
-        tunnel_interface: "tunnel.1"
+        license_type: "FWAAS-AGGREGATE"
+        spn_name: "main-spn"
+        folder: "Remote Networks"
+        ecmp_load_balancing: "disable"
+        ipsec_tunnel: "tunnel-to-branch1"
+        subnets: ["10.1.0.0/16", "10.2.0.0/16"]
+        protocol:
+          bgp:
+            enable: true
+            local_ip_address: "10.0.0.1"
+            peer_ip_address: "10.0.0.2"
+            local_as: "65000"
+            peer_as: "65001"
+            secret: "bgp-auth-key"
         state: "present"
-  rescue:
-    - name: Handle error
-      debug:
-        msg: "Failed to create remote network. Check if all referenced objects exist."
+
+    - name: Create a remote network with ECMP load balancing
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "Branch-Office-2"
+        description: "Remote network for Branch Office 2 with ECMP"
+        region: "us-west-1"
+        license_type: "FWAAS-AGGREGATE"
+        spn_name: "west-spn"
+        folder: "Remote Networks"
+        ecmp_load_balancing: "enable"
+        ecmp_tunnels:
+          - name: "tunnel1"
+            ipsec_tunnel: "tunnel-to-branch2-1"
+            local_ip_address: "10.0.1.1"
+            peer_ip_address: "10.0.1.2"
+            peer_as: "65002"
+          - name: "tunnel2"
+            ipsec_tunnel: "tunnel-to-branch2-2"
+            local_ip_address: "10.0.2.1"
+            peer_ip_address: "10.0.2.2"
+            peer_as: "65002"
+        subnets: ["10.3.0.0/16", "10.4.0.0/16"]
+        state: "present"
+
+    - name: Update a remote network
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "Branch-Office-1"
+        description: "Updated description for Branch Office 1"
+        region: "us-east-1"
+        folder: "Remote Networks"
+        ecmp_load_balancing: "disable"
+        ipsec_tunnel: "updated-tunnel-to-branch1"
+        subnets: ["10.1.0.0/16", "10.2.0.0/16", "10.5.0.0/16"]
+        state: "present"
+
+    - name: Delete a remote network
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "Branch-Office-2"
+        folder: "Remote Networks"
+        state: "absent"
 ```
 
-## 7. Best Practices
+</div>
 
-1. **Planning and Design**
+## Return Values
 
-   - Plan IP addressing to avoid overlaps between remote networks
-   - Design BGP peering relationships carefully
-   - Choose appropriate regions based on geographic proximity
-   - Document network topology and VPN configuration details
+| Key | Returned | Description |
+| --- | --- | --- |
+| changed | Always | Whether any changes were made. |
+| remote_network | When state is present | Details about the remote network. |
 
-2. **Security Configuration**
+<div class="termy">
 
-   - Use strong IPsec crypto profiles
-   - Configure appropriate security rules for remote network traffic
-   - Implement principle of least privilege for remote network access
-   - Regularly review and audit remote network connections
+```json
+{
+    "id": "123e4567-e89b-12d3-a456-426655440000",
+    "name": "Branch-Office-1",
+    "description": "Remote network for Branch Office 1",
+    "region": "us-east-1",
+    "license_type": "FWAAS-AGGREGATE",
+    "spn_name": "main-spn",
+    "folder": "Remote Networks",
+    "ecmp_load_balancing": "disable",
+    "ipsec_tunnel": "tunnel-to-branch1",
+    "subnets": ["10.1.0.0/16", "10.2.0.0/16"]
+}
+```
 
-3. **High Availability**
-
-   - Consider redundant tunnels for critical connections
-   - Implement secondary WAN configurations where needed
-   - Monitor tunnel status and connectivity
-   - Create backup plans for connection failures
-
-4. **BGP Configuration**
-
-   - Use private AS numbers for BGP peering
-   - Configure route filters to control route advertisements
-   - Consider BGP authentication mechanisms
-   - Test BGP routing changes before implementation
-
-5. **Maintenance**
-
-   - Schedule maintenance windows for configuration changes
-   - Test changes in a staging environment when possible
-   - Keep IKE and IPsec settings in sync with remote endpoints
-   - Maintain documentation of remote network configurations
-
-## 8. Related Models
-
-- [IKE Gateway](ike_gateway.md) - Configure IKE gateways used by remote networks
-- [IPsec Crypto Profile](ipsec_crypto_profile.md) - Configure encryption profiles for IPsec tunnels
-- [BGP Routing](bgp_routing.md) - Configure BGP routing used with remote networks
-- [Network Locations](network_locations.md) - Configure network locations for remote networks
+</div>

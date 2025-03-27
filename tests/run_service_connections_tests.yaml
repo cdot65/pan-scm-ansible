@@ -1,0 +1,90 @@
+---
+# Playbook for building the collection and running service_connections tests
+# Usage: poetry run ansible-playbook tests/run_service_connections_tests.yaml --vault-password-file=tests/.vault_password
+
+- name: Build Collection and Run Service Connections Tests
+  hosts: localhost
+  gather_facts: no
+  
+  tasks:
+    - name: Clean up any old build artifacts
+      ansible.builtin.shell: |
+        rm -rf dist/
+        rm -rf ansible_collections/
+      args:
+        chdir: "/Users/cdot/PycharmProjects/cdot65/pan-scm-ansible"
+      ignore_errors: true
+
+    - name: Build Ansible collection
+      ansible.builtin.shell: |
+        poetry run ansible-galaxy collection build --force
+      args:
+        chdir: "/Users/cdot/PycharmProjects/cdot65/pan-scm-ansible"
+      register: build_result
+
+    - name: Display build result
+      ansible.builtin.debug:
+        var: build_result.stdout_lines
+
+    - name: Get the collection file name
+      ansible.builtin.find:
+        paths: "/Users/cdot/PycharmProjects/cdot65/pan-scm-ansible"
+        patterns: "cdot65-scm-*.tar.gz"
+      register: collection_files
+
+    - name: Fail if collection file not found
+      ansible.builtin.fail:
+        msg: "No collection file was built"
+      when: collection_files.files | length == 0
+
+    - name: Set collection file path
+      ansible.builtin.set_fact:
+        collection_file: "{{ collection_files.files[0].path }}"
+
+    - name: Install the collection
+      ansible.builtin.shell: |
+        poetry run ansible-galaxy collection install {{ collection_file }} --force
+      args:
+        chdir: "/Users/cdot/PycharmProjects/cdot65/pan-scm-ansible"
+      register: install_result
+
+    - name: Display install result
+      ansible.builtin.debug:
+        var: install_result.stdout_lines
+
+    - name: Run service_connections module test
+      ansible.builtin.shell: |
+        poetry run ansible-playbook tests/test_service_connections.yaml --vault-password-file=tests/.vault_password
+      args:
+        chdir: "/Users/cdot/PycharmProjects/cdot65/pan-scm-ansible"
+      register: test_result
+
+    - name: Display test results
+      ansible.builtin.debug:
+        var: test_result.stdout_lines
+
+    - name: Check for test failures
+      ansible.builtin.fail:
+        msg: "Service connections module test failed"
+      when: test_result.rc != 0
+
+    - name: Run service_connections_info module test
+      ansible.builtin.shell: |
+        poetry run ansible-playbook tests/test_service_connections_info.yaml --vault-password-file=tests/.vault_password
+      args:
+        chdir: "/Users/cdot/PycharmProjects/cdot65/pan-scm-ansible"
+      register: info_test_result
+
+    - name: Display info test results
+      ansible.builtin.debug:
+        var: info_test_result.stdout_lines
+
+    - name: Check for info test failures
+      ansible.builtin.fail:
+        msg: "Service connections info module test failed"
+      when: info_test_result.rc != 0
+
+    - name: Test summary
+      ansible.builtin.debug:
+        msg: "All tests completed successfully!"
+      when: test_result.rc == 0 and info_test_result.rc == 0
