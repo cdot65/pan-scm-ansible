@@ -1,0 +1,170 @@
+---
+- name: Test Internal DNS Servers Info Module in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+  tasks:
+    # First clean up any existing test DNS server objects if they exist
+    - name: Remove test DNS server objects if they exist
+      cdot65.scm.internal_dns_servers:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "DNS1_{{ test_timestamp }}"
+        - "DNS2_{{ test_timestamp }}"
+        - "DNS3_{{ test_timestamp }}"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # Create standard dev tags for automation/testing
+    - name: Create DNS server objects for testing
+      cdot65.scm.internal_dns_servers:
+        provider: "{{ provider }}"
+        name: "{{ item.name }}"
+        domain_name: "{{ item.domains }}"
+        primary: "{{ item.primary }}"
+        secondary: "{{ item.secondary }}"
+        state: "present"
+      loop:
+        - { name: "DNS1_{{ test_timestamp }}", domains: ["example.com", "test.example.com"], primary: "192.168.1.10", secondary: "192.168.1.11" }
+        - { name: "DNS2_{{ test_timestamp }}", domains: ["example.org", "test.example.org"], primary: "192.168.2.10", secondary: "192.168.2.11" }
+        - { name: "DNS3_{{ test_timestamp }}", domains: ["example.net", "test.example.net"], primary: "192.168.3.10", secondary: "192.168.3.11" }
+      register: create_dns_servers_result
+      tags:
+        - dev-ansible
+        - dev-automation
+
+    - name: Verify DNS servers creation
+      ansible.builtin.assert:
+        that:
+          - create_dns_servers_result is succeeded
+        fail_msg: "Failed to create DNS servers for testing"
+        success_msg: "Successfully created DNS servers for testing"
+      tags:
+        - dev-cicd
+        
+    # Set the DNS server name to a variable for future reference
+    - name: Set DNS server name for testing
+      ansible.builtin.set_fact:
+        dns_server_name: "{{ create_dns_servers_result.results[0].internal_dns_server.name }}"
+      tags:
+        - dev-test
+
+    # ==========================================
+    # INFO queries - specific DNS server
+    # ==========================================
+    - name: Get information about a specific DNS server
+      cdot65.scm.internal_dns_servers_info:
+        provider: "{{ provider }}"
+        name: "{{ dns_server_name }}"
+      register: dns_server_info
+      tags:
+        - dev-test
+
+    - name: Display specific DNS server information
+      debug:
+        var: dns_server_info
+        verbosity: 1
+
+    - name: Verify specific DNS server query
+      ansible.builtin.assert:
+        that:
+          - dns_server_info.internal_dns_server is defined
+          - "'DNS1_' in dns_server_info.internal_dns_server.name"
+          - dns_server_info.internal_dns_server.domain_name | length == 2
+          - dns_server_info.internal_dns_server.primary == "192.168.1.10"
+          - dns_server_info.internal_dns_server.secondary == "192.168.1.11"
+        fail_msg: "Failed to retrieve specific DNS server information"
+        success_msg: "Successfully retrieved specific DNS server information"
+      tags:
+        - dev-ansible
+
+    # ==========================================
+    # INFO queries - list all DNS servers
+    # ==========================================
+    - name: List all DNS server objects
+      cdot65.scm.internal_dns_servers_info:
+        provider: "{{ provider }}"
+      register: all_dns_servers
+      tags:
+        - dev-automation
+
+    - name: Display all DNS servers
+      debug:
+        var: all_dns_servers
+        verbosity: 1
+
+    - name: Verify all DNS servers listing
+      ansible.builtin.assert:
+        that:
+          - all_dns_servers.internal_dns_servers is defined
+          - all_dns_servers.internal_dns_servers | length >= 3  # Our 3 test DNS servers plus any existing ones
+          - all_dns_servers.internal_dns_servers | selectattr('name', 'search', 'DNS') | list | length >= 3
+        fail_msg: "Failed to retrieve all DNS servers"
+        success_msg: "Successfully retrieved all DNS servers"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # INFO queries - filter DNS servers manually
+    # ==========================================
+    # Since we can't filter directly on the API, we'll filter in memory
+    - name: Filter DNS servers with DNS prefix
+      set_fact:
+        test_dns_servers:
+          internal_dns_servers: "{{ all_dns_servers.internal_dns_servers | selectattr('name', 'search', 'DNS') | list }}"
+      tags:
+        - dev-test
+
+    - name: Display filtered DNS servers
+      debug:
+        var: test_dns_servers
+        verbosity: 1
+
+    - name: Verify filtered DNS servers
+      ansible.builtin.assert:
+        that:
+          - test_dns_servers.internal_dns_servers | length >= 3
+          - test_dns_servers.internal_dns_servers | selectattr('name', 'search', 'DNS') | list | length >= 3
+        fail_msg: "Failed to filter DNS servers by name pattern"
+        success_msg: "Successfully filtered DNS servers by name pattern"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # CLEANUP
+    # ==========================================
+    - name: Remove all test DNS server objects
+      cdot65.scm.internal_dns_servers:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "DNS1_{{ test_timestamp }}"
+        - "DNS2_{{ test_timestamp }}"
+        - "DNS3_{{ test_timestamp }}"
+      register: dns_servers_cleanup_result
+      tags:
+        - dev-cleanup
+
+    - name: Verify DNS servers were cleaned up
+      ansible.builtin.assert:
+        that:
+          - dns_servers_cleanup_result is succeeded
+        fail_msg: "Failed to clean up test DNS servers"
+        success_msg: "Successfully cleaned up test DNS servers"
+      tags:
+        - dev-cicd
+        - dev-cleanup

@@ -1,0 +1,239 @@
+---
+- name: Test Internal DNS Servers Module in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+  tasks:
+    # First clean up any existing test DNS server objects if they exist
+    - name: Remove test DNS server objects if they exist
+      cdot65.scm.internal_dns_servers:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "Test_DNS_Server_{{ test_timestamp }}"
+        - "Updated_DNS_Server_{{ test_timestamp }}"
+      tags:
+        - dev-cleanup
+        - dev-test
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
+    - name: Create a DNS server
+      cdot65.scm.internal_dns_servers:
+        provider: "{{ provider }}"
+        name: "Test_DNS_Server_{{ test_timestamp }}"
+        domain_name: 
+          - "example.com"
+          - "internal.example.com"
+        primary: "192.168.1.10"
+        secondary: "192.168.1.11"
+        state: "present"
+      register: create_dns_result
+      tags:
+        - dev-test
+        - dev-ansible
+
+    - name: Debug DNS server creation result
+      debug:
+        var: create_dns_result
+        verbosity: 1
+
+    - name: Verify DNS server creation
+      ansible.builtin.assert:
+        that:
+          - create_dns_result is changed
+          - create_dns_result.internal_dns_server is defined
+          - "'Test_DNS_Server_' in create_dns_result.internal_dns_server.name"
+          - create_dns_result.internal_dns_server.primary == "192.168.1.10"
+          - create_dns_result.internal_dns_server.secondary == "192.168.1.11"
+          - create_dns_result.internal_dns_server.domain_name | length == 2
+        fail_msg: "Failed to create DNS server"
+        success_msg: "Successfully created DNS server"
+      tags:
+        - dev-cicd
+
+    # Set DNS server name to a fixed variable after creation
+    - name: Set DNS server name to existing name
+      ansible.builtin.set_fact:
+        dns_server_name: "{{ create_dns_result.internal_dns_server.name }}"
+
+    # Test idempotency
+    - name: Test idempotency (re-create the same DNS server)
+      cdot65.scm.internal_dns_servers:
+        provider: "{{ provider }}"
+        name: "{{ dns_server_name }}"
+        domain_name: 
+          - "example.com"
+          - "internal.example.com"
+        primary: "192.168.1.10"
+        secondary: "192.168.1.11"
+        state: "present"
+      register: idempotency_result
+      tags:
+        - dev-cicd
+        - dev-automation
+
+    - name: Verify idempotency behavior
+      ansible.builtin.assert:
+        that:
+          - idempotency_result is not changed
+        fail_msg: "Internal DNS Servers module failed idempotency test"
+        success_msg: "Internal DNS Servers module passed idempotency test"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # READ operation tests (info module)
+    # ==========================================
+    - name: Get information about the created DNS server
+      cdot65.scm.internal_dns_servers_info:
+        provider: "{{ provider }}"
+        name: "{{ dns_server_name }}"
+      register: info_result
+      tags:
+        - dev-test
+        - dev-automation
+
+    - name: Debug DNS server info result
+      debug:
+        var: info_result
+        verbosity: 1
+
+    - name: Verify DNS server info retrieval
+      ansible.builtin.assert:
+        that:
+          - info_result.internal_dns_server is defined
+          - info_result.internal_dns_server.name == dns_server_name
+          - info_result.internal_dns_server.primary == "192.168.1.10"
+          - info_result.internal_dns_server.domain_name | length == 2
+        fail_msg: "Failed to retrieve DNS server info"
+        success_msg: "Successfully retrieved DNS server info"
+      tags:
+        - dev-cicd
+        - dev-ansible
+
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    - name: Update the DNS server
+      cdot65.scm.internal_dns_servers:
+        provider: "{{ provider }}"
+        name: "{{ dns_server_name }}"
+        domain_name: 
+          - "example.com"
+          - "internal.example.com"
+          - "new-domain.example.com"
+        primary: "192.168.1.10"
+        secondary: "192.168.1.12"  # Changed secondary server
+        state: "present"
+      register: update_result
+      tags:
+        - dev-cicd
+        - dev-test
+
+    - name: Debug update result
+      debug:
+        var: update_result
+        verbosity: 1
+
+    - name: Verify DNS server update
+      ansible.builtin.assert:
+        that:
+          - update_result is changed
+          - update_result.internal_dns_server is defined
+          - update_result.internal_dns_server.domain_name | length == 3
+          - update_result.internal_dns_server.secondary == "192.168.1.12"
+        fail_msg: "Failed to update DNS server"
+        success_msg: "Successfully updated DNS server"
+      tags:
+        - dev-cicd
+        - dev-automation
+
+    # Test idempotency after update
+    - name: Test idempotency on the updated DNS server (re-run same update)
+      cdot65.scm.internal_dns_servers:
+        provider: "{{ provider }}"
+        name: "{{ dns_server_name }}"
+        domain_name: 
+          - "example.com"
+          - "internal.example.com"
+          - "new-domain.example.com"
+        primary: "192.168.1.10"
+        secondary: "192.168.1.12"
+        state: "present"
+      register: idempotency_result_after_update
+      tags:
+        - dev-cicd
+        - dev-test
+
+    - name: Verify idempotency behavior after update
+      ansible.builtin.assert:
+        that:
+          - idempotency_result_after_update is not changed
+        fail_msg: "Internal DNS Servers module failed idempotency test after update"
+        success_msg: "Internal DNS Servers module passed idempotency test after update"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Delete the DNS server
+      cdot65.scm.internal_dns_servers:
+        provider: "{{ provider }}"
+        name: "{{ dns_server_name }}"
+        state: "absent"
+      register: delete_result
+      tags:
+        - dev-test
+        - dev-cleanup
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+        verbosity: 1
+
+    - name: Verify DNS server was deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is changed
+        fail_msg: "Failed to delete DNS server"
+        success_msg: "Successfully deleted DNS server"
+      tags:
+        - dev-cicd
+        - dev-cleanup
+
+    # ==========================================
+    # Verify deletion
+    # ==========================================
+    - name: Verify DNS server no longer exists
+      cdot65.scm.internal_dns_servers_info:
+        provider: "{{ provider }}"
+        name: "{{ dns_server_name }}"
+      register: verify_deletion
+      ignore_errors: yes
+      tags:
+        - dev-test
+        - dev-cleanup
+
+    - name: Confirm DNS server was properly deleted
+      ansible.builtin.assert:
+        that:
+          - verify_deletion.msg is defined
+          - verify_deletion.msg is search("not found")
+        fail_msg: "DNS server still exists after deletion"
+        success_msg: "Confirmed DNS server was properly deleted"
+      tags:
+        - dev-cicd
+        - dev-cleanup

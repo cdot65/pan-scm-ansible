@@ -35,14 +35,14 @@ These modules manage the fundamental building blocks of your network security po
 
 These modules configure the network infrastructure and connectivity:
 
-| Module                                          | Description                      |
-| ----------------------------------------------- | -------------------------------- |
-| [security_zone](security_zone.md)               | Manage security zones            |
-| [ike_crypto_profile](ike_crypto_profile.md)     | Manage IKE crypto profiles       |
-| [ike_gateway](ike_gateway.md)                   | Manage IKE gateways              |
-| [ipsec_crypto_profile](ipsec_crypto_profile.md) | Manage IPsec crypto profiles     |
-| [ipsec_tunnel](ipsec_tunnel.md)                 | Manage IPsec tunnels             |
-| [bgp_routing](bgp_routing.md)                   | Manage BGP routing configuration |
+| Module                                          | Description                      | Info Module                                          |
+| ----------------------------------------------- | -------------------------------- | ---------------------------------------------------- |
+| [security_zone](security_zone.md)               | Manage security zones            |                                                      |
+| [ike_crypto_profile](ike_crypto_profile.md)     | Manage IKE crypto profiles       |                                                      |
+| [ike_gateway](ike_gateway.md)                   | Manage IKE gateways              |                                                      |
+| [ipsec_crypto_profile](ipsec_crypto_profile.md) | Manage IPsec crypto profiles     |                                                      |
+| [ipsec_tunnel](ipsec_tunnel.md)                 | Manage IPsec tunnels             |                                                      |
+| [bgp_routing](bgp_routing.md)                   | Manage BGP routing configuration | [bgp_routing_info](bgp_routing_info.md)              |
 
 ### Deployment
 
@@ -51,6 +51,7 @@ These modules manage deployment-related configurations:
 | Module                                            | Description                       | Info Module                                           |
 | ------------------------------------------------- | --------------------------------- | ----------------------------------------------------- |
 | [bandwidth_allocations](bandwidth_allocations.md) | Manage bandwidth allocations      | [bandwidth_allocations_info](bandwidth_allocations_info.md) |
+| [internal_dns_servers](internal_dns_servers.md)   | Manage internal DNS servers       | [internal_dns_servers_info](internal_dns_servers_info.md) |
 | [remote_networks](remote_networks.md)             | Manage remote networks            |                                                       |
 | [network_locations](network_locations.md)         | Manage network locations          |                                                       |
 | [service_connections](service_connections.md)     | Manage service connections        |                                                       |

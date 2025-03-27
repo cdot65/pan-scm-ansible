@@ -21,11 +21,11 @@ except ImportError:
     Dict = None
 
 
-class InternalDnsServersSpec:
+class InternalDnsServersInfoSpec:
     """
-    Internal DNS Servers API specification for Ansible modules interacting with SCM.
+    Internal DNS Servers Info API specification for Ansible modules.
 
-    This class provides a standard specification for Internal DNS Servers parameters
+    This class provides a standard specification for Internal DNS Servers Info parameters
     used in SCM Ansible modules. It ensures consistent parameter validation
     across the collection.
     """
@@ -33,11 +33,11 @@ class InternalDnsServersSpec:
     @staticmethod
     def spec():
         """
-        Returns Ansible module spec for internal DNS server objects.
+        Returns Ansible module spec for internal DNS server info objects.
 
-        This method defines the structure and requirements for internal DNS servers
-        parameters in SCM modules, including all the attributes for creating,
-        updating, and deleting internal DNS server objects.
+        This method defines the structure and requirements for internal DNS servers info
+        parameters in SCM modules, providing the ability to gather information about
+        internal DNS server objects.
 
         Returns:
             Dict: A dictionary containing the module specification with
@@ -46,20 +46,13 @@ class InternalDnsServersSpec:
         return dict(
             name=dict(
                 type="str",
-                required=True,
+                required=False,
             ),
-            domain_name=dict(
+            gather_subset=dict(
                 type="list",
                 elements="str",
-                required=False,
-            ),
-            primary=dict(
-                type="str",
-                required=False,
-            ),
-            secondary=dict(
-                type="str",
-                required=False,
+                default=["config"],
+                choices=["all", "config"],
             ),
             provider=dict(
                 type="dict",
@@ -84,10 +77,5 @@ class InternalDnsServersSpec:
                         default="INFO",
                     ),
                 ),
-            ),
-            state=dict(
-                type="str",
-                choices=["present", "absent"],
-                required=True,
             ),
         )
