@@ -1,0 +1,315 @@
+---
+# Test playbook for remote_networks module
+
+- name: Test remote_networks module
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+
+  tasks:
+    # Initial setup and cleanup
+    - name: Delete test remote networks for cleanup [setup]
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Remote Networks"
+        state: "absent"
+      loop:
+        - "Test-Remote-Network-1"
+        - "Test-Remote-Network-2"
+      ignore_errors: true
+      tags:
+        - setup
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # CREATE operations
+    - name: Create a remote network with standard IPsec tunnel [create]
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "Test-Remote-Network-1"
+        description: "Test remote network with standard IPsec tunnel"
+        region: "us-east-1"
+        license_type: "FWAAS-AGGREGATE"
+        spn_name: "test-spn"
+        folder: "Remote Networks"
+        ecmp_load_balancing: "disable"
+        ipsec_tunnel: "test-tunnel-1"
+        subnets: ["10.1.0.0/16", "10.2.0.0/16"]
+        protocol:
+          bgp:
+            enable: true
+            local_ip_address: "10.0.0.1"
+            peer_ip_address: "10.0.0.2"
+            local_as: "65000"
+            peer_as: "65001"
+            secret: "bgp-secret-1"
+        state: "present"
+      register: create_result
+      tags:
+        - create
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that creation was successful [create]
+      assert:
+        that:
+          - create_result is defined
+          - create_result.changed == true
+          - create_result.remote_network is defined
+          - create_result.remote_network.name == "Test-Remote-Network-1"
+          - create_result.remote_network.region == "us-east-1"
+          - create_result.remote_network.description == "Test remote network with standard IPsec tunnel"
+          - create_result.remote_network.folder == "Test-Folder"
+      tags:
+        - create
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Create a remote network with ECMP load balancing [create]
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "Test-Remote-Network-2"
+        description: "Test remote network with ECMP"
+        region: "us-west-1"
+        license_type: "FWAAS-AGGREGATE"
+        spn_name: "test-spn-west"
+        folder: "Remote Networks"
+        ecmp_load_balancing: "enable"
+        ecmp_tunnels:
+          - name: "tunnel1"
+            ipsec_tunnel: "test-tunnel-2-1"
+            local_ip_address: "10.0.1.1"
+            peer_ip_address: "10.0.1.2"
+            peer_as: "65002"
+          - name: "tunnel2"
+            ipsec_tunnel: "test-tunnel-2-2"
+            local_ip_address: "10.0.2.1"
+            peer_ip_address: "10.0.2.2"
+            peer_as: "65002"
+        subnets: ["10.3.0.0/16", "10.4.0.0/16"]
+        state: "present"
+      register: create_ecmp_result
+      tags:
+        - create
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that ECMP network creation was successful [create]
+      assert:
+        that:
+          - create_ecmp_result is defined
+          - create_ecmp_result.changed == true
+          - create_ecmp_result.remote_network is defined
+          - create_ecmp_result.remote_network.name == "Test-Remote-Network-2"
+          - create_ecmp_result.remote_network.region == "us-west-1"
+          - create_ecmp_result.remote_network.ecmp_load_balancing == "enable"
+      tags:
+        - create
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # READ operations
+    - name: Get information about a specific remote network [read]
+      cdot65.scm.remote_networks_info:
+        provider: "{{ provider }}"
+        name: "Test-Remote-Network-1"
+        folder: "Remote Networks"
+      register: get_result
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that get operation returned expected values [read]
+      assert:
+        that:
+          - get_result is defined
+          - get_result.remote_network is defined
+          - get_result.remote_network.name == "Test-Remote-Network-1"
+          - get_result.remote_network.region == "us-east-1"
+          - get_result.remote_network.description == "Test remote network with standard IPsec tunnel"
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        
+    - name: List all remote networks in the test folder [read]
+      cdot65.scm.remote_networks_info:
+        provider: "{{ provider }}"
+        folder: "Remote Networks"
+      register: list_result
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that list operation returned both networks [read]
+      assert:
+        that:
+          - list_result is defined
+          - list_result.remote_networks is defined
+          - list_result.remote_networks | length >= 2
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # UPDATE operations
+    - name: Update the first remote network [update]
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "Test-Remote-Network-1"
+        description: "Updated test remote network"
+        region: "us-east-1"
+        folder: "Remote Networks"
+        ecmp_load_balancing: "disable"
+        ipsec_tunnel: "updated-test-tunnel-1"
+        subnets: ["10.1.0.0/16", "10.2.0.0/16", "10.5.0.0/16"]
+        state: "present"
+      register: update_result
+      tags:
+        - update
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that update was successful [update]
+      assert:
+        that:
+          - update_result is defined
+          - update_result.changed == true
+          - update_result.remote_network is defined
+          - update_result.remote_network.name == "Test-Remote-Network-1"
+          - update_result.remote_network.description == "Updated test remote network"
+          - update_result.remote_network.ipsec_tunnel == "updated-test-tunnel-1"
+          - update_result.remote_network.subnets | length == 3
+          - "'10.5.0.0/16' in update_result.remote_network.subnets"
+      tags:
+        - update
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Verify the update with info module [update]
+      cdot65.scm.remote_networks_info:
+        provider: "{{ provider }}"
+        name: "Test-Remote-Network-1"
+        folder: "Remote Networks"
+      register: verify_update
+      tags:
+        - update
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that updated values are reflected in info [update]
+      assert:
+        that:
+          - verify_update is defined
+          - verify_update.remote_network is defined
+          - verify_update.remote_network.description == "Updated test remote network"
+          - verify_update.remote_network.ipsec_tunnel == "updated-test-tunnel-1"
+          - verify_update.remote_network.subnets | length == 3
+      tags:
+        - update
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # DELETE operations
+    - name: Delete the first remote network [delete]
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "Test-Remote-Network-1"
+        folder: "Remote Networks"
+        state: "absent"
+      register: delete_result
+      tags:
+        - delete
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that deletion was successful [delete]
+      assert:
+        that:
+          - delete_result is defined
+          - delete_result.changed == true
+      tags:
+        - delete
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Verify that remote network was deleted [delete]
+      cdot65.scm.remote_networks_info:
+        provider: "{{ provider }}"
+        name: "Test-Remote-Network-1"
+        folder: "Remote Networks"
+      register: verify_delete
+      failed_when: false
+      tags:
+        - delete
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that remote network is no longer present [delete]
+      assert:
+        that:
+          - verify_delete is defined
+          - verify_delete.failed is defined
+          - verify_delete.failed == true
+      tags:
+        - delete
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # Final cleanup
+    - name: Delete the second remote network for cleanup [cleanup]
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "Test-Remote-Network-2"
+        folder: "Remote Networks"
+        state: "absent"
+      tags:
+        - cleanup
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd

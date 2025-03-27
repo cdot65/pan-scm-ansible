@@ -1,0 +1,256 @@
+---
+# Test playbook for remote_networks_info module
+
+- name: Test remote_networks_info module
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+
+  tasks:
+    # Initial setup for test
+    - name: Delete test remote networks for cleanup [setup]
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Remote Networks"
+        state: "absent"
+      loop:
+        - "Test-Remote-Network-1"
+        - "Test-Remote-Network-2"
+      ignore_errors: true
+      tags:
+        - setup
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # Create test network objects
+    - name: Create a remote network with standard IPsec tunnel [setup]
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "Test-Remote-Network-1"
+        description: "US East remote network"
+        region: "us-east-1"
+        license_type: "FWAAS-AGGREGATE"
+        spn_name: "test-spn-east"
+        folder: "Remote Networks"
+        ecmp_load_balancing: "disable"
+        ipsec_tunnel: "test-tunnel-1"
+        subnets: ["10.1.0.0/16", "10.2.0.0/16"]
+        protocol:
+          bgp:
+            enable: true
+            local_ip_address: "10.0.0.1"
+            peer_ip_address: "10.0.0.2"
+            local_as: "65000"
+            peer_as: "65001"
+            secret: "bgp-secret-1"
+        state: "present"
+      tags:
+        - setup
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Create a remote network with ECMP load balancing [setup]
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "Test-Remote-Network-2"
+        description: "US West remote network"
+        region: "us-west-1"
+        license_type: "FWAAS-AGGREGATE"
+        spn_name: "test-spn-west"
+        folder: "Remote Networks"
+        ecmp_load_balancing: "enable"
+        ecmp_tunnels:
+          - name: "tunnel1"
+            ipsec_tunnel: "test-tunnel-2-1"
+            local_ip_address: "10.0.1.1"
+            peer_ip_address: "10.0.1.2"
+            peer_as: "65002"
+          - name: "tunnel2"
+            ipsec_tunnel: "test-tunnel-2-2"
+            local_ip_address: "10.0.2.1"
+            peer_ip_address: "10.0.2.2"
+            peer_as: "65002"
+        subnets: ["10.3.0.0/16", "10.4.0.0/16"]
+        state: "present"
+      tags:
+        - setup
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # READ operations - Get single network
+    - name: Get information about a specific remote network [read]
+      cdot65.scm.remote_networks_info:
+        provider: "{{ provider }}"
+        name: "Test-Remote-Network-1"
+        folder: "Remote Networks"
+      register: get_result
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that get operation returned expected values [read]
+      assert:
+        that:
+          - get_result is defined
+          - get_result.remote_network is defined
+          - get_result.remote_network.name == "Test-Remote-Network-1"
+          - get_result.remote_network.region == "us-east-1"
+          - get_result.remote_network.description == "US East remote network"
+          - get_result.remote_network.folder == "Remote Networks"
+          - get_result.remote_network.license_type == "FWAAS-AGGREGATE"
+          - get_result.remote_network.spn_name == "test-spn-east"
+          - get_result.remote_network.ipsec_tunnel == "test-tunnel-1"
+          - get_result.remote_network.subnets | length == 2
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # READ operations - List all networks
+    - name: List all remote networks in the test folder [read]
+      cdot65.scm.remote_networks_info:
+        provider: "{{ provider }}"
+        folder: "Remote Networks"
+      register: list_result
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that list operation returned expected number of networks [read]
+      assert:
+        that:
+          - list_result is defined
+          - list_result.remote_networks is defined
+          - list_result.remote_networks | length >= 2
+          - (list_result.remote_networks | selectattr('name', 'equalto', 'Test-Remote-Network-1') | list) | length == 1
+          - (list_result.remote_networks | selectattr('name', 'equalto', 'Test-Remote-Network-2') | list) | length == 1
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # READ operations - Filter by region
+    - name: List remote networks filtered by region [read]
+      cdot65.scm.remote_networks_info:
+        provider: "{{ provider }}"
+        folder: "Remote Networks"
+        regions: ["us-east-1"]
+      register: region_filter_result
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that region filter returned expected networks [read]
+      assert:
+        that:
+          - region_filter_result is defined
+          - region_filter_result.remote_networks is defined
+          - region_filter_result.remote_networks | length >= 1
+          - (region_filter_result.remote_networks | selectattr('name', 'equalto', 'Test-Remote-Network-1') | list) | length == 1
+          - (region_filter_result.remote_networks | selectattr('region', 'equalto', 'us-east-1') | list) | length >= 1
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # READ operations - Filter by license type
+    - name: List remote networks filtered by license type [read]
+      cdot65.scm.remote_networks_info:
+        provider: "{{ provider }}"
+        folder: "Remote Networks"
+        license_types: ["FWAAS-AGGREGATE"]
+      register: license_filter_result
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that license type filter returned expected networks [read]
+      assert:
+        that:
+          - license_filter_result is defined
+          - license_filter_result.remote_networks is defined
+          - license_filter_result.remote_networks | length >= 2
+          - (license_filter_result.remote_networks | selectattr('license_type', 'equalto', 'FWAAS-AGGREGATE') | list) | length >= 2
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # READ operations - Filter by subnet
+    - name: List remote networks filtered by subnet [read]
+      cdot65.scm.remote_networks_info:
+        provider: "{{ provider }}"
+        folder: "Remote Networks"
+        subnets: ["10.1.0.0/16"]
+      register: subnet_filter_result
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert that subnet filter returned expected networks [read]
+      assert:
+        that:
+          - subnet_filter_result is defined
+          - subnet_filter_result.remote_networks is defined
+          - subnet_filter_result.remote_networks | length >= 1
+          - (subnet_filter_result.remote_networks | selectattr('name', 'equalto', 'Test-Remote-Network-1') | list) | length == 1
+      tags:
+        - read
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # Final cleanup
+    - name: Delete test remote networks for cleanup [cleanup]
+      cdot65.scm.remote_networks:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "Remote Networks"
+        state: "absent"
+      loop:
+        - "Test-Remote-Network-1"
+        - "Test-Remote-Network-2"
+      tags:
+        - cleanup
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd

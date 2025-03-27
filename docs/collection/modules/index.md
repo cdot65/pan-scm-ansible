@@ -52,7 +52,7 @@ These modules manage deployment-related configurations:
 | ------------------------------------------------- | --------------------------------- | ----------------------------------------------------- |
 | [bandwidth_allocations](bandwidth_allocations.md) | Manage bandwidth allocations      | [bandwidth_allocations_info](bandwidth_allocations_info.md) |
 | [internal_dns_servers](internal_dns_servers.md)   | Manage internal DNS servers       | [internal_dns_servers_info](internal_dns_servers_info.md) |
-| [remote_networks](remote_networks.md)             | Manage remote networks            |                                                       |
+| [remote_networks](remote_networks.md)             | Manage remote networks            | [remote_networks_info](remote_networks_info.md)          |
 | [network_locations](network_locations.md)         | Manage network locations          |                                                       |
 | [service_connections](service_connections.md)     | Manage service connections        |                                                       |
 

@@ -135,7 +135,7 @@ The collection includes modules for managing various SCM configuration objects:
 | Module                                                    | Description                       | Info Module                                               |
 | --------------------------------------------------------- | --------------------------------- | --------------------------------------------------------- |
 | [Bandwidth Allocations](modules/bandwidth_allocations.md) | Manage bandwidth allocations      | [Bandwidth Allocations Info](modules/bandwidth_allocations_info.md) |
-| [Remote Networks](modules/remote_networks.md)             | Manage remote networks            |                                                           |
+| [Remote Networks](modules/remote_networks.md)             | Manage remote networks            | [Remote Networks Info](modules/remote_networks_info.md)   |
 | [Network Locations](modules/network_locations.md)         | Manage network locations          |                                                           |
 | [Service Connections](modules/service_connections.md)     | Manage service connections        |                                                           |
 
