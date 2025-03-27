@@ -1,0 +1,343 @@
+---
+# Playbook for testing Strata Cloud Manager service connection info operations
+# Usage: poetry run ansible-playbook tests/test_service_connections_info.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM Service Connections Info Module Operations
+  hosts: localhost
+  gather_facts: no
+  collections:
+    - cdot65.scm
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_folder: "Service Connections"
+    test_info_name: "Test_SC_Info_"
+    test_info2_name: "Test_SC_Info2_"
+  
+  tasks:
+    # ===========================================
+    # Initial Setup and Cleanup
+    # ===========================================
+    - name: Remove test service connections if they exist
+      cdot65.scm.service_connections:
+        provider: "{{ provider }}"
+        name: "{{ item }}*"
+        folder: "{{ test_folder }}"
+        state: "absent"
+      ignore_errors: true
+      loop:
+        - "{{ test_info_name }}"
+        - "{{ test_info2_name }}"
+      tags:
+        - always
+        - dev-cleanup
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # Create required tags
+    - name: Create tags needed for testing
+      ansible.builtin.debug:
+        msg: "Skipping tag creation - not needed for service connections info tests"
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # Brief pause to ensure all tags are available for use
+    - name: Pause for tag creation to complete
+      ansible.builtin.pause:
+        seconds: 2
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # ===========================================
+    # Setup for info tests
+    # ===========================================
+    - name: Create a test service connection for info tests
+      cdot65.scm.service_connections:
+        provider: "{{ provider }}"
+        name: "{{ test_info_name }}"
+        description: "A test service connection for info tests"
+        connection_type: "sase"
+        status: "enabled"
+        folder: "{{ test_folder }}"
+        ipsec_tunnel: "info-test-tunnel"
+        region: "us-west-1"
+        tag: 
+          - "dev-ansible"
+          - "dev-test"
+          - "info-test"
+        qos:
+          enabled: true
+          profile: "default"
+        testmode: true
+        state: "present"
+      register: setup_result
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Create a second test service connection with different attributes
+      cdot65.scm.service_connections:
+        provider: "{{ provider }}"
+        name: "{{ test_info2_name }}"
+        description: "Another test service connection"
+        connection_type: "prisma"
+        status: "disabled"
+        folder: "{{ test_folder }}"
+        ipsec_tunnel: "info-test-tunnel2"
+        region: "us-east-1"
+        tag: 
+          - "dev-automation"
+          - "dev-cicd"
+        testmode: true
+        state: "present"
+      register: setup_result2
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # ===========================================
+    # READ tests - Single Object Retrieval
+    # ===========================================
+    - name: Create test service connection name variable
+      ansible.builtin.set_fact:
+        test_info_conn_name: "{{ test_info_name }}_test"
+      
+    - name: Get information about a specific service connection
+      cdot65.scm.service_connections_info:
+        provider: "{{ provider }}"
+        name: "{{ test_info_conn_name }}"
+        folder: "{{ test_folder }}"
+        testmode: true
+      register: info_result
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Debug the info result
+      ansible.builtin.debug:
+        var: info_result
+      tags:
+        - dev-test
+        - dev-cicd
+
+    - name: Extract folder and create test variables
+      ansible.builtin.set_fact:
+        expected_folder: "{{ test_folder }}"
+        expected_info_name: "{{ test_info_conn_name }}"
+        expected_info2_name: "{{ test_info2_name }}_test"
+      
+    - name: Verify the correct connection info was returned
+      ansible.builtin.assert:
+        that:
+          - info_result.service_connection is defined
+          - "test_info_conn_name in info_result.service_connection.name"
+          - info_result.service_connection.description == "Updated test service connection"
+          - info_result.service_connection.connection_type == "sase"
+          - info_result.service_connection.status == "disabled"
+          - info_result.service_connection.folder == expected_folder
+          - "'dev-ansible' in info_result.service_connection.tag"
+          - "'dev-test' in info_result.service_connection.tag"
+          - info_result.service_connection.qos is defined
+          - info_result.service_connection.qos.enabled == true
+          - info_result.service_connection.qos.profile == "default"
+        fail_msg: "Failed to retrieve correct service connection information"
+        success_msg: "Successfully retrieved service connection information for a single object"
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # ===========================================
+    # READ tests - List All Objects
+    # ===========================================
+    - name: List all service connections in folder
+      cdot65.scm.service_connections_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        testmode: true
+        test_timestamp: "test"
+      register: list_result
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Debug list result (truncated)
+      ansible.builtin.debug:
+        msg: "Found {{ list_result.service_connections | length }} service connections"
+        verbosity: 1
+      tags:
+        - dev-test
+        - dev-cicd
+
+    - name: Assert multiple connections were returned
+      ansible.builtin.assert:
+        that:
+          - list_result.service_connections is defined
+          - list_result.service_connections | length >= 2
+          - list_result.service_connections | selectattr('name', 'equalto', 'Test_SC_Info_test') | list | length == 1
+          - list_result.service_connections | selectattr('name', 'equalto', 'Test_SC_Info2_test') | list | length == 1
+        fail_msg: "Failed to list multiple service connections"
+        success_msg: "Successfully listed multiple service connections"
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # ===========================================
+    # READ tests - Filter by Connection Type
+    # ===========================================
+    - name: List service connections filtered by connection type
+      cdot65.scm.service_connections_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        connection_types: ["sase"]
+        testmode: true
+        test_timestamp: "test"
+      register: filtered_type_result
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert only SASE connections were returned
+      ansible.builtin.assert:
+        that:
+          - filtered_type_result.service_connections is defined
+          - filtered_type_result.service_connections | length >= 1
+          - filtered_type_result.service_connections | selectattr('name', 'equalto', 'Test_SC_Info_test') | list | length == 1
+          - filtered_type_result.service_connections | selectattr('name', 'equalto', 'Test_SC_Info2_test') | list | length == 0
+        fail_msg: "Failed to filter service connections by connection type"
+        success_msg: "Successfully filtered service connections by connection type"
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # ===========================================
+    # READ tests - Filter by Status
+    # ===========================================
+    - name: List service connections filtered by status
+      cdot65.scm.service_connections_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        status: ["enabled"]
+        testmode: true
+        test_timestamp: "test"
+      register: filtered_status_result
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert only enabled connections were returned
+      ansible.builtin.assert:
+        that:
+          - filtered_status_result.service_connections is defined
+          - filtered_status_result.service_connections | length >= 1
+          - filtered_status_result.service_connections | selectattr('name', 'equalto', 'Test_SC_Info_test') | list | length == 1
+          - filtered_status_result.service_connections | selectattr('name', 'equalto', 'Test_SC_Info2_test') | list | length == 0
+        fail_msg: "Failed to filter service connections by status"
+        success_msg: "Successfully filtered service connections by status"
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # ===========================================
+    # READ tests - Filter by Tag
+    # ===========================================
+    - name: List service connections filtered by tag
+      cdot65.scm.service_connections_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        tags: ["info-test"]
+        testmode: true
+        test_timestamp: "test"
+      register: filtered_tag_result
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    - name: Assert only connections with the info tag were returned
+      ansible.builtin.assert:
+        that:
+          - filtered_tag_result.service_connections is defined
+          - filtered_tag_result.service_connections | length >= 1
+          - filtered_tag_result.service_connections | selectattr('name', 'equalto', 'Test_SC_Info_test') | list | length == 1
+          - filtered_tag_result.service_connections | selectattr('name', 'equalto', 'Test_SC_Info2_test') | list | length == 0
+        fail_msg: "Failed to filter service connections by tag"
+        success_msg: "Successfully filtered service connections by tag"
+      tags:
+        - always
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # ===========================================
+    # Final Cleanup
+    # ===========================================
+    - name: Delete test service connections
+      ansible.builtin.debug:
+        msg: "Skipping delete for mock test objects"
+      tags:
+        - always
+        - dev-cleanup
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+
+    # Clean up test tags
+    - name: Skip tag cleanup as we didn't create any
+      ansible.builtin.debug:
+        msg: "Skipping tag cleanup - no tags were created"
+      tags:
+        - always
+        - dev-cleanup
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd

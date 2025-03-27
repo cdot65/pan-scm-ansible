@@ -54,7 +54,7 @@ These modules manage deployment-related configurations:
 | [internal_dns_servers](internal_dns_servers.md)   | Manage internal DNS servers       | [internal_dns_servers_info](internal_dns_servers_info.md) |
 | [remote_networks](remote_networks.md)             | Manage remote networks            | [remote_networks_info](remote_networks_info.md)          |
 | [network_locations](network_locations.md)         | Manage network locations          |                                                       |
-| [service_connections](service_connections.md)     | Manage service connections        |                                                       |
+| [service_connections](service_connections.md)     | Manage service connections        | [service_connections_info](service_connections_info.md) |
 
 ### Security Services
 
@@ -66,7 +66,7 @@ These modules configure security policies and profiles:
 | [anti_spyware_profile](anti_spyware_profile.md)                         | Manage anti-spyware profiles             | [anti_spyware_profile_info](anti_spyware_profile_info.md)                         |
 | [decryption_profile](decryption_profile.md)                             | Manage decryption profiles               | [decryption_profile_info](decryption_profile_info.md)                             |
 | [dns_security_profile](dns_security_profile.md)                         | Manage DNS security profiles             | [dns_security_profile_info](dns_security_profile_info.md)                         |
-| [security_profiles_group](security_profiles_group.md)                   | Manage security profile groups           | -                                                                                 |
+| [security_profiles_group](security_profiles_group.md)                   | Manage security profile groups           | [security_profiles_group_info](security_profiles_group_info.md)                   |
 | [url_categories](url_categories.md)                                     | Manage URL categories                    | [url_categories_info](url_categories_info.md)                                     |
 | [vulnerability_protection_profile](vulnerability_protection_profile.md) | Manage vulnerability protection profiles | [vulnerability_protection_profile_info](vulnerability_protection_profile_info.md) |
 | [wildfire_antivirus_profiles](wildfire_antivirus_profiles.md)           | Manage WildFire antivirus profiles       | [wildfire_antivirus_profiles_info](wildfire_antivirus_profiles_info.md)           |

@@ -21,11 +21,11 @@ except ImportError:
     Dict = None
 
 
-class ServiceConnectionsSpec:
+class ServiceConnectionsInfoSpec:
     """
-    Service Connections API specification for Ansible modules.
+    Service Connections Info API specification for Ansible modules.
 
-    This class provides a standard specification for service connection-related parameters
+    This class provides a standard specification for service connection info-related parameters
     used in SCM Ansible modules. It ensures consistent parameter validation
     across the collection.
     """
@@ -33,11 +33,11 @@ class ServiceConnectionsSpec:
     @staticmethod
     def spec():
         """
-        Returns Ansible module spec for service connection objects.
+        Returns Ansible module spec for service connection info objects.
 
-        This method defines the structure and requirements for service connection-related
-        parameters in SCM modules, including all the attributes for creating,
-        updating, and deleting service connection objects.
+        This method defines the structure and requirements for service connection info-related
+        parameters in SCM modules, including all the attributes for retrieving
+        service connection information.
 
         Returns:
             Dict: A dictionary containing the module specification with
@@ -46,28 +46,6 @@ class ServiceConnectionsSpec:
         return dict(
             name=dict(
                 type="str",
-                required=True,
-            ),
-            description=dict(
-                type="str",
-                required=False,
-            ),
-            connection_type=dict(
-                type="str",
-                required=False,
-                choices=["sase", "prisma", "panorama"],
-            ),
-            status=dict(
-                type="str",
-                required=False,
-                choices=["enabled", "disabled"],
-            ),
-            ipsec_tunnel=dict(
-                type="str",
-                required=False,
-            ),
-            region=dict(
-                type="str",
                 required=False,
             ),
             testmode=dict(
@@ -75,50 +53,15 @@ class ServiceConnectionsSpec:
                 required=False,
                 default=False,
             ),
-            auto_key_rotation=dict(
-                type="bool",
+            test_timestamp=dict(
+                type="str",
                 required=False,
             ),
-            tag=dict(
+            gather_subset=dict(
                 type="list",
                 elements="str",
-                required=False,
-            ),
-            qos=dict(
-                type="dict",
-                required=False,
-                options=dict(
-                    enabled=dict(
-                        type="bool",
-                        required=False,
-                    ),
-                    profile=dict(
-                        type="str",
-                        required=False,
-                    ),
-                ),
-            ),
-            backup_connection=dict(
-                type="dict",
-                required=False,
-                options=dict(
-                    connection_name=dict(
-                        type="str",
-                        required=True,
-                    ),
-                    folder=dict(
-                        type="str",
-                        required=True,
-                    ),
-                    snippet=dict(
-                        type="str",
-                        required=False,
-                    ),
-                    device=dict(
-                        type="str",
-                        required=False,
-                    ),
-                ),
+                default=["config"],
+                choices=["all", "config"],
             ),
             folder=dict(
                 type="str",
@@ -131,6 +74,43 @@ class ServiceConnectionsSpec:
             ),
             device=dict(
                 type="str",
+                required=False,
+            ),
+            exact_match=dict(
+                type="bool",
+                required=False,
+                default=False,
+            ),
+            exclude_folders=dict(
+                type="list",
+                elements="str",
+                required=False,
+            ),
+            exclude_snippets=dict(
+                type="list",
+                elements="str",
+                required=False,
+            ),
+            exclude_devices=dict(
+                type="list",
+                elements="str",
+                required=False,
+            ),
+            connection_types=dict(
+                type="list",
+                elements="str",
+                required=False,
+                choices=["sase", "prisma", "panorama"],
+            ),
+            status=dict(
+                type="list",
+                elements="str",
+                required=False,
+                choices=["enabled", "disabled"],
+            ),
+            tags=dict(
+                type="list",
+                elements="str",
                 required=False,
             ),
             provider=dict(
@@ -156,10 +136,5 @@ class ServiceConnectionsSpec:
                         default="INFO",
                     ),
                 ),
-            ),
-            state=dict(
-                type="str",
-                choices=["present", "absent"],
-                required=True,
             ),
         )
