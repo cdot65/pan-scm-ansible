@@ -97,6 +97,8 @@ nav:
           - Deployment:
               - Bandwidth Allocations: collection/modules/bandwidth_allocations.md
               - Bandwidth Allocations Info: collection/modules/bandwidth_allocations_info.md
+              - Internal DNS Servers: collection/modules/internal_dns_servers.md
+              - Internal DNS Servers Info: collection/modules/internal_dns_servers_info.md
               - Remote Networks: collection/modules/remote_networks.md
               - Network Locations: collection/modules/network_locations.md
               - Service Connections: collection/modules/service_connections.md
@@ -107,6 +109,7 @@ nav:
               - IPsec Crypto Profile: collection/modules/ipsec_crypto_profile.md
               - IPsec Tunnel: collection/modules/ipsec_tunnel.md
               - BGP Routing: collection/modules/bgp_routing.md
+              - BGP Routing Info: collection/modules/bgp_routing_info.md
           - Objects:
               - Address: collection/modules/address.md
               - Address Info: collection/modules/address_info.md

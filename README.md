@@ -79,20 +79,21 @@ Ansible Collection for managing Palo Alto Networks Strata Cloud Manager (SCM) co
 
 ### Network Configuration
 
-| Module                                                                                                    | Description                      |
-|-----------------------------------------------------------------------------------------------------------|----------------------------------|
-| [security_zone](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_zone/)               | Manage security zones            |
-| [ike_crypto_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/ike_crypto_profile/)     | Manage IKE crypto profiles       |
-| [ike_gateway](https://cdot65.github.io/pan-scm-ansible/collection/modules/ike_gateway/)                   | Manage IKE gateways              |
-| [ipsec_crypto_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/ipsec_crypto_profile/) | Manage IPsec crypto profiles     |
-| [ipsec_tunnel](https://cdot65.github.io/pan-scm-ansible/collection/modules/ipsec_tunnel/)                 | Manage IPsec tunnels             |
-| [bgp_routing](https://cdot65.github.io/pan-scm-ansible/collection/modules/bgp_routing/)                   | Manage BGP routing configuration |
+| Module                                                                                                    | Description                      | Info Module                                                                                                     |
+|-----------------------------------------------------------------------------------------------------------|----------------------------------|----------------------------------------------------------------------------------------------------------------|
+| [security_zone](https://cdot65.github.io/pan-scm-ansible/collection/modules/security_zone/)               | Manage security zones            |                                                                                                                |
+| [ike_crypto_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/ike_crypto_profile/)     | Manage IKE crypto profiles       |                                                                                                                |
+| [ike_gateway](https://cdot65.github.io/pan-scm-ansible/collection/modules/ike_gateway/)                   | Manage IKE gateways              |                                                                                                                |
+| [ipsec_crypto_profile](https://cdot65.github.io/pan-scm-ansible/collection/modules/ipsec_crypto_profile/) | Manage IPsec crypto profiles     |                                                                                                                |
+| [ipsec_tunnel](https://cdot65.github.io/pan-scm-ansible/collection/modules/ipsec_tunnel/)                 | Manage IPsec tunnels             |                                                                                                                |
+| [bgp_routing](https://cdot65.github.io/pan-scm-ansible/collection/modules/bgp_routing/)                   | Manage BGP routing configuration | [bgp_routing_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/bgp_routing_info/)             |
 
 ### Deployment
 
 | Module                                                                                                        | Description                       | Info Module                                                                                                             |
 |---------------------------------------------------------------------------------------------------------------|-----------------------------------|------------------------------------------------------------------------------------------------------------------------|
 | [bandwidth_allocations](https://cdot65.github.io/pan-scm-ansible/collection/modules/bandwidth_allocations/)   | Manage bandwidth allocations      | [bandwidth_allocations_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/bandwidth_allocations_info/)   |
+| [internal_dns_servers](https://cdot65.github.io/pan-scm-ansible/collection/modules/internal_dns_servers/)     | Manage internal DNS servers       | [internal_dns_servers_info](https://cdot65.github.io/pan-scm-ansible/collection/modules/internal_dns_servers_info/)     |
 | [remote_networks](https://cdot65.github.io/pan-scm-ansible/collection/modules/remote_networks/)               | Manage remote networks            |                                                                                                                        |
 | [network_locations](https://cdot65.github.io/pan-scm-ansible/collection/modules/network_locations/)           | Manage network locations          |                                                                                                                        |
 | [service_connections](https://cdot65.github.io/pan-scm-ansible/collection/modules/service_connections/)       | Manage service connections        |                                                                                                                        |

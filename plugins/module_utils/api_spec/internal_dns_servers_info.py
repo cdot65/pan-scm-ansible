@@ -21,11 +21,11 @@ except ImportError:
     Dict = None
 
 
-class BGPRoutingSpec:
+class InternalDnsServersInfoSpec:
     """
-    BGP Routing API specification for Ansible modules interacting with SCM BGP routing configuration.
+    Internal DNS Servers Info API specification for Ansible modules.
 
-    This class provides a standard specification for BGP routing-related parameters 
+    This class provides a standard specification for Internal DNS Servers Info parameters
     used in SCM Ansible modules. It ensures consistent parameter validation
     across the collection.
     """
@@ -33,58 +33,26 @@ class BGPRoutingSpec:
     @staticmethod
     def spec():
         """
-        Returns Ansible module spec for BGP routing configuration.
+        Returns Ansible module spec for internal DNS server info objects.
 
-        This method defines the structure and requirements for BGP routing-related
-        parameters in SCM modules, including all attributes for BGP routing
-        configuration.
+        This method defines the structure and requirements for internal DNS servers info
+        parameters in SCM modules, providing the ability to gather information about
+        internal DNS server objects.
 
         Returns:
             Dict: A dictionary containing the module specification with
                 parameter definitions and their requirements.
         """
         return dict(
-            backbone_routing=dict(
+            name=dict(
                 type="str",
                 required=False,
-                choices=[
-                    "no-asymmetric-routing",
-                    "asymmetric-routing-only",
-                    "asymmetric-routing-with-load-share",
-                ],
             ),
-            routing_preference=dict(
-                type="dict",
-                required=False,
-                options=dict(
-                    default=dict(
-                        type="dict",
-                        required=False,
-                    ),
-                    hot_potato_routing=dict(
-                        type="dict",
-                        required=False,
-                    ),
-                ),
-                mutually_exclusive=[["default", "hot_potato_routing"]],
-                required_one_of=[["default", "hot_potato_routing"]],
-            ),
-            accept_route_over_SC=dict(
-                type="bool",
-                required=False,
-            ),
-            outbound_routes_for_services=dict(
+            gather_subset=dict(
                 type="list",
                 elements="str",
-                required=False,
-            ),
-            add_host_route_to_ike_peer=dict(
-                type="bool",
-                required=False,
-            ),
-            withdraw_static_route=dict(
-                type="bool",
-                required=False,
+                default=["config"],
+                choices=["all", "config"],
             ),
             provider=dict(
                 type="dict",
@@ -109,10 +77,5 @@ class BGPRoutingSpec:
                         default="INFO",
                     ),
                 ),
-            ),
-            state=dict(
-                type="str",
-                choices=["present", "absent"],
-                required=True,
             ),
         )

@@ -1,0 +1,41 @@
+---
+# Playbook for testing Strata Cloud Manager BGP Routing Info module
+# Usage: ansible-playbook tests/test_bgp_routing_info.yaml --vault-password-file=tests/.vault_password
+#
+# Note: This is a placeholder test file that follows the golden template pattern.
+# To run this test, the bgp_routing_info module needs to be registered in the SCM SDK.
+# The current SDK version does not include the bgp_routing module/service.
+# This test will be completed once the SDK supports the bgp_routing module.
+
+- name: Test BGP Routing Info Module in Strata Cloud Manager
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+  
+  tasks:
+    # ==========================================
+    # PLACEHOLDER
+    # ==========================================
+    - name: Print test information - SDK BGP Module Not Available
+      ansible.builtin.debug:
+        msg: |
+          This is a placeholder test file for the BGP Routing Info module.
+          The current SCM SDK version does not support the bgp_routing module.
+          This test will be completed once the SDK adds support for BGP routing.
+          
+          The test follows the golden template pattern with:
+          - Initial setup and cleanup
+          - CREATE configuration for info testing
+          - READ operations with different gather_subsets
+          - UPDATE and read operations to test different settings
+          - Final cleanup
+      tags:
+        - dev-test

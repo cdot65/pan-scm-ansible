@@ -85,3 +85,5 @@ scripts
 /.env
 /ansible_collections/
 tests/vault.yaml
+
+**/CLAUDE.local.md
