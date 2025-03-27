@@ -1,0 +1,116 @@
+---
+# Playbook for testing service_connections and service_connections_info modules
+# Usage: poetry run ansible-playbook tests/run_test_service_connections.yaml
+
+- name: Run Service Connections Module Tests
+  hosts: localhost
+  gather_facts: no
+  collections:
+    - cdot65.scm
+  vars:
+    provider:
+      client_id: "test-client-id" 
+      client_secret: "test-client-secret"
+      tsg_id: "test-tsg-id"
+      log_level: "INFO"
+    test_folder: "Service Connections"
+    test_base_name: "Test_SC_"
+    test_qos_name: "QoS_SC_"
+    test_backup_name: "Backup_SC_"
+    test_timestamp: "test"
+  
+  tasks:
+    - name: Display test information
+      ansible.builtin.debug:
+        msg: "Running tests for service_connections module in test mode"
+    
+    # ===========================================
+    # CREATE operation tests 
+    # ===========================================
+    - name: Create a basic service connection
+      cdot65.scm.service_connections:
+        provider: "{{ provider }}"
+        name: "{{ test_base_name }}{{ test_timestamp }}"
+        description: "A test service connection"
+        connection_type: "sase"
+        status: "enabled"
+        folder: "{{ test_folder }}"
+        testmode: true
+        state: "present"
+      register: create_result
+      ignore_errors: true
+
+    - name: Display create result if success
+      ansible.builtin.debug:
+        var: create_result
+      when: create_result is success
+
+    - name: Extract actual service connection name
+      ansible.builtin.set_fact:
+        actual_name: "{{ create_result.service_connection.name }}"
+      when: create_result is success and create_result.service_connection is defined
+
+    - name: Create a service connection with QoS settings
+      cdot65.scm.service_connections:
+        provider: "{{ provider }}"
+        name: "{{ test_qos_name }}{{ test_timestamp }}"
+        description: "Service connection with QoS"
+        connection_type: "sase"
+        status: "enabled"
+        folder: "{{ test_folder }}"
+        qos:
+          enabled: true
+          profile: "default"
+        testmode: true
+        state: "present"
+      register: create_qos_result
+      ignore_errors: true
+
+    - name: Display QoS create result if success
+      ansible.builtin.debug:
+        var: create_qos_result
+      when: create_qos_result is success
+
+    # ===========================================
+    # READ tests using service_connections_info
+    # ===========================================
+    - name: Get information using service_connections_info
+      cdot65.scm.service_connections_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        testmode: true
+        test_timestamp: "{{ test_timestamp }}"
+      register: info_result
+      ignore_errors: true
+
+    - name: Display info result if success
+      ansible.builtin.debug:
+        var: info_result
+      when: info_result is success
+
+    - name: Filter connections by type
+      cdot65.scm.service_connections_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        connection_types: ["sase"] 
+        testmode: true
+        test_timestamp: "{{ test_timestamp }}"
+      register: filtered_result
+      ignore_errors: true
+
+    - name: Display filtered result if success
+      ansible.builtin.debug:
+        msg: "Found {{ filtered_result.service_connections | length }} SASE connections"
+      when: filtered_result is success and filtered_result.service_connections is defined
+
+    # ===========================================
+    # Summary
+    # ===========================================
+    - name: Summarize test results
+      ansible.builtin.debug:
+        msg: |
+          Service Connections Module Test Summary:
+          - Create basic connection: {{ 'SUCCESS' if create_result is success else 'FAILURE' }}
+          - Create QoS connection: {{ 'SUCCESS' if create_qos_result is success else 'FAILURE' }}
+          - Get all connections: {{ 'SUCCESS' if info_result is success else 'FAILURE' }}
+          - Filter by connection type: {{ 'SUCCESS' if filtered_result is success else 'FAILURE' }}
