@@ -165,18 +165,18 @@ profiles:
     sample:
       - id: "123e4567-e89b-12d3-a456-426655440000"
         name: "ikev2-aes256-sha256"
-        description: "IKEv2 AES-256 SHA-256 profile"
         folder: "SharedFolder"
         hash: ["sha256"]
         encryption: ["aes-256-cbc"]
         dh_group: ["group14"]
       - id: "234e5678-e89b-12d3-a456-426655440001"
         name: "ikev1-3des-md5"
-        description: "IKEv1 3DES MD5 profile"
         folder: "SharedFolder"
         hash: ["md5"]
         encryption: ["3des"]
         dh_group: ["group2"]
+    notes:
+        - The SCM API does not return the description field even if it was set when creating the profile.
 profile:
     description: Information about the requested IKE crypto profile (returned when name is specified).
     returned: success, when name is specified
@@ -184,11 +184,12 @@ profile:
     sample:
         id: "123e4567-e89b-12d3-a456-426655440000"
         name: "ikev2-aes256-sha256"
-        description: "IKEv2 AES-256 SHA-256 profile"
         folder: "SharedFolder"
         hash: ["sha256"]
         encryption: ["aes-256-cbc"]
         dh_group: ["group14"]
+    notes:
+        - The SCM API does not return the description field even if it was set when creating the profile.
 """
 
 
@@ -217,82 +218,6 @@ def build_filter_params(module_params):
     return container_params, filter_params
 
 
-import uuid
-from datetime import datetime
-
-def generate_mock_profiles(params):
-    """
-    Generate a list of mock IKE crypto profiles for testing.
-    
-    Args:
-        params (dict): The parameters from the module
-        
-    Returns:
-        list: A list of mock profile objects
-    """
-    # If name is specified, create a single profile
-    if params.get("name"):
-        profile = {
-            "id": str(uuid.uuid4()),
-            "name": params["name"],
-            "description": f"Mock profile for {params['name']}",
-            "hash": ["sha256"],
-            "encryption": ["aes-256-cbc"],
-            "dh_group": ["group14"],
-            "authentication_multiple": 0
-        }
-        
-        # Add container parameter
-        for container in ["folder", "snippet", "device"]:
-            if params.get(container):
-                profile[container] = params[container]
-                
-        return [profile]
-    
-    # Create a list of mock profiles
-    profiles = []
-    
-    # Create profile with SHA1
-    profiles.append({
-        "id": str(uuid.uuid4()),
-        "name": "mock-profile-sha1",
-        "description": "Mock IKE profile with SHA-1",
-        "hash": ["sha1"],
-        "encryption": ["aes-128-cbc"],
-        "dh_group": ["group2"],
-        "lifetime": {"hours": 8}
-    })
-    
-    # Create profile with SHA256
-    profiles.append({
-        "id": str(uuid.uuid4()),
-        "name": "mock-profile-sha256",
-        "description": "Mock IKE profile with SHA-256",
-        "hash": ["sha256"],
-        "encryption": ["aes-256-cbc"],
-        "dh_group": ["group14"],
-        "lifetime": {"hours": 8}
-    })
-    
-    # Create profile with multiple algorithms
-    profiles.append({
-        "id": str(uuid.uuid4()),
-        "name": "mock-profile-multiple",
-        "description": "Mock IKE profile with multiple algorithms",
-        "hash": ["sha256", "sha384"],
-        "encryption": ["aes-256-cbc", "aes-256-gcm"],
-        "dh_group": ["group14", "group19", "group20"],
-        "lifetime": {"hours": 24}
-    })
-    
-    # Add container parameter to all profiles
-    for profile in profiles:
-        for container in ["folder", "snippet", "device"]:
-            if params.get(container):
-                profile[container] = params[container]
-    
-    return profiles
-
 def main():
     """
     Main execution path for the ike_crypto_profile_info module.
@@ -303,19 +228,23 @@ def main():
     :return: Ansible module exit data
     :rtype: dict
     """
-    argument_spec = dict(
-        name=dict(type="str", required=False),
-        gather_subset=dict(
-            type="list", elements="str", default=["config"], choices=["all", "config"]
+    # Define module parameters based on IKECryptoProfileInfoSpec
+    argument_spec = {
+        "name": dict(type="str", required=False),
+        "gather_subset": dict(
+            type="list",
+            elements="str",
+            default=["config"],
+            choices=["all", "config"],
         ),
-        folder=dict(type="str", required=False),
-        snippet=dict(type="str", required=False),
-        device=dict(type="str", required=False),
-        exact_match=dict(type="bool", required=False, default=False),
-        exclude_folders=dict(type="list", elements="str", required=False),
-        exclude_snippets=dict(type="list", elements="str", required=False),
-        exclude_devices=dict(type="list", elements="str", required=False),
-        provider=dict(
+        "folder": dict(type="str", required=False),
+        "snippet": dict(type="str", required=False),
+        "device": dict(type="str", required=False),
+        "exact_match": dict(type="bool", required=False, default=False),
+        "exclude_folders": dict(type="list", elements="str", required=False),
+        "exclude_snippets": dict(type="list", elements="str", required=False),
+        "exclude_devices": dict(type="list", elements="str", required=False),
+        "provider": dict(
             type="dict",
             required=True,
             options=dict(
@@ -325,67 +254,20 @@ def main():
                 log_level=dict(type="str", required=False, default="INFO"),
             ),
         ),
-        testmode=dict(type="bool", required=False, default=False),
-    )
-    
+    }
+
     module = AnsibleModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        mutually_exclusive=[["folder", "snippet", "device"]],
+        mutually_exclusive=[
+            ["folder", "snippet", "device"],
+        ],
         # Only require a container if we're not provided with a specific name
         required_if=[["name", None, ["folder", "snippet", "device"], True]],
     )
 
-    result = {}
-    
-    # Check if we're in test mode
-    testmode = module.params.get("testmode", False)
-    
-    if testmode:
-        # In test mode, we'll provide mock data instead of making API calls
-        if module.params.get("name"):
-            name = module.params["name"]
-            container_present = False
-            container_name = ""
-            container_value = ""
-            
-            # Get the container param
-            for container in ["folder", "snippet", "device"]:
-                if module.params.get(container):
-                    container_present = True
-                    container_name = container
-                    container_value = module.params[container]
-                    break
-            
-            # If a container is required but not provided, fail
-            if not container_present and module.params.get("name") is None:
-                module.fail_json(
-                    msg="One of 'folder', 'snippet', or 'device' must be provided when 'name' is not specified."
-                )
-            
-            # For a non-existent profile, fail with an appropriate message
-            if name == "Non_Existent_Profile":
-                module.fail_json(
-                    msg=f"IKE crypto profile with name '{name}' not found in {container_name} '{container_value}'"
-                )
-                
-            # Generate mock profiles
-            mock_profiles = generate_mock_profiles(module.params)
-            
-            # Return the single profile
-            result["profile"] = mock_profiles[0]
-        else:
-            # Generate mock profiles
-            mock_profiles = generate_mock_profiles(module.params)
-            
-            # Apply any additional filters
-            filtered_profiles = mock_profiles
-            
-            # Return the list of profiles
-            result["profiles"] = filtered_profiles
-            
-        module.exit_json(**result)
-        return
+    # Initialize result with changed=False and no profile info yet
+    result = {"changed": False}
 
     try:
         client = get_scm_client(module)
@@ -400,39 +282,43 @@ def main():
                 if module.params.get(container):
                     container_params[container] = module.params[container]
 
+            # If no container param is specified, try to find the profile without container filters
             try:
-                # Fetch a specific IKE crypto profile
-                profile = client.ike_crypto_profile.fetch(name=name, **container_params)
-
-                # Serialize response for Ansible output
+                profile = client.network.ike_crypto_profiles.find_by_name(
+                    name=name, **container_params
+                )
+                # Add profile to result dictionary as a separate key
                 result["profile"] = serialize_response(profile)
-
             except ObjectNotPresentError:
                 module.fail_json(
-                    msg=f"IKE crypto profile with name '{name}' not found in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
+                    msg=f"IKE crypto profile with name '{name}' not found"
+                    + (f" in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'" if container_params else "")
                 )
-            except (MissingQueryParameterError, InvalidObjectError) as e:
-                module.fail_json(msg=str(e))
-
+            except Exception as e:
+                module.fail_json(msg=f"Error retrieving IKE crypto profile information: {str(e)}")
         else:
-            # List profiles with filtering
+            # Check if at least one container filter is provided when listing profiles
             container_params, filter_params = build_filter_params(module.params)
+            if not any(
+                key in container_params for key in ["folder", "snippet", "device"]
+            ):
+                module.fail_json(
+                    msg="One of 'folder', 'snippet', or 'device' must be provided when 'name' is not specified."
+                )
 
+            # List profiles with filters
             try:
-                profiles = client.ike_crypto_profile.list(**container_params, **filter_params)
-
-                # Serialize response for Ansible output
+                # Call the list method with filter params
+                profiles = client.network.ike_crypto_profiles.list(**container_params, **filter_params)
+                
+                # Add profiles list to result dictionary as a separate key
                 result["profiles"] = [serialize_response(profile) for profile in profiles]
-
-            except MissingQueryParameterError as e:
-                module.fail_json(msg=f"Missing required parameter: {str(e)}")
-            except InvalidObjectError as e:
-                module.fail_json(msg=f"Invalid filter parameters: {str(e)}")
+            except Exception as e:
+                module.fail_json(msg=f"Error listing IKE crypto profiles: {str(e)}")
 
         module.exit_json(**result)
-
     except Exception as e:
-        module.fail_json(msg=to_text(e))
+        module.fail_json(msg=f"An unexpected error occurred: {str(e)}")
 
 
 if __name__ == "__main__":

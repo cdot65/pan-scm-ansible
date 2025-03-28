@@ -96,6 +96,7 @@ options:
         description: IKEv2 SA reauthentication interval equals authentication-multiple * rekey-lifetime; 0 means reauthentication disabled.
         required: false
         type: int
+        default: 0
     folder:
         description: The folder in which the resource is defined.
         required: false
@@ -137,11 +138,6 @@ options:
         choices:
           - present
           - absent
-    testmode:
-        description: Enable test mode for CI/CD environments (no API calls).
-        required: false
-        type: bool
-        default: false
 
 author:
     - Calvin Remsburg (@cdot65)
@@ -243,10 +239,8 @@ profile:
         authentication_multiple: 0
 """
 
-# Storage for testmode - simulate state persistence between runs
-# This will be used to track existing mock profiles for idempotency testing
-testmode_profiles = {}
-
+# Storage for tracking changes during module execution
+changed_records = {}
 
 def build_profile_data(module_params):
     """
@@ -394,64 +388,6 @@ def needs_update(existing, params):
     return changed, update_data
 
 
-def generate_mock_profile(params):
-    """
-    Generate a mock IKE crypto profile for tests.
-    
-    Args:
-        params (dict): The parameters from the module
-        
-    Returns:
-        dict: A mock profile object
-    """
-    # Generate a random UUID for the profile
-    profile_id = str(uuid.uuid4())
-    
-    # Start with basic profile data
-    profile = {
-        "id": profile_id,
-        "name": params["name"]
-    }
-    
-    # Add description if provided
-    if params.get("description"):
-        profile["description"] = params["description"]
-    
-    # Add algorithms
-    if params.get("hash"):
-        profile["hash"] = params["hash"]
-    
-    if params.get("encryption"):
-        profile["encryption"] = params["encryption"]
-    
-    if params.get("dh_group"):
-        profile["dh_group"] = params["dh_group"]
-    
-    # Add authentication_multiple if provided
-    if params.get("authentication_multiple") is not None:
-        profile["authentication_multiple"] = params["authentication_multiple"]
-    
-    # Handle lifetime parameter
-    lifetime_params = {
-        "lifetime_seconds": "seconds",
-        "lifetime_minutes": "minutes",
-        "lifetime_hours": "hours", 
-        "lifetime_days": "days"
-    }
-    
-    for param, unit in lifetime_params.items():
-        if params.get(param) is not None:
-            profile["lifetime"] = {unit: params[param]}
-            break
-    
-    # Add container information
-    for container in ["folder", "snippet", "device"]:
-        if params.get(container):
-            profile[container] = params[container]
-    
-    return profile
-
-
 def main():
     """
     Main execution path for the ike_crypto_profile module.
@@ -462,9 +398,7 @@ def main():
     :return: Ansible module exit data
     :rtype: dict
     """
-    # Add testmode parameter to IKECryptoProfileSpec.spec()
     spec = IKECryptoProfileSpec.spec()
-    spec["testmode"] = {"type": "bool", "required": False, "default": False}
     
     module = AnsibleModule(
         argument_spec=spec,
@@ -481,80 +415,6 @@ def main():
 
     result = {"changed": False, "profile": None}
     
-    # Check if we're in test mode
-    testmode = module.params.get("testmode", False)
-    
-    # In test mode or check mode, simulate behavior without API calls
-    if testmode:
-        global testmode_profiles
-        
-        profile_data = build_profile_data(module.params)
-        
-        # Validate container is specified
-        if not is_container_specified(profile_data):
-            module.fail_json(
-                msg="Exactly one of 'folder', 'snippet', or 'device' must be provided."
-            )
-        
-        # Create a key for the profile based on name and container
-        profile_name = module.params["name"]
-        container_type = None
-        container_value = None
-        for container in ["folder", "snippet", "device"]:
-            if module.params.get(container):
-                container_type = container
-                container_value = module.params[container]
-                break
-        
-        profile_key = f"{profile_name}:{container_type}:{container_value}"
-        
-        if module.params["state"] == "present":
-            # For idempotency test with existing profiles
-            if profile_key in testmode_profiles:
-                # Check if anything would change
-                existing_profile = testmode_profiles[profile_key]
-                
-                # Verify if fields would be updated
-                needs_update = False
-                for key in ["description", "hash", "encryption", "dh_group", "authentication_multiple"]:
-                    if key in profile_data and profile_data.get(key) != existing_profile.get(key):
-                        needs_update = True
-                        break
-                
-                # Check lifetime changes
-                if "lifetime" in profile_data and profile_data.get("lifetime") != existing_profile.get("lifetime"):
-                    needs_update = True
-                
-                if needs_update:
-                    # Simulate update
-                    testmode_profiles[profile_key] = generate_mock_profile(module.params)
-                    result["profile"] = testmode_profiles[profile_key]
-                    result["changed"] = True
-                else:
-                    # No changes needed
-                    result["profile"] = existing_profile
-                    result["changed"] = False
-            else:
-                # Create new profile
-                testmode_profiles[profile_key] = generate_mock_profile(module.params)
-                result["profile"] = testmode_profiles[profile_key]
-                result["changed"] = True
-                
-        elif module.params["state"] == "absent":
-            # Check if the profile exists
-            if profile_key in testmode_profiles:
-                # Delete it
-                del testmode_profiles[profile_key]
-                result["changed"] = True
-            else:
-                # Nothing to delete
-                result["changed"] = False
-                
-        # Return the result
-        module.exit_json(**result)
-        return
-
-    # Real mode with API client
     try:
         client = get_scm_client(module)
         profile_data = build_profile_data(module.params)
@@ -564,7 +424,7 @@ def main():
             module.fail_json(
                 msg="Exactly one of 'folder', 'snippet', or 'device' must be provided."
             )
-
+        
         # Get existing profile
         exists, existing_profile = get_existing_profile(client, profile_data)
 

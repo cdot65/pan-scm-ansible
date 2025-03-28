@@ -88,6 +88,7 @@ class IKECryptoProfileSpec:
             "authentication_multiple": {
                 "type": "int",
                 "required": False,
+                "default": 0,
                 "description": "IKEv2 SA reauthentication interval equals authentication-multiple * rekey-lifetime; 0 means reauthentication disabled",
             },
 
