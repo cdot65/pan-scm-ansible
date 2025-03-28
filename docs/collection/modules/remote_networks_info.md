@@ -2,15 +2,15 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [Module Parameters](#module-parameters) 
-4. [Requirements](#requirements)
-5. [Usage Examples](#usage-examples)
-6. [Return Values](#return-values)
-7. [Error Handling](#error-handling)
-8. [Best Practices](#best-practices)
-9. [Related Modules](#related-modules)
+- [Remote Networks Information Object](#remote-networks-information-object)
+  - [Table of Contents](#table-of-contents)
+  - [Synopsis](#synopsis)
+  - [Parameters](#parameters)
+    - [Parameter: provider](#parameter-provider)
+  - [Examples](#examples)
+  - [Return Values](#return-values)
+    - [Return Value: remote\_networks](#return-value-remote_networks)
+    - [Return Value: remote\_network](#return-value-remote_network)
 
 
 Gather information about remote networks in SCM.
@@ -158,19 +158,3 @@ Gather information about remote networks in SCM.
   "subnets": ["10.1.0.0/16", "10.2.0.0/16"]
 }
 ```
-
-
-## Overview
-
-
-## Core Methods
-
-
-## Error Handling
-
-
-## Best Practices
-
-
-## Related Modules
-

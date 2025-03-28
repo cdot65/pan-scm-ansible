@@ -87,3 +87,5 @@ scripts
 tests/vault.yaml
 
 **/CLAUDE.local.md
+.WINDSURFFILES/
+.windsurfrules
