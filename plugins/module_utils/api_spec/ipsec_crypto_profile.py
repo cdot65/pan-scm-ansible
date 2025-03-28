@@ -13,7 +13,7 @@ __metaclass__ = type
 class IPsecCryptoProfileSpec:
     """
     Class for defining the module parameter specifications for IPsec crypto profiles.
-    
+
     This specification aligns with the SCM SDK's IPsec crypto profile module parameters
     and follows Ansible module parameter standards.
     """
@@ -40,7 +40,6 @@ class IPsecCryptoProfileSpec:
                 "required": False,
                 "description": "Description of the IPsec crypto profile",
             },
-
             # ESP parameters
             "esp": {
                 "type": "dict",
@@ -50,7 +49,16 @@ class IPsecCryptoProfileSpec:
                         "type": "list",
                         "elements": "str",
                         "required": False,
-                        "choices": ["des", "3des", "aes-128-cbc", "aes-192-cbc", "aes-256-cbc", "aes-128-gcm", "aes-256-gcm", "null"],
+                        "choices": [
+                            "des",
+                            "3des",
+                            "aes-128-cbc",
+                            "aes-192-cbc",
+                            "aes-256-cbc",
+                            "aes-128-gcm",
+                            "aes-256-gcm",
+                            "null",
+                        ],
                         "description": "List of ESP encryption algorithms to use",
                     },
                     "authentication": {
@@ -63,7 +71,6 @@ class IPsecCryptoProfileSpec:
                 },
                 "description": "ESP protocol configuration",
             },
-            
             # AH parameters
             "ah": {
                 "type": "dict",
@@ -79,16 +86,22 @@ class IPsecCryptoProfileSpec:
                 },
                 "description": "AH protocol configuration",
             },
-            
             # DH group
             "dh_group": {
                 "type": "str",
                 "required": False,
                 "default": "group2",  # Default value to match the SDK
-                "choices": ["no-pfs", "group1", "group2", "group5", "group14", "group19", "group20"],
+                "choices": [
+                    "no-pfs",
+                    "group1",
+                    "group2",
+                    "group5",
+                    "group14",
+                    "group19",
+                    "group20",
+                ],
                 "description": "Diffie-Hellman group to use for PFS (default: group2)",
             },
-
             # Lifetime configuration
             "lifetime": {
                 "type": "dict",
@@ -125,7 +138,6 @@ class IPsecCryptoProfileSpec:
                 },
                 "description": "SA lifetime configuration",
             },
-
             # Lifesize configuration
             "lifesize": {
                 "type": "dict",
@@ -162,7 +174,6 @@ class IPsecCryptoProfileSpec:
                 },
                 "description": "SA lifesize configuration",
             },
-
             # Container parameters (mutually exclusive)
             "folder": {
                 "type": "str",
@@ -185,7 +196,6 @@ class IPsecCryptoProfileSpec:
                 "pattern": r"^[a-zA-Z\d\-_. ]+$",
                 "max_length": 64,
             },
-
             # Provider authentication
             "provider": {
                 "type": "dict",
@@ -216,7 +226,6 @@ class IPsecCryptoProfileSpec:
                 },
                 "description": "Authentication credentials for SCM",
             },
-
             # State parameter
             "state": {
                 "type": "str",
@@ -230,7 +239,7 @@ class IPsecCryptoProfileSpec:
 class IPsecCryptoProfileInfoSpec:
     """
     Class for defining the module parameter specifications for IPsec crypto profile info.
-    
+
     This specification is designed for the info module that retrieves information about
     IPsec crypto profiles.
     """
@@ -298,7 +307,6 @@ class IPsecCryptoProfileInfoSpec:
                 "required": False,
                 "description": "List of device values to exclude from results",
             },
-            
             # Provider authentication
             "provider": {
                 "type": "dict",

@@ -25,7 +25,7 @@ class BGPRoutingSpec:
     """
     BGP Routing API specification for Ansible modules interacting with SCM BGP routing configuration.
 
-    This class provides a standard specification for BGP routing-related parameters 
+    This class provides a standard specification for BGP routing-related parameters
     used in SCM Ansible modules. It ensures consistent parameter validation
     across the collection.
     """

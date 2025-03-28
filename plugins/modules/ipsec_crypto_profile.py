@@ -21,18 +21,20 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import json
 import uuid
 from datetime import datetime
-import json
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.ipsec_crypto_profile import IPsecCryptoProfileSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.ipsec_crypto_profile import (
+    IPsecCryptoProfileSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 from scm.models.network import IPsecCryptoProfileUpdateModel
 
@@ -381,42 +383,42 @@ def build_profile_data(module_params):
     # Name is required
     if module_params.get("name"):
         profile_data["name"] = module_params["name"]
-    
+
     # Description is optional
     if module_params.get("description"):
         profile_data["description"] = module_params["description"]
-    
+
     # Container types (one of folder, snippet, or device must be set)
     if module_params.get("folder"):
         profile_data["folder"] = module_params["folder"]
-    
+
     if module_params.get("snippet"):
         profile_data["snippet"] = module_params["snippet"]
-    
+
     if module_params.get("device"):
         profile_data["device"] = module_params["device"]
 
     # DH Group
     if module_params.get("dh_group"):
         profile_data["dh_group"] = module_params["dh_group"]
-    
+
     # Process ESP parameters
     if module_params.get("esp"):
         profile_data["esp"] = {}
-        
+
         if module_params["esp"].get("encryption"):
             profile_data["esp"]["encryption"] = module_params["esp"]["encryption"]
-        
+
         if module_params["esp"].get("authentication"):
             profile_data["esp"]["authentication"] = module_params["esp"]["authentication"]
-    
+
     # Process AH parameters
     if module_params.get("ah"):
         profile_data["ah"] = {}
-        
+
         if module_params["ah"].get("authentication"):
             profile_data["ah"]["authentication"] = module_params["ah"]["authentication"]
-    
+
     # Process lifetime
     if module_params.get("lifetime"):
         lifetime = {}
@@ -424,10 +426,10 @@ def build_profile_data(module_params):
             if unit in module_params["lifetime"] and module_params["lifetime"][unit] is not None:
                 # Convert to integer to ensure correct typing
                 lifetime[unit] = int(module_params["lifetime"][unit])
-        
+
         if lifetime:
             profile_data["lifetime"] = lifetime
-    
+
     # Process lifesize - ensure only one unit is used
     if module_params.get("lifesize"):
         lifesize = {}
@@ -439,10 +441,10 @@ def build_profile_data(module_params):
                 lifesize[unit] = int(module_params["lifesize"][unit])
                 # Only use the first non-null unit we find
                 break
-        
+
         if lifesize:
             profile_data["lifesize"] = lifesize
-    
+
     return profile_data
 
 
@@ -479,9 +481,9 @@ def get_existing_profile(client, profile_data):
     try:
         # Fetch the profile by name and container
         # Validate client has ipsec_crypto_profile attribute
-        if not hasattr(client, 'ipsec_crypto_profile'):
+        if not hasattr(client, "ipsec_crypto_profile"):
             return False, "SCM client does not have ipsec_crypto_profile service initialized"
-        
+
         profile = client.ipsec_crypto_profile.fetch(
             name=name,
             folder=folder,
@@ -512,20 +514,20 @@ def needs_update(existing, params):
     """
     # Convert the existing profile to a dict
     existing_dict = existing.model_dump()
-    
+
     # Create a dictionary for the update model, starting with the ID
     update_data = {"id": existing.id}
-    
+
     # Check if each field needs to be updated
     update_needed = False
-    
+
     # Check name
     if params.get("name") and params["name"] != existing.name:
         update_data["name"] = params["name"]
         update_needed = True
     else:
         update_data["name"] = existing.name
-    
+
     # Safely check description - it might not be in the API response model
     if params.get("description"):
         if hasattr(existing, "description") and params["description"] != existing.description:
@@ -537,14 +539,14 @@ def needs_update(existing, params):
             update_needed = True
     elif hasattr(existing, "description") and existing.description:
         update_data["description"] = existing.description
-    
+
     # Check DH Group
     if params.get("dh_group") and params["dh_group"] != existing_dict.get("dh_group"):
         update_data["dh_group"] = params["dh_group"]
         update_needed = True
     else:
         update_data["dh_group"] = existing_dict.get("dh_group")
-    
+
     # Check ESP configuration
     if params.get("esp"):
         if not existing_dict.get("esp"):
@@ -552,12 +554,12 @@ def needs_update(existing, params):
             update_needed = True
         else:
             update_data["esp"] = {}
-            
+
             # Check encryption
             if "encryption" in params["esp"]:
                 existing_enc = existing_dict.get("esp", {}).get("encryption", [])
                 requested_enc = params["esp"]["encryption"]
-                
+
                 # Compare lists without regard to order
                 if sorted(existing_enc) != sorted(requested_enc):
                     update_data["esp"]["encryption"] = requested_enc
@@ -566,12 +568,12 @@ def needs_update(existing, params):
                     update_data["esp"]["encryption"] = existing_enc
             elif "encryption" in existing_dict.get("esp", {}):
                 update_data["esp"]["encryption"] = existing_dict["esp"]["encryption"]
-            
+
             # Check authentication
             if "authentication" in params["esp"]:
                 existing_auth = existing_dict.get("esp", {}).get("authentication", [])
                 requested_auth = params["esp"]["authentication"]
-                
+
                 # Compare lists without regard to order
                 if sorted(existing_auth) != sorted(requested_auth):
                     update_data["esp"]["authentication"] = requested_auth
@@ -583,7 +585,7 @@ def needs_update(existing, params):
     else:
         if existing_dict.get("esp"):
             update_data["esp"] = existing_dict["esp"]
-    
+
     # Check AH configuration
     if params.get("ah"):
         if not existing_dict.get("ah"):
@@ -591,12 +593,12 @@ def needs_update(existing, params):
             update_needed = True
         else:
             update_data["ah"] = {}
-            
+
             # Check authentication
             if "authentication" in params["ah"]:
                 existing_auth = existing_dict.get("ah", {}).get("authentication", [])
                 requested_auth = params["ah"]["authentication"]
-                
+
                 # Compare lists without regard to order
                 if sorted(existing_auth) != sorted(requested_auth):
                     update_data["ah"]["authentication"] = requested_auth
@@ -608,7 +610,7 @@ def needs_update(existing, params):
     else:
         if existing_dict.get("ah"):
             update_data["ah"] = existing_dict["ah"]
-    
+
     # Check lifetime configuration
     if params.get("lifetime"):
         if not existing_dict.get("lifetime"):
@@ -619,7 +621,10 @@ def needs_update(existing, params):
             update_data["lifetime"] = {}
             for unit in ["seconds", "minutes", "hours", "days"]:
                 if unit in params["lifetime"]:
-                    if unit not in existing_dict["lifetime"] or params["lifetime"][unit] != existing_dict["lifetime"][unit]:
+                    if (
+                        unit not in existing_dict["lifetime"]
+                        or params["lifetime"][unit] != existing_dict["lifetime"][unit]
+                    ):
                         update_data["lifetime"][unit] = params["lifetime"][unit]
                         update_needed = True
                     else:
@@ -629,7 +634,7 @@ def needs_update(existing, params):
     else:
         if existing_dict.get("lifetime"):
             update_data["lifetime"] = existing_dict["lifetime"]
-    
+
     # Check lifesize configuration
     if params.get("lifesize"):
         if not existing_dict.get("lifesize"):
@@ -640,7 +645,10 @@ def needs_update(existing, params):
             update_data["lifesize"] = {}
             for unit in ["kb", "mb", "gb", "tb"]:
                 if unit in params["lifesize"]:
-                    if unit not in existing_dict["lifesize"] or params["lifesize"][unit] != existing_dict["lifesize"][unit]:
+                    if (
+                        unit not in existing_dict["lifesize"]
+                        or params["lifesize"][unit] != existing_dict["lifesize"][unit]
+                    ):
                         update_data["lifesize"][unit] = params["lifesize"][unit]
                         update_needed = True
                     else:
@@ -650,7 +658,7 @@ def needs_update(existing, params):
     else:
         if existing_dict.get("lifesize"):
             update_data["lifesize"] = existing_dict["lifesize"]
-    
+
     # Check container fields
     for container in ["folder", "snippet", "device"]:
         if params.get(container) and params[container] != existing_dict.get(container):
@@ -658,7 +666,7 @@ def needs_update(existing, params):
             update_needed = True
         elif existing_dict.get(container):
             update_data[container] = existing_dict[container]
-    
+
     return update_needed, update_data
 
 
@@ -686,42 +694,42 @@ def main():
     # Get parameters
     state = module.params.get("state")
     check_mode = module.check_mode
-    
+
     # Build profile data from module parameters
     try:
         profile_data = build_profile_data(module.params)
     except ValueError as e:
         module.fail_json(msg=str(e))
-    
+
     # Validate that exactly one container type is specified
     if not is_container_specified(profile_data):
         module.fail_json(
             msg="Exactly one container type (folder, snippet, or device) must be specified"
         )
-    
+
     # Validate ESP and AH combinations
     has_esp = "esp" in profile_data
     has_ah = "ah" in profile_data
-    
+
     if state == "present" and not (has_esp or has_ah):
         module.fail_json(
             msg="At least one security protocol (ESP or AH) must be configured when state=present"
         )
-        
+
     if has_esp and has_ah and state == "present":
         # Both are allowed, but warn the user as this is uncommon
         module.warn("Both ESP and AH protocols are configured. This is an uncommon configuration.")
-    
+
     # Get the SCM client
     try:
         client = get_scm_client(module)
     except Exception as e:
         module.fail_json(msg=f"Failed to initialize SCM client: {str(e)}")
-    
+
     # Determine which container parameter was provided
     container = None
     container_value = None
-    
+
     if module.params.get("folder"):
         container = "folder"
         container_value = module.params["folder"]
@@ -731,27 +739,29 @@ def main():
     elif module.params.get("device"):
         container = "device"
         container_value = module.params["device"]
-    
+
     if not container or not container_value:
         module.fail_json(msg="One of 'folder', 'snippet', or 'device' must be provided")
-    
+
     # Check if profile exists
     exists = False
     existing_profile = None
-    
+
     try:
         # Fetch the profile by name and container
         # Validate client has ipsec_crypto_profile attribute
-        if not hasattr(client, 'ipsec_crypto_profile'):
-            module.fail_json(msg="SCM client does not have ipsec_crypto_profile service initialized")
-        
+        if not hasattr(client, "ipsec_crypto_profile"):
+            module.fail_json(
+                msg="SCM client does not have ipsec_crypto_profile service initialized"
+            )
+
         profile = client.ipsec_crypto_profile.fetch(
             name=profile_data.get("name"),
             folder=profile_data.get("folder"),
             snippet=profile_data.get("snippet"),
             device=profile_data.get("device"),
         )
-        
+
         if profile:
             exists = True
             existing_profile = profile
@@ -760,21 +770,22 @@ def main():
         exists = False
     except Exception as e:
         module.fail_json(msg=f"Error checking if profile exists: {str(e)}")
-    
+
     result = {
         "changed": False,
         "ipsec_crypto_profile": None,
     }
-    
+
     if state == "present":
         if exists:
             # Check if update is needed
             try:
                 update_needed, update_data = needs_update(existing_profile, profile_data)
-                
+
                 # Enhanced debugging for idempotence issues
-                if existing_profile and hasattr(existing_profile, 'model_dump'):
+                if existing_profile and hasattr(existing_profile, "model_dump"):
                     existing_data = existing_profile.model_dump()
+
                     class UUIDEncoder(json.JSONEncoder):
                         def default(self, obj):
                             if isinstance(obj, uuid.UUID):
@@ -782,50 +793,70 @@ def main():
                                 return str(obj)
                             # Let the base class handle anything else
                             return json.JSONEncoder.default(self, obj)
-                    
-                    module.debug(f"Existing profile (API): {json.dumps(existing_data, indent=2, sort_keys=True, cls=UUIDEncoder)}")
-                    module.debug(f"Requested profile (Module): {json.dumps(profile_data, indent=2, sort_keys=True, cls=UUIDEncoder)}")
+
+                    module.debug(
+                        f"Existing profile (API): {json.dumps(existing_data, indent=2, sort_keys=True, cls=UUIDEncoder)}"
+                    )
+                    module.debug(
+                        f"Requested profile (Module): {json.dumps(profile_data, indent=2, sort_keys=True, cls=UUIDEncoder)}"
+                    )
                     module.debug(f"Update needed: {update_needed}")
-                    
+
                     # Add specific debugging for known troublesome fields
                     if "esp" in profile_data and "esp" in existing_data:
                         module.debug(f"ESP check: {profile_data['esp']} vs {existing_data['esp']}")
-                        if "authentication" in profile_data.get("esp", {}) and "authentication" in existing_data.get("esp", {}):
-                            module.debug(f"ESP auth check: {sorted(profile_data['esp']['authentication'])} vs {sorted(existing_data['esp']['authentication'])}")
-                        if "encryption" in profile_data.get("esp", {}) and "encryption" in existing_data.get("esp", {}):
-                            module.debug(f"ESP enc check: {sorted(profile_data['esp']['encryption'])} vs {sorted(existing_data['esp']['encryption'])}")
-                    
+                        if "authentication" in profile_data.get(
+                            "esp", {}
+                        ) and "authentication" in existing_data.get("esp", {}):
+                            module.debug(
+                                f"ESP auth check: {sorted(profile_data['esp']['authentication'])} vs {sorted(existing_data['esp']['authentication'])}"
+                            )
+                        if "encryption" in profile_data.get(
+                            "esp", {}
+                        ) and "encryption" in existing_data.get("esp", {}):
+                            module.debug(
+                                f"ESP enc check: {sorted(profile_data['esp']['encryption'])} vs {sorted(existing_data['esp']['encryption'])}"
+                            )
+
                     if "lifetime" in profile_data and "lifetime" in existing_data:
-                        module.debug(f"Lifetime check: {profile_data['lifetime']} vs {existing_data['lifetime']}")
-                    
+                        module.debug(
+                            f"Lifetime check: {profile_data['lifetime']} vs {existing_data['lifetime']}"
+                        )
+
                     if "lifesize" in profile_data and "lifesize" in existing_data:
-                        module.debug(f"Lifesize check: {profile_data['lifesize']} vs {existing_data['lifesize']}")
-                    
+                        module.debug(
+                            f"Lifesize check: {profile_data['lifesize']} vs {existing_data['lifesize']}"
+                        )
+
                     if "description" in profile_data:
                         module.debug(f"Description in module params: {profile_data['description']}")
                         if "description" in existing_data:
                             module.debug(f"Description in API: {existing_data['description']}")
                         else:
                             module.debug("Description not in API response")
-                
+
                 if update_needed:
                     if not check_mode:
                         try:
                             # Create an update model
                             update_model = IPsecCryptoProfileUpdateModel(**update_data)
-                            
+
                             # Validate client has ipsec_crypto_profile attribute
-                            if not hasattr(client, 'ipsec_crypto_profile'):
-                                module.fail_json(msg="SCM client does not have ipsec_crypto_profile service initialized")
-                            
+                            if not hasattr(client, "ipsec_crypto_profile"):
+                                module.fail_json(
+                                    msg="SCM client does not have ipsec_crypto_profile service initialized"
+                                )
+
                             # Update the profile
                             updated_profile = client.ipsec_crypto_profile.update(update_model)
-                            
+
                             # Update result
                             result["changed"] = True
                             result["ipsec_crypto_profile"] = serialize_response(updated_profile)
                         except InvalidObjectError as e:
-                            module.fail_json(msg=f"Failed to update IPsec crypto profile, invalid data: {str(e)}")
+                            module.fail_json(
+                                msg=f"Failed to update IPsec crypto profile, invalid data: {str(e)}"
+                            )
                         except Exception as e:
                             module.fail_json(msg=f"Failed to update IPsec crypto profile: {str(e)}")
                     else:
@@ -841,43 +872,51 @@ def main():
             if not check_mode:
                 try:
                     # Validate client has ipsec_crypto_profile attribute
-                    if not hasattr(client, 'ipsec_crypto_profile'):
-                        module.fail_json(msg="SCM client does not have ipsec_crypto_profile service initialized")
-                    
+                    if not hasattr(client, "ipsec_crypto_profile"):
+                        module.fail_json(
+                            msg="SCM client does not have ipsec_crypto_profile service initialized"
+                        )
+
                     # Create the profile
                     created_profile = client.ipsec_crypto_profile.create(profile_data)
-                    
+
                     # Update result
                     result["changed"] = True
                     result["ipsec_crypto_profile"] = serialize_response(created_profile)
                 except InvalidObjectError as e:
-                    module.fail_json(msg=f"Failed to create IPsec crypto profile, invalid data: {str(e)}")
+                    module.fail_json(
+                        msg=f"Failed to create IPsec crypto profile, invalid data: {str(e)}"
+                    )
                 except Exception as e:
                     module.fail_json(msg=f"Failed to create IPsec crypto profile: {str(e)}")
             else:
                 result["changed"] = True
-    
+
     elif state == "absent":
         if exists:
             if not check_mode:
                 try:
                     # Check if client and profile exist
-                    if client and existing_profile and hasattr(existing_profile, 'id'):
+                    if client and existing_profile and hasattr(existing_profile, "id"):
                         # Validate client has ipsec_crypto_profile attribute
-                        if not hasattr(client, 'ipsec_crypto_profile'):
-                            module.fail_json(msg="SCM client does not have ipsec_crypto_profile service initialized")
-                        
+                        if not hasattr(client, "ipsec_crypto_profile"):
+                            module.fail_json(
+                                msg="SCM client does not have ipsec_crypto_profile service initialized"
+                            )
+
                         # Ensure existing_profile has an id attribute
-                        if not hasattr(existing_profile, 'id'):
+                        if not hasattr(existing_profile, "id"):
                             module.fail_json(msg="Profile object does not have an ID attribute")
-                        
+
                         # Delete the profile
                         client.ipsec_crypto_profile.delete(object_id=str(existing_profile.id))
-                        
+
                         # Update result
                         result["changed"] = True
                     else:
-                        module.fail_json(msg="Failed to delete IPsec crypto profile: Client or profile is not properly initialized")
+                        module.fail_json(
+                            msg="Failed to delete IPsec crypto profile: Client or profile is not properly initialized"
+                        )
                 except ObjectNotPresentError:
                     # Object was already deleted, this is not an error
                     result["changed"] = False
@@ -885,7 +924,7 @@ def main():
                     module.fail_json(msg=f"Failed to delete IPsec crypto profile: {str(e)}")
             else:
                 result["changed"] = True
-    
+
     module.exit_json(**result)
 
 

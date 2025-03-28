@@ -1,4 +1,21 @@
-# remote_networks
+# Remote Networks Configuration Object
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Core Methods](#core-methods)
+3. [Module Parameters](#module-parameters)
+4. [Requirements](#requirements)
+5. [Usage Examples](#usage-examples)
+   - [Creating Remote Networkss](#creating-remote_networkss)
+   - [Updating Remote Networkss](#updating-remote_networkss)
+   - [Deleting Remote Networkss](#deleting-remote_networkss)
+6. [Managing Configuration Changes](#managing-configuration-changes)
+7. [Return Values](#return-values)
+8. [Error Handling](#error-handling)
+9. [Best Practices](#best-practices)
+10. [Related Modules](#related-modules)
+
 
 Manage remote networks in SCM.
 
@@ -65,7 +82,7 @@ Manage remote networks in SCM.
 
 ## Examples
 
-<div class="termy">
+
 
 ```yaml
 - name: Manage Remote Networks in Strata Cloud Manager
@@ -147,7 +164,7 @@ Manage remote networks in SCM.
         state: "absent"
 ```
 
-</div>
+
 
 ## Return Values
 
@@ -156,7 +173,7 @@ Manage remote networks in SCM.
 | changed | Always | Whether any changes were made. |
 | remote_network | When state is present | Details about the remote network. |
 
-<div class="termy">
+
 
 ```json
 {
@@ -173,4 +190,21 @@ Manage remote networks in SCM.
 }
 ```
 
-</div>
+
+## Overview
+
+
+## Core Methods
+
+
+## Error Handling
+
+
+## Best Practices
+
+
+## Related Modules
+
+
+## Managing Configuration Changes
+

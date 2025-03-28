@@ -26,12 +26,14 @@ from datetime import datetime
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.ike_crypto_profile import IKECryptoProfileSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.ike_crypto_profile import (
+    IKECryptoProfileSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 from scm.models.network import IKECryptoProfileUpdateModel
 
@@ -242,6 +244,7 @@ profile:
 # Storage for tracking changes during module execution
 changed_records = {}
 
+
 def build_profile_data(module_params):
     """
     Build IKE crypto profile data dictionary from module parameters.
@@ -253,21 +256,21 @@ def build_profile_data(module_params):
         dict: Filtered dictionary containing only relevant profile parameters
     """
     profile_data = {}
-    
+
     # Copy basic parameters
     for param in ["name", "description"]:
         if module_params.get(param) is not None:
             profile_data[param] = module_params[param]
-    
+
     # Copy algorithm parameters
     for param in ["hash", "encryption", "dh_group"]:
         if module_params.get(param) is not None:
             profile_data[param] = module_params[param]
-    
+
     # Copy authentication_multiple if provided
     if module_params.get("authentication_multiple") is not None:
         profile_data["authentication_multiple"] = module_params["authentication_multiple"]
-    
+
     # Handle lifetime parameter (only one can be set)
     lifetime_params = ["lifetime_seconds", "lifetime_minutes", "lifetime_hours", "lifetime_days"]
     for lifetime_param in lifetime_params:
@@ -277,12 +280,12 @@ def build_profile_data(module_params):
             # Create the lifetime object with the appropriate unit key
             profile_data["lifetime"] = {unit: module_params[lifetime_param]}
             break  # Only use the first lifetime parameter found
-    
+
     # Copy container parameters
     for container in ["folder", "snippet", "device"]:
         if module_params.get(container) is not None:
             profile_data[container] = module_params[container]
-    
+
     return profile_data
 
 
@@ -375,7 +378,7 @@ def needs_update(existing, params):
     if "lifetime" in params and params["lifetime"] is not None:
         # Existing lifetime might be None or a specific time unit
         existing_lifetime = getattr(existing, "lifetime", None)
-        
+
         if existing_lifetime != params["lifetime"]:
             update_data["lifetime"] = params["lifetime"]
             changed = True
@@ -399,7 +402,7 @@ def main():
     :rtype: dict
     """
     spec = IKECryptoProfileSpec.spec()
-    
+
     module = AnsibleModule(
         argument_spec=spec,
         supports_check_mode=True,
@@ -408,13 +411,11 @@ def main():
             ["lifetime_seconds", "lifetime_minutes", "lifetime_hours", "lifetime_days"],
         ],
         required_one_of=[["folder", "snippet", "device"]],
-        required_if=[
-            ["state", "present", ["hash", "encryption", "dh_group"], True]
-        ],
+        required_if=[["state", "present", ["hash", "encryption", "dh_group"], True]],
     )
 
     result = {"changed": False, "profile": None}
-    
+
     try:
         client = get_scm_client(module)
         profile_data = build_profile_data(module.params)
@@ -424,13 +425,13 @@ def main():
             module.fail_json(
                 msg="Exactly one of 'folder', 'snippet', or 'device' must be provided."
             )
-        
+
         # Get existing profile
         exists, existing_profile = get_existing_profile(client, profile_data)
 
         if module.params["state"] == "present":
             # Algorithm parameters are required for create (handled by required_if)
-            
+
             if not exists:
                 # Create new profile
                 if not module.check_mode:

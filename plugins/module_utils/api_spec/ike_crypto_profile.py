@@ -13,7 +13,7 @@ __metaclass__ = type
 class IKECryptoProfileSpec:
     """
     Class for defining the module parameter specifications for IKE crypto profiles.
-    
+
     This specification aligns with the SCM SDK's IKE crypto profile module parameters
     and follows Ansible module parameter standards.
     """
@@ -38,7 +38,6 @@ class IKECryptoProfileSpec:
                 "required": False,
                 "description": "Description of the IKE crypto profile",
             },
-
             # Algorithm parameters
             "hash": {
                 "type": "list",
@@ -51,7 +50,15 @@ class IKECryptoProfileSpec:
                 "type": "list",
                 "elements": "str",
                 "required": False,
-                "choices": ["des", "3des", "aes-128-cbc", "aes-192-cbc", "aes-256-cbc", "aes-128-gcm", "aes-256-gcm"],
+                "choices": [
+                    "des",
+                    "3des",
+                    "aes-128-cbc",
+                    "aes-192-cbc",
+                    "aes-256-cbc",
+                    "aes-128-gcm",
+                    "aes-256-gcm",
+                ],
                 "description": "List of encryption algorithms to use",
             },
             "dh_group": {
@@ -61,7 +68,6 @@ class IKECryptoProfileSpec:
                 "choices": ["group1", "group2", "group5", "group14", "group19", "group20"],
                 "description": "List of Diffie-Hellman groups to use",
             },
-
             # Lifetime configuration
             "lifetime_seconds": {
                 "type": "int",
@@ -83,7 +89,6 @@ class IKECryptoProfileSpec:
                 "required": False,
                 "description": "Lifetime in days (1-365)",
             },
-
             # Authentication multiple (reauthentication interval)
             "authentication_multiple": {
                 "type": "int",
@@ -91,7 +96,6 @@ class IKECryptoProfileSpec:
                 "default": 0,
                 "description": "IKEv2 SA reauthentication interval equals authentication-multiple * rekey-lifetime; 0 means reauthentication disabled",
             },
-
             # Container parameters (mutually exclusive)
             "folder": {
                 "type": "str",
@@ -108,7 +112,6 @@ class IKECryptoProfileSpec:
                 "required": False,
                 "description": "The device in which the resource is defined",
             },
-
             # Provider authentication
             "provider": {
                 "type": "dict",
@@ -139,7 +142,6 @@ class IKECryptoProfileSpec:
                 },
                 "description": "Authentication credentials for SCM",
             },
-
             # State parameter
             "state": {
                 "type": "str",
@@ -153,7 +155,7 @@ class IKECryptoProfileSpec:
 class IKECryptoProfileInfoSpec:
     """
     Class for defining the module parameter specifications for IKE crypto profile info.
-    
+
     This specification is designed for the info module that retrieves information about
     IKE crypto profiles.
     """
@@ -173,7 +175,6 @@ class IKECryptoProfileInfoSpec:
                 "required": False,
                 "description": "The name of the IKE crypto profile to retrieve",
             },
-            
             # Information gathering control
             "gather_subset": {
                 "type": "list",
@@ -182,7 +183,6 @@ class IKECryptoProfileInfoSpec:
                 "choices": ["all", "config"],
                 "description": "Determines which information to gather",
             },
-
             # Container parameters (mutually exclusive)
             "folder": {
                 "type": "str",
@@ -199,7 +199,6 @@ class IKECryptoProfileInfoSpec:
                 "required": False,
                 "description": "Filter profiles by device container",
             },
-
             # Filter parameters
             "exact_match": {
                 "type": "bool",
@@ -225,7 +224,6 @@ class IKECryptoProfileInfoSpec:
                 "required": False,
                 "description": "List of device values to exclude from results",
             },
-
             # Provider authentication
             "provider": {
                 "type": "dict",

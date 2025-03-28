@@ -23,11 +23,11 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
@@ -299,24 +299,24 @@ def main():
 
             # If no container param is specified, try to find the gateway without container filters
             try:
-                gateway = client.ike_gateway.fetch(
-                    name=name, **container_params
-                )
+                gateway = client.ike_gateway.fetch(name=name, **container_params)
                 # Add gateway to result dictionary as a separate key
                 result["gateway"] = serialize_response(gateway)
             except ObjectNotPresentError:
                 module.fail_json(
                     msg=f"IKE gateway with name '{name}' not found"
-                    + (f" in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'" if container_params else "")
+                    + (
+                        f" in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
+                        if container_params
+                        else ""
+                    )
                 )
             except Exception as e:
                 module.fail_json(msg=f"Error retrieving IKE gateway information: {str(e)}")
         else:
             # Check if at least one container filter is provided when listing gateways
             container_params, filter_params = build_filter_params(module.params)
-            if not any(
-                key in container_params for key in ["folder", "snippet", "device"]
-            ):
+            if not any(key in container_params for key in ["folder", "snippet", "device"]):
                 module.fail_json(
                     msg="One of 'folder', 'snippet', or 'device' must be provided when 'name' is not specified."
                 )
@@ -325,7 +325,7 @@ def main():
             try:
                 # Call the list method with filter params
                 gateways = client.ike_gateway.list(**container_params, **filter_params)
-                
+
                 # Add gateways list to result dictionary as a separate key
                 result["gateways"] = [serialize_response(gateway) for gateway in gateways]
             except Exception as e:

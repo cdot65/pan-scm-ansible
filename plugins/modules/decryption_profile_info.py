@@ -23,7 +23,6 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.decryption_profile_info import (  # noqa: F401
     DecryptionProfileInfoSpec,
 )
@@ -33,6 +32,7 @@ from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
     serialize_response,
 )
+
 from scm.config.security.decryption_profile import DecryptionProfile
 from scm.exceptions import NotFoundError
 

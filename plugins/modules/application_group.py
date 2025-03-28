@@ -24,8 +24,6 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from pydantic import ValidationError
-
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.application_group import (  # noqa: F401
     ApplicationGroupSpec,
 )
@@ -35,6 +33,8 @@ from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import (  
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (  # noqa: F401
     serialize_response,
 )
+from pydantic import ValidationError
+
 from scm.config.objects.application_group import ApplicationGroup
 from scm.exceptions import NotFoundError
 from scm.models.objects.application_group import (

@@ -24,7 +24,6 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.syslog_server_profiles import (
     SyslogServerProfilesSpec,
 )
@@ -32,6 +31,7 @@ from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, NameNotUniqueError, ObjectNotPresentError
 from scm.models.objects import SyslogServerProfileUpdateModel
 

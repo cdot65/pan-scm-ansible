@@ -27,12 +27,14 @@ from datetime import datetime
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.agent_versions import AgentVersionsSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.agent_versions import (
+    AgentVersionsSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
@@ -289,12 +291,12 @@ def build_filter_params(module_params):
         dict: Filtered dictionary containing only relevant filter parameters
     """
     filter_params = {}
-    
+
     # Add standard filters
     for filter_param in ["exact_match", "exact_version"]:
         if module_params.get(filter_param) is not None:
             filter_params[filter_param] = module_params[filter_param]
-    
+
     # Add type filter if provided
     if module_params.get("type") is not None:
         # Convert to list for SDK expectation if it's not already
@@ -302,7 +304,7 @@ def build_filter_params(module_params):
             filter_params["type"] = [module_params["type"]]
         else:
             filter_params["type"] = module_params["type"]
-    
+
     # Add status filter if provided
     if module_params.get("status") is not None:
         # Convert to list for SDK expectation if it's not already
@@ -310,7 +312,7 @@ def build_filter_params(module_params):
             filter_params["status"] = [module_params["status"]]
         else:
             filter_params["status"] = module_params["status"]
-    
+
     # Add platform filter if provided
     if module_params.get("platform") is not None:
         # Convert to list for SDK expectation if it's not already
@@ -318,11 +320,11 @@ def build_filter_params(module_params):
             filter_params["platform"] = [module_params["platform"]]
         else:
             filter_params["platform"] = module_params["platform"]
-    
+
     # Add features filter if provided
     if module_params.get("features_enabled") is not None:
         filter_params["features"] = module_params["features_enabled"]
-    
+
     return filter_params
 
 
@@ -339,7 +341,8 @@ def build_version_data(module_params):
     version_data = {
         k: v
         for k, v in module_params.items()
-        if k not in ["provider", "state", "gather_subset", "exact_match", "exact_version", "testmode"] 
+        if k
+        not in ["provider", "state", "gather_subset", "exact_match", "exact_version", "testmode"]
         and v is not None
     }
     return version_data
@@ -356,81 +359,91 @@ def generate_mock_agent_versions(module_params):
         list: List of mock agent version dictionaries
     """
     mock_versions = []
-    
+
     # Prisma Access Agents
-    mock_versions.append({
-        "id": str(uuid.uuid4()),
-        "name": "Prisma Access Agent",
-        "version": "5.3.0",
-        "type": "prisma_access",
-        "status": "recommended",
-        "platform": "linux_x86_64",
-        "features_enabled": ["ipsec", "ssl_vpn", "globalprotect"],
-        "release_date": "2023-06-15",
-        "end_of_support_date": "2024-06-15",
-        "release_notes_url": "https://example.com/release-notes/5.3.0"
-    })
-    
-    mock_versions.append({
-        "id": str(uuid.uuid4()),
-        "name": "Prisma Access Agent",
-        "version": "5.2.8",
-        "type": "prisma_access",
-        "status": "current",
-        "platform": "linux_x86_64",
-        "features_enabled": ["ipsec", "ssl_vpn"],
-        "release_date": "2023-02-10",
-        "end_of_support_date": "2024-02-10",
-        "release_notes_url": "https://example.com/release-notes/5.2.8"
-    })
-    
+    mock_versions.append(
+        {
+            "id": str(uuid.uuid4()),
+            "name": "Prisma Access Agent",
+            "version": "5.3.0",
+            "type": "prisma_access",
+            "status": "recommended",
+            "platform": "linux_x86_64",
+            "features_enabled": ["ipsec", "ssl_vpn", "globalprotect"],
+            "release_date": "2023-06-15",
+            "end_of_support_date": "2024-06-15",
+            "release_notes_url": "https://example.com/release-notes/5.3.0",
+        }
+    )
+
+    mock_versions.append(
+        {
+            "id": str(uuid.uuid4()),
+            "name": "Prisma Access Agent",
+            "version": "5.2.8",
+            "type": "prisma_access",
+            "status": "current",
+            "platform": "linux_x86_64",
+            "features_enabled": ["ipsec", "ssl_vpn"],
+            "release_date": "2023-02-10",
+            "end_of_support_date": "2024-02-10",
+            "release_notes_url": "https://example.com/release-notes/5.2.8",
+        }
+    )
+
     # SD-WAN Agents
-    mock_versions.append({
-        "id": str(uuid.uuid4()),
-        "name": "SD-WAN Agent",
-        "version": "2.1.0",
-        "type": "sdwan",
-        "status": "recommended",
-        "platform": "linux_arm64",
-        "features_enabled": ["qos", "traffic_shaping"],
-        "release_date": "2023-05-20",
-        "end_of_support_date": "2024-05-20",
-        "release_notes_url": "https://example.com/release-notes/2.1.0"
-    })
-    
+    mock_versions.append(
+        {
+            "id": str(uuid.uuid4()),
+            "name": "SD-WAN Agent",
+            "version": "2.1.0",
+            "type": "sdwan",
+            "status": "recommended",
+            "platform": "linux_arm64",
+            "features_enabled": ["qos", "traffic_shaping"],
+            "release_date": "2023-05-20",
+            "end_of_support_date": "2024-05-20",
+            "release_notes_url": "https://example.com/release-notes/2.1.0",
+        }
+    )
+
     # NGFW Agents
-    mock_versions.append({
-        "id": str(uuid.uuid4()),
-        "name": "NGFW Agent",
-        "version": "3.5.2",
-        "type": "ngfw",
-        "status": "recommended",
-        "platform": "linux_x86_64",
-        "features_enabled": ["firewall", "nat", "vpn"],
-        "release_date": "2023-04-12",
-        "end_of_support_date": "2024-04-12",
-        "release_notes_url": "https://example.com/release-notes/3.5.2"
-    })
-    
+    mock_versions.append(
+        {
+            "id": str(uuid.uuid4()),
+            "name": "NGFW Agent",
+            "version": "3.5.2",
+            "type": "ngfw",
+            "status": "recommended",
+            "platform": "linux_x86_64",
+            "features_enabled": ["firewall", "nat", "vpn"],
+            "release_date": "2023-04-12",
+            "end_of_support_date": "2024-04-12",
+            "release_notes_url": "https://example.com/release-notes/3.5.2",
+        }
+    )
+
     # CPE Agents
-    mock_versions.append({
-        "id": str(uuid.uuid4()),
-        "name": "CPE Agent",
-        "version": "1.8.3",
-        "type": "cpe",
-        "status": "current",
-        "platform": "linux_arm64",
-        "features_enabled": ["monitoring", "management"],
-        "release_date": "2023-03-05",
-        "end_of_support_date": "2024-03-05",
-        "release_notes_url": "https://example.com/release-notes/1.8.3"
-    })
-    
+    mock_versions.append(
+        {
+            "id": str(uuid.uuid4()),
+            "name": "CPE Agent",
+            "version": "1.8.3",
+            "type": "cpe",
+            "status": "current",
+            "platform": "linux_arm64",
+            "features_enabled": ["monitoring", "management"],
+            "release_date": "2023-03-05",
+            "end_of_support_date": "2024-03-05",
+            "release_notes_url": "https://example.com/release-notes/1.8.3",
+        }
+    )
+
     # Include the timestamp if provided for test repeatability
     if module_params.get("test_timestamp"):
         for version in mock_versions:
             version["test_timestamp"] = module_params["test_timestamp"]
-    
+
     return mock_versions
 
 
@@ -446,12 +459,12 @@ def filter_mock_versions(mock_versions, filter_params):
         list: Filtered list of mock version dictionaries
     """
     filtered_versions = mock_versions.copy()
-    
+
     # Filter by name
     if "name" in filter_params and filter_params["name"]:
         name_filter = filter_params["name"]
         filtered_versions = [v for v in filtered_versions if v["name"] == name_filter]
-    
+
     # Filter by version
     if "version" in filter_params and filter_params["version"]:
         version_filter = filter_params["version"]
@@ -459,7 +472,7 @@ def filter_mock_versions(mock_versions, filter_params):
             filtered_versions = [v for v in filtered_versions if v["version"] == version_filter]
         else:
             filtered_versions = [v for v in filtered_versions if version_filter in v["version"]]
-    
+
     # Filter by type
     if "type" in filter_params and filter_params["type"]:
         type_filter = filter_params["type"]
@@ -467,7 +480,7 @@ def filter_mock_versions(mock_versions, filter_params):
             filtered_versions = [v for v in filtered_versions if v["type"] in type_filter]
         else:
             filtered_versions = [v for v in filtered_versions if v["type"] == type_filter]
-    
+
     # Filter by status
     if "status" in filter_params and filter_params["status"]:
         status_filter = filter_params["status"]
@@ -475,7 +488,7 @@ def filter_mock_versions(mock_versions, filter_params):
             filtered_versions = [v for v in filtered_versions if v["status"] in status_filter]
         else:
             filtered_versions = [v for v in filtered_versions if v["status"] == status_filter]
-    
+
     # Filter by platform
     if "platform" in filter_params and filter_params["platform"]:
         platform_filter = filter_params["platform"]
@@ -483,15 +496,16 @@ def filter_mock_versions(mock_versions, filter_params):
             filtered_versions = [v for v in filtered_versions if v["platform"] in platform_filter]
         else:
             filtered_versions = [v for v in filtered_versions if v["platform"] == platform_filter]
-    
+
     # Filter by features
     if "features" in filter_params and filter_params["features"]:
         features_filter = filter_params["features"]
         filtered_versions = [
-            v for v in filtered_versions 
+            v
+            for v in filtered_versions
             if all(feature in v.get("features_enabled", []) for feature in features_filter)
         ]
-    
+
     return filtered_versions
 
 
@@ -507,35 +521,34 @@ def process_agent_version_testmode(module, agent_data):
         tuple: (changed, agent_version_object) state for Ansible result
     """
     global _mock_agent_versions
-    
+
     # Initialize mock store if empty
     if not _mock_agent_versions:
         _mock_agent_versions = {
-            version["version"]: version 
-            for version in generate_mock_agent_versions(module.params)
+            version["version"]: version for version in generate_mock_agent_versions(module.params)
         }
-    
+
     # For read operations or general queries
     if not (agent_data.get("name") and agent_data.get("version")):
         return False, None
-    
+
     version_key = agent_data["version"]
-    
+
     # Check if the version exists in our mock store
     exists = version_key in _mock_agent_versions
-    
+
     if module.params["state"] == "present":
         if exists:
             # Check if we need to update
             current_version = _mock_agent_versions[version_key]
             changed = False
-            
+
             # Update fields
             for key, value in agent_data.items():
                 if key in current_version and current_version[key] != value:
                     current_version[key] = value
                     changed = True
-            
+
             return changed, current_version
         else:
             # Create new version
@@ -549,13 +562,13 @@ def process_agent_version_testmode(module, agent_data):
                 "features_enabled": agent_data.get("features_enabled", []),
                 "release_date": agent_data.get("release_date", datetime.now().strftime("%Y-%m-%d")),
                 "end_of_support_date": agent_data.get("end_of_support_date", ""),
-                "release_notes_url": agent_data.get("release_notes_url", "")
+                "release_notes_url": agent_data.get("release_notes_url", ""),
             }
-            
+
             # Add to mock store
             _mock_agent_versions[version_key] = new_version
             return True, new_version
-    
+
     elif module.params["state"] == "absent":
         if exists:
             # Remove version
@@ -570,7 +583,7 @@ def main():
     """
     Main execution path for the agent_versions module.
 
-    This module provides functionality to manage agent version configurations 
+    This module provides functionality to manage agent version configurations
     in the SCM (Strata Cloud Manager) system.
 
     :return: Ansible module exit data
@@ -602,7 +615,7 @@ def main():
                     # Information retrieval in test mode
                     mock_versions = generate_mock_agent_versions(module.params)
                     filtered_versions = filter_mock_versions(mock_versions, filter_params)
-                    
+
                     if module.params.get("name") or module.params.get("version"):
                         # Single version fetch
                         if filtered_versions:
@@ -612,24 +625,26 @@ def main():
                     else:
                         # Multiple versions list
                         result["agent_versions"] = filtered_versions
-            
+
             elif module.params["state"] == "absent":
                 # Handle version removal in test mode
                 if not (module.params.get("name") and module.params.get("version")):
-                    module.fail_json(msg="Both name and version are required to remove an agent version")
-                
+                    module.fail_json(
+                        msg="Both name and version are required to remove an agent version"
+                    )
+
                 changed, removed_version = process_agent_version_testmode(module, agent_data)
                 result["changed"] = changed
-            
+
             module.exit_json(**result)
-            
+
         except Exception as e:
             module.fail_json(msg=f"Error in test mode: {to_text(e)}")
-    
+
     # Normal mode with API client
     try:
         client = get_scm_client(module)
-        
+
         if module.params["state"] == "present":
             # Check if we're targeting a specific version
             if module.params.get("name") and module.params.get("version"):
@@ -642,20 +657,20 @@ def main():
                     }
                     if module.params.get("exact_version"):
                         fetch_params["exact_match"] = True
-                    
+
                     try:
                         existing_version = client.agent_versions.fetch(**fetch_params)
-                        
+
                         # Version exists, check if update is needed
                         # Note: The SDK doesn't support direct updates to agent versions
                         # This is a read-only API in SCM. We're adding a mock update capability here
                         # that would need to be adjusted based on the actual API capabilities.
-                        
+
                         # This is a placeholder for actual update logic that would come from SCM API
                         # For now, we'll just return the existing version with no changes
                         result["agent_version"] = serialize_response(existing_version)
                         module.exit_json(**result)
-                        
+
                     except (ObjectNotPresentError, InvalidObjectError):
                         # Version doesn't exist, but we can't actually create
                         # one since this is a read-only API. Return a useful error.
@@ -665,10 +680,10 @@ def main():
                                 f"not found, and cannot be created. This is a read-only API."
                             )
                         )
-                        
+
                 except (MissingQueryParameterError, InvalidObjectError) as e:
                     module.fail_json(msg=str(e))
-                    
+
             else:
                 # We're just fetching information
                 try:
@@ -676,29 +691,31 @@ def main():
                     if module.params.get("name") or module.params.get("version"):
                         name = module.params.get("name")
                         version = module.params.get("version")
-                        
+
                         # Prepare fetch parameters
                         fetch_params = {}
                         if name:
                             fetch_params["name"] = name
                         if version:
                             fetch_params["version"] = version
-                            
+
                         if module.params.get("exact_version"):
                             fetch_params["exact_match"] = True
-    
+
                         agent_version = client.agent_versions.fetch(**fetch_params)
-    
+
                         # Serialize response for Ansible output
                         result["agent_version"] = serialize_response(agent_version)
-    
+
                     else:
                         # List agent versions with filtering
                         agent_versions = client.agent_versions.list(**filter_params)
-    
+
                         # Serialize response for Ansible output
-                        result["agent_versions"] = [serialize_response(version) for version in agent_versions]
-    
+                        result["agent_versions"] = [
+                            serialize_response(version) for version in agent_versions
+                        ]
+
                 except ObjectNotPresentError:
                     error_msg = "Agent version not found"
                     if module.params.get("name"):
@@ -708,14 +725,14 @@ def main():
                     module.fail_json(msg=error_msg)
                 except (MissingQueryParameterError, InvalidObjectError) as e:
                     module.fail_json(msg=str(e))
-        
+
         elif module.params["state"] == "absent":
             # The SCM API doesn't support removing agent versions through the API
             # This is primarily a read-only API
             module.fail_json(
                 msg="Removing agent versions is not supported through the SCM API. This is a read-only resource."
             )
-        
+
         module.exit_json(**result)
 
     except Exception as e:

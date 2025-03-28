@@ -24,8 +24,6 @@ __metaclass__ = type
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from pydantic import ValidationError
-
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.service_group import (
     ServiceGroupSpec,
 )
@@ -33,6 +31,8 @@ from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+from pydantic import ValidationError
+
 from scm.exceptions import InvalidObjectError, NameNotUniqueError, ObjectNotPresentError
 from scm.models.objects.service_group import ServiceGroupCreateModel, ServiceGroupUpdateModel
 

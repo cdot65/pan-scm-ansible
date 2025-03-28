@@ -23,11 +23,11 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
@@ -286,24 +286,24 @@ def main():
 
             # If no container param is specified, try to find the profile without container filters
             try:
-                profile = client.ipsec_crypto_profile.fetch(
-                    name=name, **container_params
-                )
+                profile = client.ipsec_crypto_profile.fetch(name=name, **container_params)
                 # Add profile to result dictionary as a separate key
                 result["profile"] = serialize_response(profile)
             except ObjectNotPresentError:
                 module.fail_json(
                     msg=f"IPsec crypto profile with name '{name}' not found"
-                    + (f" in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'" if container_params else "")
+                    + (
+                        f" in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
+                        if container_params
+                        else ""
+                    )
                 )
             except Exception as e:
                 module.fail_json(msg=f"Error retrieving IPsec crypto profile information: {str(e)}")
         else:
             # Check if at least one container filter is provided when listing profiles
             container_params, filter_params = build_filter_params(module.params)
-            if not any(
-                key in container_params for key in ["folder", "snippet", "device"]
-            ):
+            if not any(key in container_params for key in ["folder", "snippet", "device"]):
                 module.fail_json(
                     msg="One of 'folder', 'snippet', or 'device' must be provided when 'name' is not specified."
                 )
@@ -312,7 +312,7 @@ def main():
             try:
                 # Call the list method with filter params
                 profiles = client.ipsec_crypto_profile.list(**container_params, **filter_params)
-                
+
                 # Add profiles list to result dictionary as a separate key
                 # Use a try-except block to handle profiles that may be missing required fields
                 result["profiles"] = []
@@ -321,10 +321,17 @@ def main():
                         result["profiles"].append(serialize_response(profile))
                     except Exception as serialization_error:
                         # Log the error but continue with other profiles
-                        module.debug(f"Skipping profile due to serialization error: {str(serialization_error)}")
+                        module.debug(
+                            f"Skipping profile due to serialization error: {str(serialization_error)}"
+                        )
                         # If possible, try to include at least basic info about the profile
-                        if hasattr(profile, 'name'):
-                            result["profiles"].append({"name": profile.name, "_error": "Profile could not be fully serialized"})
+                        if hasattr(profile, "name"):
+                            result["profiles"].append(
+                                {
+                                    "name": profile.name,
+                                    "_error": "Profile could not be fully serialized",
+                                }
+                            )
             except Exception as e:
                 module.fail_json(msg=f"Error listing IPsec crypto profiles: {str(e)}")
 

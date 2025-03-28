@@ -24,12 +24,12 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.bgp_routing import BGPRoutingSpec
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError
 
 DOCUMENTATION = r"""
@@ -256,7 +256,7 @@ def needs_update(existing, params):
     if "routing_preference" in params and params["routing_preference"] is not None:
         routing_pref = params["routing_preference"]
         existing_is_default = hasattr(existing.routing_preference, "default")
-        
+
         # If default in params but existing is hot_potato_routing
         if "default" in routing_pref and not existing_is_default:
             changed = True
@@ -265,18 +265,25 @@ def needs_update(existing, params):
             changed = True
 
     # Check boolean parameters
-    for bool_param in ["accept_route_over_SC", "add_host_route_to_ike_peer", "withdraw_static_route"]:
+    for bool_param in [
+        "accept_route_over_SC",
+        "add_host_route_to_ike_peer",
+        "withdraw_static_route",
+    ]:
         if bool_param in params and params[bool_param] is not None:
             if getattr(existing, bool_param) != params[bool_param]:
                 changed = True
 
     # Check outbound_routes_for_services parameter
-    if "outbound_routes_for_services" in params and params["outbound_routes_for_services"] is not None:
+    if (
+        "outbound_routes_for_services" in params
+        and params["outbound_routes_for_services"] is not None
+    ):
         # Convert string to list if needed
         routes = params["outbound_routes_for_services"]
         if isinstance(routes, str):
             routes = [routes]
-            
+
         # Compare routes (order might not matter)
         if set(existing.outbound_routes_for_services) != set(routes):
             changed = True
@@ -304,7 +311,7 @@ def main():
     try:
         client = get_scm_client(module)
         bgp_routing_data = build_bgp_routing_data(module.params)
-        
+
         # Get existing BGP routing configuration
         existing_config = get_current_bgp_routing(client)
 
@@ -317,7 +324,9 @@ def main():
                         result["bgp_routing"] = serialize_response(new_config)
                         result["changed"] = True
                     except (InvalidObjectError, MissingQueryParameterError) as e:
-                        module.fail_json(msg=f"Failed to create BGP routing configuration: {str(e)}")
+                        module.fail_json(
+                            msg=f"Failed to create BGP routing configuration: {str(e)}"
+                        )
                 else:
                     result["changed"] = True
             else:
@@ -332,7 +341,9 @@ def main():
                             result["bgp_routing"] = serialize_response(updated_config)
                             result["changed"] = True
                         except (InvalidObjectError, MissingQueryParameterError) as e:
-                            module.fail_json(msg=f"Failed to update BGP routing configuration: {str(e)}")
+                            module.fail_json(
+                                msg=f"Failed to update BGP routing configuration: {str(e)}"
+                            )
                     else:
                         result["changed"] = True
                 else:

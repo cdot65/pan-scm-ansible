@@ -30,20 +30,15 @@ class RemoteNetworksSpec:
             description=dict(type="str", required=False),
             region=dict(type="str", required=True),
             license_type=dict(
-                type="str", 
-                default="FWAAS-AGGREGATE", 
-                choices=["FWAAS-AGGREGATE", "FWAAS-BYOL", "CN-SERIES", "FWAAS-PAYG"]
+                type="str",
+                default="FWAAS-AGGREGATE",
+                choices=["FWAAS-AGGREGATE", "FWAAS-BYOL", "CN-SERIES", "FWAAS-PAYG"],
             ),
             spn_name=dict(type="str", required=False),
             subnets=dict(type="list", elements="str", required=False),
             folder=dict(type="str", required=False),
-            
             # ECMP configuration
-            ecmp_load_balancing=dict(
-                type="str", 
-                required=True, 
-                choices=["enable", "disable"]
-            ),
+            ecmp_load_balancing=dict(type="str", required=True, choices=["enable", "disable"]),
             ecmp_tunnels=dict(
                 type="list",
                 elements="dict",
@@ -56,10 +51,8 @@ class RemoteNetworksSpec:
                     peer_as=dict(type="str", required=True),
                 ),
             ),
-            
             # Standard tunnel configuration
             ipsec_tunnel=dict(type="str", required=False),
-            
             # Protocol configuration (BGP)
             protocol=dict(
                 type="dict",
@@ -79,7 +72,6 @@ class RemoteNetworksSpec:
                     ),
                 ),
             ),
-            
             # Authentication and state parameters
             provider=dict(
                 type="dict",
@@ -91,7 +83,5 @@ class RemoteNetworksSpec:
                     log_level=dict(type="str", required=False, default="INFO"),
                 ),
             ),
-            state=dict(
-                type="str", required=True, choices=["present", "absent"]
-            ),
+            state=dict(type="str", required=True, choices=["present", "absent"]),
         )

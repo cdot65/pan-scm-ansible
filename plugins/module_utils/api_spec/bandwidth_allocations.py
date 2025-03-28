@@ -25,7 +25,7 @@ class BandwidthAllocationsSpec:
     """
     Bandwidth Allocations API specification for Ansible modules interacting with SCM bandwidth allocation objects.
 
-    This class provides a standard specification for bandwidth allocation-related parameters 
+    This class provides a standard specification for bandwidth allocation-related parameters
     used in SCM Ansible modules. It ensures consistent parameter validation
     across the collection.
     """

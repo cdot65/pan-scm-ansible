@@ -26,12 +26,12 @@ from datetime import datetime
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.ike_gateway import IKEGatewaySpec
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 from scm.models.network import IKEGatewayUpdateModel
 
@@ -447,14 +447,16 @@ def build_gateway_data(module_params):
 
     # Start with base fields
     gateway_data = {
-        field: module_params.get(field) for field in gateway_fields if module_params.get(field) is not None
+        field: module_params.get(field)
+        for field in gateway_fields
+        if module_params.get(field) is not None
     }
 
     # Handle authentication - ensure only one auth type is included
     if module_params.get("authentication") is not None:
         auth = module_params["authentication"]
         gateway_data["authentication"] = {}
-        
+
         if auth.get("pre_shared_key") is not None:
             gateway_data["authentication"]["pre_shared_key"] = auth["pre_shared_key"]
         elif auth.get("certificate") is not None:
@@ -464,10 +466,10 @@ def build_gateway_data(module_params):
     if module_params.get("protocol") is not None:
         protocol = module_params["protocol"]
         gateway_data["protocol"] = {"version": protocol.get("version", "ikev2-preferred")}
-        
+
         if protocol.get("ikev1") is not None:
             gateway_data["protocol"]["ikev1"] = protocol["ikev1"]
-        
+
         if protocol.get("ikev2") is not None:
             gateway_data["protocol"]["ikev2"] = protocol["ikev2"]
 
@@ -475,7 +477,7 @@ def build_gateway_data(module_params):
     if module_params.get("peer_address") is not None:
         addr = module_params["peer_address"]
         gateway_data["peer_address"] = {}
-        
+
         if addr.get("ip") is not None:
             gateway_data["peer_address"]["ip"] = addr["ip"]
         elif addr.get("fqdn") is not None:
@@ -531,8 +533,7 @@ def get_existing_gateway(client, gateway_data):
 
         # Fetch the gateway by name and container
         gateway = client.ike_gateway.fetch(
-            name=gateway_data["name"],
-            **{container_type: container_value}
+            name=gateway_data["name"], **{container_type: container_value}
         )
         return True, gateway
     except (MissingQueryParameterError, ObjectNotPresentError):
@@ -638,32 +639,34 @@ def main():
     try:
         # Get the SCM client
         client = get_scm_client(module)  # Pass the module object, not just the provider dictionary
-        
+
         # Check if client is properly initialized
         if not client:
             module.fail_json(msg="Failed to initialize SCM client")
 
         # Check if the gateway exists
         gateway_exists, existing_gateway = get_existing_gateway(client, gateway_data)
-        
+
         # Handle errors from get_existing_gateway
         if isinstance(existing_gateway, Exception):
             module.fail_json(msg=f"Error fetching existing gateway: {str(existing_gateway)}")
 
         # Handle state=present (create or update)
         if state == "present":
-            if gateway_exists and existing_gateway:  
+            if gateway_exists and existing_gateway:
                 # Check if gateway needs update
                 update_needed, update_data = needs_update(existing_gateway, gateway_data)
-                
+
                 if update_needed:
                     if not module.check_mode:
                         try:
                             # Create update model
                             gateway = IKEGatewayUpdateModel(**update_data)
                             # Validate client has ike_gateway attribute
-                            if not hasattr(client, 'ike_gateway'):
-                                module.fail_json(msg="SCM client does not have ike_gateway service initialized")
+                            if not hasattr(client, "ike_gateway"):
+                                module.fail_json(
+                                    msg="SCM client does not have ike_gateway service initialized"
+                                )
                             # Update the gateway
                             updated_gateway = client.ike_gateway.update(gateway)
                             result["gateway"] = serialize_response(updated_gateway)
@@ -678,24 +681,28 @@ def main():
                 if not module.check_mode:
                     try:
                         # Validate client has ike_gateway attribute
-                        if not hasattr(client, 'ike_gateway'):
-                            module.fail_json(msg="SCM client does not have ike_gateway service initialized")
+                        if not hasattr(client, "ike_gateway"):
+                            module.fail_json(
+                                msg="SCM client does not have ike_gateway service initialized"
+                            )
                         created_gateway = client.ike_gateway.create(data=gateway_data)
                         result["gateway"] = serialize_response(created_gateway)
                     except Exception as e:
                         module.fail_json(msg=f"Error creating gateway: {str(e)}")
                 result["changed"] = True
-        
+
         # Handle state=absent (delete)
         elif state == "absent":
-            if gateway_exists and existing_gateway:  
+            if gateway_exists and existing_gateway:
                 if not module.check_mode:
                     try:
                         # Validate client has ike_gateway attribute
-                        if not hasattr(client, 'ike_gateway'):
-                            module.fail_json(msg="SCM client does not have ike_gateway service initialized")
+                        if not hasattr(client, "ike_gateway"):
+                            module.fail_json(
+                                msg="SCM client does not have ike_gateway service initialized"
+                            )
                         # Ensure existing_gateway has an id attribute
-                        if not hasattr(existing_gateway, 'id'):
+                        if not hasattr(existing_gateway, "id"):
                             module.fail_json(msg="Gateway object does not have an ID attribute")
                         # Delete the gateway
                         client.ike_gateway.delete(object_id=str(existing_gateway.id))
