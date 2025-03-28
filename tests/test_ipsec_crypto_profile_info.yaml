@@ -1,0 +1,196 @@
+---
+# Playbook for testing Strata Cloud Manager IPsec crypto profile info operations
+# Usage: ansible-playbook tests/test_ipsec_crypto_profile_info.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM IPsec Crypto Profile Info Module Operations
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_folder: "Security"
+  tasks:
+    # ==========================================
+    # SETUP - Create profiles for testing info module
+    # ==========================================
+    - name: Create IPsec ESP profile for testing info module
+      cdot65.scm.ipsec_crypto_profile:
+        provider: "{{ provider }}"
+        name: "test-info-ipsec-esp-profile"
+        folder: "{{ test_folder }}"
+        esp:
+          authentication:
+            - "sha256"
+            - "sha384"
+          encryption:
+            - "aes-256-cbc"
+            - "aes-256-gcm"
+        dh_group: "group19"
+        lifetime:
+          seconds: 3600
+        lifesize:
+          gb: 25
+        state: present
+      register: create_esp_result
+
+    - name: Create IPsec AH profile for testing info module
+      cdot65.scm.ipsec_crypto_profile:
+        provider: "{{ provider }}"
+        name: "test-info-ipsec-ah-profile"
+        folder: "{{ test_folder }}"
+        ah:
+          authentication:
+            - "md5"
+            - "sha512"
+        dh_group: "group2"
+        state: present
+      register: create_ah_result
+
+    # ==========================================
+    # GET info about a specific profile
+    # ==========================================
+    - name: Get information about the ESP profile
+      cdot65.scm.ipsec_crypto_profile_info:
+        provider: "{{ provider }}"
+        name: "test-info-ipsec-esp-profile"
+        folder: "{{ test_folder }}"
+      register: esp_info_result
+
+    - name: Debug ESP profile info result
+      debug:
+        var: esp_info_result
+
+    - name: Verify ESP profile info
+      ansible.builtin.assert:
+        that:
+          - esp_info_result.profile is defined
+          - esp_info_result.profile.name == "test-info-ipsec-esp-profile"
+          - esp_info_result.profile.dh_group == "group19"
+          - esp_info_result.profile.esp.encryption | length == 2
+          - "'aes-256-cbc' in esp_info_result.profile.esp.encryption"
+          - "'aes-256-gcm' in esp_info_result.profile.esp.encryption"
+          - esp_info_result.profile.esp.authentication | length == 2
+          - "'sha256' in esp_info_result.profile.esp.authentication"
+          - "'sha384' in esp_info_result.profile.esp.authentication"
+        fail_msg: "Failed to get info about ESP profile"
+        success_msg: "Successfully retrieved info about ESP profile"
+      tags:
+        - dev-cicd
+
+    - name: Get information about the AH profile
+      cdot65.scm.ipsec_crypto_profile_info:
+        provider: "{{ provider }}"
+        name: "test-info-ipsec-ah-profile"
+        folder: "{{ test_folder }}"
+      register: ah_info_result
+
+    - name: Debug AH profile info result
+      debug:
+        var: ah_info_result
+
+    - name: Verify AH profile info
+      ansible.builtin.assert:
+        that:
+          - ah_info_result.profile is defined
+          - ah_info_result.profile.name == "test-info-ipsec-ah-profile"
+          - ah_info_result.profile.dh_group == "group2"
+          - ah_info_result.profile.ah.authentication | length == 2
+          - "'md5' in ah_info_result.profile.ah.authentication"
+          - "'sha512' in ah_info_result.profile.ah.authentication"
+        fail_msg: "Failed to get info about AH profile"
+        success_msg: "Successfully retrieved info about AH profile"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # LIST all profiles
+    # ==========================================
+    - name: List all IPsec crypto profiles in the folder
+      cdot65.scm.ipsec_crypto_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+      register: list_info_result
+      tags:
+        - dev-cicd
+
+    - name: Debug list info result
+      debug:
+        var: list_info_result
+        verbosity: 1
+
+    - name: Verify list profiles info
+      ansible.builtin.assert:
+        that:
+          - list_info_result.profiles is defined
+          - list_info_result.profiles | length >= 2
+          - list_info_result.profiles | selectattr('name', 'equalto', 'test-info-ipsec-esp-profile') | list | length == 1
+          - list_info_result.profiles | selectattr('name', 'equalto', 'test-info-ipsec-ah-profile') | list | length == 1
+        fail_msg: "Failed to list all IPsec crypto profiles"
+        success_msg: "Successfully listed all IPsec crypto profiles"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # Test exact match and exclusions
+    # ==========================================
+    - name: List profiles with exact match
+      cdot65.scm.ipsec_crypto_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        exact_match: true
+      register: exact_match_result
+      tags:
+        - dev-cicd
+
+    - name: Debug exact match result
+      debug:
+        var: exact_match_result
+        verbosity: 1
+
+    # ==========================================
+    # Test profile that doesn't exist
+    # ==========================================
+    - name: Try to get info about a non-existent profile
+      cdot65.scm.ipsec_crypto_profile_info:
+        provider: "{{ provider }}"
+        name: "Non_Existent_IPsec_Profile"
+        folder: "{{ test_folder }}"
+      register: nonexistent_result
+      failed_when: false
+      tags:
+        - dev-cicd
+
+    - name: Debug non-existent profile result
+      debug:
+        var: nonexistent_result
+        verbosity: 0
+
+    - name: Verify non-existent profile returns appropriate error
+      ansible.builtin.assert:
+        that:
+          - nonexistent_result is defined
+          - nonexistent_result.msg is defined
+          - "'not found' in nonexistent_result.msg"
+        fail_msg: "Failed to handle non-existent profile appropriately"
+        success_msg: "Successfully handled non-existent profile"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # CLEANUP - Remove test profiles
+    # ==========================================
+    - name: Remove test IPsec crypto profiles
+      cdot65.scm.ipsec_crypto_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: absent
+      loop:
+        - "test-info-ipsec-esp-profile"
+        - "test-info-ipsec-ah-profile"
+      register: cleanup_result

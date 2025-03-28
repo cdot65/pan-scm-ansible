@@ -1,18 +1,18 @@
-# Ipsec Crypto Profile Configuration Object
+# IPsec Crypto Profile Configuration Object
 
 ## Table of Contents
 
 01. [Overview](#overview)
 02. [Core Methods](#core-methods)
-03. [IPSec Crypto Profile Model Attributes](#ipsec-crypto-profile-model-attributes)
+03. [IPsec Crypto Profile Model Attributes](#ipsec-crypto-profile-model-attributes)
 04. [Exceptions](#exceptions)
 05. [Basic Configuration](#basic-configuration)
 06. [Usage Examples](#usage-examples)
-    - [Creating IPSec Crypto Profiles](#creating-ipsec-crypto-profiles)
-    - [Basic IPSec Crypto Profile](#basic-ipsec-crypto-profile)
-    - [Suite-B IPSec Crypto Profile](#suite-b-ipsec-crypto-profile)
-    - [Updating IPSec Crypto Profiles](#updating-ipsec-crypto-profiles)
-    - [Deleting IPSec Crypto Profiles](#deleting-ipsec-crypto-profiles)
+    - [Creating IPsec Crypto Profiles](#creating-ipsec-crypto-profiles)
+    - [IPsec Crypto Profile with ESP Configuration](#ipsec-crypto-profile-with-esp-configuration)
+    - [IPsec Crypto Profile with AH Configuration](#ipsec-crypto-profile-with-ah-configuration)
+    - [Updating IPsec Crypto Profiles](#updating-ipsec-crypto-profiles)
+    - [Deleting IPsec Crypto Profiles](#deleting-ipsec-crypto-profiles)
 07. [Managing Configuration Changes](#managing-configuration-changes)
 08. [Error Handling](#error-handling)
 09. [Best Practices](#best-practices)
@@ -20,285 +20,277 @@
 
 ## Overview
 
-The `ipsec_crypto_profile` Ansible module provides functionality to manage IPSec Crypto Profiles in
-Palo Alto Networks' Strata Cloud Manager (SCM). IPSec Crypto Profiles define the encryption and
-authentication algorithms to be used during the IPSec Phase-2 negotiation when establishing a secure
+The `ipsec_crypto_profile` Ansible module provides functionality to manage IPsec Crypto Profiles in
+Palo Alto Networks' Strata Cloud Manager (SCM). IPsec Crypto Profiles define the encryption and
+authentication algorithms to be used during the IPsec Phase-2 negotiation when establishing a secure
 VPN tunnel.
 
 ## Core Methods
 
 | Method     | Description                        | Parameters                               | Return Type                             |
 | ---------- | ---------------------------------- | ---------------------------------------- | --------------------------------------- |
-| `create()` | Creates a new IPSec Crypto Profile | `data: Dict[str, Any]`                   | `IpsecCryptoProfileResponseModel`       |
+| `create()` | Creates a new IPsec Crypto Profile | `data: Dict[str, Any]`                   | `IpsecCryptoProfileResponseModel`       |
 | `update()` | Updates an existing profile        | `profile: IpsecCryptoProfileUpdateModel` | `IpsecCryptoProfileResponseModel`       |
 | `delete()` | Removes a profile                  | `object_id: str`                         | `None`                                  |
 | `fetch()`  | Gets a profile by name             | `name: str`, `container: str`            | `IpsecCryptoProfileResponseModel`       |
 | `list()`   | Lists profiles with filtering      | `folder: str`, `**filters`               | `List[IpsecCryptoProfileResponseModel]` |
 
-## IPSec Crypto Profile Model Attributes
+## IPsec Crypto Profile Model Attributes
 
-| Attribute            | Type | Required      | Description                                      |
-| -------------------- | ---- | ------------- | ------------------------------------------------ |
-| `name`               | str  | Yes           | Name of the IPSec Crypto Profile                 |
-| `description`        | str  | No            | Description of the profile                       |
-| `esp_encryption`     | list | Yes           | List of ESP encryption algorithms                |
-| `esp_authentication` | list | No\*          | List of ESP authentication algorithms            |
-| `ah_authentication`  | list | No\*          | List of AH authentication algorithms             |
-| `dh_group`           | str  | No            | Diffie-Hellman group for Perfect Forward Secrecy |
-| `lifetime`           | dict | No            | IPSec SA lifetime settings                       |
-| `folder`             | str  | One container | The folder in which the profile is defined       |
-| `snippet`            | str  | One container | The snippet in which the profile is defined      |
-| `device`             | str  | One container | The device in which the profile is defined       |
+| Attribute            | Type    | Required      | Description                                      |
+| -------------------- | ------- | ------------- | ------------------------------------------------ |
+| `name`               | str     | Yes           | Name of the IPsec Crypto Profile                 |
+| `description`        | str     | No            | Description of the IPsec Crypto Profile          |
+| `esp`                | dict    | ESP or AH     | ESP configuration settings                       |
+| `esp.encryption`     | list    | If ESP        | List of ESP encryption algorithms                |
+| `esp.authentication` | list    | If ESP        | List of ESP authentication algorithms            |
+| `ah`                 | dict    | ESP or AH     | AH configuration settings                        |
+| `ah.authentication`  | list    | If AH         | List of AH authentication algorithms             |
+| `dh_group`           | str     | No            | DH group for Perfect Forward Secrecy             |
+| `lifetime`           | dict    | No            | SA lifetime configuration                        |
+| `lifetime.seconds`   | int     | One unit      | Lifetime in seconds (180-65535)                  |
+| `lifetime.minutes`   | int     | One unit      | Lifetime in minutes (3-1092)                     |
+| `lifetime.hours`     | int     | One unit      | Lifetime in hours (1-18)                         |
+| `lifetime.days`      | int     | One unit      | Lifetime in days (1-30)                          |
+| `lifesize`           | dict    | No            | SA lifesize configuration                        |
+| `lifesize.kb`        | int     | One unit      | Lifesize in kilobytes                            |
+| `lifesize.mb`        | int     | One unit      | Lifesize in megabytes                            |
+| `lifesize.gb`        | int     | One unit      | Lifesize in gigabytes                            |
+| `lifesize.tb`        | int     | One unit      | Lifesize in terabytes                            |
+| `folder`             | str     | One container | Folder in which to create the profile            |
+| `snippet`            | str     | One container | Snippet in which to create the profile           |
+| `device`             | str     | One container | Device in which to create the profile            |
+| `state`              | str     | No            | State of the IPsec Crypto Profile (present/absent)|
 
-\*Note: When using GCM encryption algorithms, esp_authentication should not be specified as
-authentication is built into GCM.
-
-### Lifetime Attributes
-
-| Attribute | Type | Required | Description                           |
-| --------- | ---- | -------- | ------------------------------------- |
-| `days`    | int  | No       | Number of days for lifetime (0-365)   |
-| `hours`   | int  | No       | Number of hours for lifetime (0-24)   |
-| `minutes` | int  | No       | Number of minutes for lifetime (0-60) |
-| `seconds` | int  | No       | Number of seconds for lifetime (0-60) |
+*Exactly one of `esp` or `ah` must be provided.*  
+*Only one lifetime unit (seconds, minutes, hours, days) can be specified.*  
+*Only one lifesize unit (kb, mb, gb, tb) can be specified.*  
+*Exactly one container (`folder`, `snippet`, or `device`) must be specified.*
 
 ### Provider Dictionary Attributes
 
-| Attribute       | Type | Required | Default | Description                      |
-| --------------- | ---- | -------- | ------- | -------------------------------- |
-| `client_id`     | str  | Yes      |         | Client ID for authentication     |
-| `client_secret` | str  | Yes      |         | Client secret for authentication |
-| `tsg_id`        | str  | Yes      |         | Tenant Service Group ID          |
-| `log_level`     | str  | No       | "INFO"  | Log level for the SDK            |
+| Attribute       | Type   | Required | Default | Description                      |
+| --------------- | ------ | -------- | ------- | -------------------------------- |
+| `client_id`     | str    | Yes      |         | Client ID for authentication     |
+| `client_secret` | str    | Yes      |         | Client secret for authentication |
+| `tsg_id`        | str    | Yes      |         | Tenant Service Group ID          |
+| `log_level`     | str    | No       | "INFO"  | Log level for the SDK            |
 
 ## Exceptions
 
-| Exception                    | Description                    |
-| ---------------------------- | ------------------------------ |
-| `InvalidObjectError`         | Invalid profile data or format |
-| `NameNotUniqueError`         | Profile name already exists    |
-| `ObjectNotPresentError`      | Profile not found              |
-| `MissingQueryParameterError` | Missing required parameters    |
-| `AuthenticationError`        | Authentication failed          |
-| `ServerError`                | Internal server error          |
-| `InvalidAlgorithmError`      | Invalid algorithm specified    |
+| Exception                    | Description                     |
+| ---------------------------- | ------------------------------- |
+| `ObjectNotPresentError`      | Profile not found               |
+| `InvalidObjectError`         | Invalid parameter format        |
+| `MissingQueryParameterError` | Missing required parameters     |
+| `AuthenticationError`        | Authentication failed           |
+| `ServerError`                | Internal server error           |
+| `InvalidAlgorithmError`      | Invalid algorithm specified     |
 
 ## Basic Configuration
 
-The IPSec Crypto Profile module requires proper authentication credentials to access the Strata
-Cloud Manager API.
-
 ```yaml
-- name: Basic IPSec Crypto Profile Configuration
-  hosts: localhost
-  gather_facts: false
-  vars:
+- name: Create basic IPsec Crypto Profile
+  cdot65.scm.ipsec_crypto_profile:
     provider:
       client_id: "your_client_id"
       client_secret: "your_client_secret"
       tsg_id: "your_tsg_id"
-      log_level: "INFO"
-  tasks:
-    - name: Ensure an IPSec Crypto Profile exists
-      cdot65.scm.ipsec_crypto_profile:
-        provider: "{{ provider }}"
-        name: "Standard-IPSec"
-        description: "Standard IPSec encryption profile for VPN tunnels"
-        esp_encryption: 
-          - "aes-256-cbc"
-        esp_authentication:
-          - "sha256"
-        dh_group: "group14"
-        lifetime:
-          hours: 1
-        folder: "Texas"
-        state: "present"
+    name: "Standard-IPsec-Profile"
+    description: "Standard IPsec crypto settings"
+    esp:
+      encryption:
+        - "aes-256-cbc"
+      authentication:
+        - "sha256"
+    dh_group: "group14"
+    folder: "Shared"
+    state: "present"
 ```
 
 ## Usage Examples
 
-### Creating IPSec Crypto Profiles
+### Creating IPsec Crypto Profiles
 
-IPSec Crypto Profiles define the security parameters for Phase-2 IPSec negotiation when establishing
-a VPN tunnel. Different profiles can be created for different security requirements.
+IPsec Crypto Profiles can be created with either ESP or AH configuration, but not both simultaneously.
 
-### Basic IPSec Crypto Profile
-
-This example creates a standard IPSec Crypto Profile with moderate security settings.
+#### IPsec Crypto Profile with ESP Configuration
 
 ```yaml
-- name: Create a basic IPSec Crypto Profile
+- name: Create IPsec Crypto Profile with ESP configuration
   cdot65.scm.ipsec_crypto_profile:
-    provider: "{{ provider }}"
-    name: "Standard-IPSec"
-    description: "Standard IPSec encryption profile for general VPN tunnels"
-    esp_encryption: 
-      - "aes-128-cbc"
-      - "aes-256-cbc"
-    esp_authentication: 
-      - "sha1"
-      - "sha256"
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+    name: "ESP-AES256-SHA256"
+    description: "ESP profile with AES-256-CBC and SHA-256"
+    esp:
+      encryption:
+        - "aes-256-cbc"
+      authentication:
+        - "sha256"
     dh_group: "group14"
     lifetime:
-      hours: 8
-    folder: "Texas"
+      seconds: 28800
+    lifesize:
+      mb: 20000
+    folder: "Prisma Access"
     state: "present"
 ```
 
-### Suite-B IPSec Crypto Profile
-
-This example creates a Suite-B compliant IPSec Crypto Profile with high security settings.
+#### IPsec Crypto Profile with AH Configuration
 
 ```yaml
-- name: Create a Suite-B compliant IPSec Crypto Profile
+- name: Create IPsec Crypto Profile with AH configuration
   cdot65.scm.ipsec_crypto_profile:
-    provider: "{{ provider }}"
-    name: "Suite-B-GCM-128"
-    description: "Suite-B compliance profile for IPSec"
-    esp_encryption: 
-      - "aes-128-gcm"
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+    name: "AH-SHA512"
+    description: "AH profile with SHA-512"
+    ah:
+      authentication:
+        - "sha512"
+    dh_group: "group14"
+    lifetime:
+      seconds: 65535
+    folder: "Prisma Access"
+    state: "present"
+```
+
+### Updating IPsec Crypto Profiles
+
+To update an existing IPsec Crypto Profile, specify the name and the attributes to change:
+
+```yaml
+- name: Update IPsec Crypto Profile DH group
+  cdot65.scm.ipsec_crypto_profile:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+    name: "ESP-AES256-SHA256"
     dh_group: "group19"
     lifetime:
-      hours: 4
-    folder: "Texas"
+      hours: 8
+    folder: "Prisma Access"
     state: "present"
 ```
 
-### Updating IPSec Crypto Profiles
+### Deleting IPsec Crypto Profiles
 
-This example updates an existing IPSec Crypto Profile with new algorithms and settings.
-
-```yaml
-- name: Update an IPSec Crypto Profile
-  cdot65.scm.ipsec_crypto_profile:
-    provider: "{{ provider }}"
-    name: "Standard-IPSec"
-    description: "Updated standard IPSec profile"
-    esp_encryption: 
-      - "aes-256-gcm"
-    dh_group: "group20"
-    lifetime:
-      hours: 2
-    folder: "Texas"
-    state: "present"
-```
-
-### Deleting IPSec Crypto Profiles
-
-This example removes an IPSec Crypto Profile.
+To delete an IPsec Crypto Profile:
 
 ```yaml
-- name: Delete an IPSec Crypto Profile
+- name: Delete IPsec Crypto Profile
   cdot65.scm.ipsec_crypto_profile:
-    provider: "{{ provider }}"
-    name: "Standard-IPSec"
-    folder: "Texas"
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+    name: "ESP-AES256-SHA256"
+    folder: "Prisma Access"
     state: "absent"
 ```
 
 ## Managing Configuration Changes
 
-After creating, updating, or deleting IPSec Crypto Profiles, you need to commit your changes to
-apply them.
+### Change Detection
 
-```yaml
-- name: Commit changes
-  cdot65.scm.commit:
-    provider: "{{ provider }}"
-    folders: ["Texas"]
-    description: "Updated IPSec Crypto Profiles"
-```
+The module performs change detection by comparing the existing profile configuration to the requested configuration:
+
+1. The module fetches the existing IPsec Crypto Profile from SCM using its name and container
+2. It compares the existing profile's attributes to the requested configuration
+3. If differences are found, the module updates the profile
+4. If no differences are found, the module reports no changes needed
+
+### Idempotence
+
+This module is idempotent, meaning it will only make changes when necessary:
+
+- If creating a profile that already exists with identical settings, no change is reported
+- If updating a profile with settings that match the current configuration, no change is reported
+- If deleting a profile that doesn't exist, no change is reported
 
 ## Error Handling
 
-It's important to handle potential errors when working with IPSec Crypto Profiles.
+Common errors and how to handle them:
+
+| Error                                     | Possible Cause                                    | Solution                                                       |
+| ----------------------------------------- | ------------------------------------------------- | -------------------------------------------------------------- |
+| "Authentication failed"                    | Invalid client_id, client_secret, or tsg_id       | Verify the authentication parameters                            |
+| "Profile not found"                        | The specified profile doesn't exist               | Check the profile name and container                            |
+| "Multiple containers specified"            | More than one container type was specified        | Specify exactly one of folder, snippet, or device               |
+| "Both ESP and AH specified"                | Both ESP and AH configurations were provided      | Specify only one of ESP or AH                                   |
+| "Multiple lifetime units specified"        | More than one lifetime unit was specified         | Specify only one lifetime unit (seconds, minutes, hours, days)  |
+| "Multiple lifesize units specified"        | More than one lifesize unit was specified         | Specify only one lifesize unit (kb, mb, gb, tb)                 |
+| "Validation error for encryption algorithm"| Invalid encryption algorithm specified            | Use only supported encryption algorithms                        |
+| "Validation error for authentication algorithm"| Invalid authentication algorithm specified    | Use only supported authentication algorithms                    |
+
+Error handling best practices:
 
 ```yaml
-- name: Create or update IPSec Crypto Profile with error handling
+- name: Create or update IPsec Crypto Profile with error handling
   block:
-    - name: Ensure IPSec Crypto Profile exists
+    - name: Attempt to create IPsec Crypto Profile
       cdot65.scm.ipsec_crypto_profile:
         provider: "{{ provider }}"
-        name: "Standard-IPSec"
-        description: "Standard IPSec encryption profile"
-        esp_encryption: 
-          - "aes-256-gcm"
+        name: "Standard-IPsec-Profile"
+        esp:
+          encryption:
+            - "aes-256-cbc"
+          authentication:
+            - "sha256"
         dh_group: "group14"
-        lifetime:
-          hours: 1
-        folder: "Texas"
+        folder: "Shared"
         state: "present"
-      register: profile_result
-      
-    - name: Commit changes
-      cdot65.scm.commit:
-        provider: "{{ provider }}"
-        folders: ["Texas"]
-        description: "Updated IPSec Crypto Profiles"
-      when: profile_result.changed
-      
+      register: result
   rescue:
-    - name: Handle errors
+    - name: Handle error
       debug:
-        msg: "An error occurred: {{ ansible_failed_result.msg }}"
-        
-    - name: Check if it's an algorithm error
-      debug:
-        msg: "Please check the encryption or authentication algorithm settings"
-      when: "'algorithm' in ansible_failed_result.msg"
+        msg: "Failed to create or update IPsec Crypto Profile: {{ ansible_failed_result.msg }}"
 ```
 
 ## Best Practices
 
-### Algorithm Selection
+### Security Considerations
 
-- Use AES-GCM algorithms where possible as they provide both encryption and authentication
-- Avoid using deprecated or weak algorithms (DES, MD5)
-- For non-GCM algorithms, always specify authentication algorithms
-- Balance security requirements with performance considerations
-- Follow industry standards and compliance requirements
+- Use strong encryption and authentication algorithms:
+  - Prefer AES-256 over weaker encryption options
+  - Use SHA-256 or stronger for authentication
+  - Avoid using deprecated algorithms like MD5 or DES
 
-### Perfect Forward Secrecy
+- DH Group selection:
+  - For most environments, use group14 (2048-bit MODP) or higher
+  - For high-security environments, use group19 (256-bit ECP) or group20 (384-bit ECP)
+  - Avoid using no-pfs except when compatibility with legacy systems is required
 
-- Enable Perfect Forward Secrecy (PFS) with strong DH groups where security is critical
-- Use group14 (2048-bit) or higher for sensitive traffic
-- Consider the performance impact of PFS on high-volume VPN tunnels
-- Document PFS decisions and rationale
+### Performance Considerations
 
-### Lifetime Management
+- Balance security and performance:
+  - For high-throughput environments, consider the performance impact of stronger algorithms
+  - GCM-based encryption (aes-128-gcm, aes-256-gcm) provides both strong security and better performance
 
-- Set appropriate SA lifetimes based on security requirements and traffic volume
-- Shorter lifetimes increase security but also increase rekeying overhead
-- Consider the operational impact of frequent rekeying
-- Document your lifetime decisions and rationale
+- Lifetime and lifesize settings:
+  - Shorter lifetimes increase security but also increase key negotiation overhead
+  - Set appropriate lifetimes based on your security requirements and traffic patterns
 
-### Profile Organization
+### Compliance Considerations
 
-- Create profiles for different security levels based on the sensitivity of traffic
-- Use high-security profiles for sensitive networks
-- Use standard profiles for general-purpose connections
-- Document profile usage to track where each profile is applied
-- Use descriptive names that indicate security level or purpose
+- Follow industry standards and compliance requirements:
+  - FIPS 140-2 compliance may restrict algorithm choices
+  - Industry regulations may dictate minimum security requirements
 
-### Compliance Requirements
+### Documentation
 
-- Consider compliance requirements (FIPS, Suite-B) when selecting algorithms
-- Document compliance adherence for audit purposes
-- Regularly review profiles against evolving compliance standards
-- Test compliance-driven configurations thoroughly
-
-### Implementation Strategy
-
-- Test profiles in a non-production environment before deployment
-- Verify compatibility with peer devices before implementation
-- Implement changes during maintenance windows
-- Have a rollback plan for unsuccessful implementations
-- Monitor VPN connections after implementation
+- Document your IPsec crypto profile choices and rationale
+- Include references to security policies or compliance requirements that informed your configuration
 
 ## Related Modules
 
-- [ike_crypto_profile](ike_crypto_profile.md) - Configure IKE Crypto profiles for Phase-1
-  negotiations
-- [ike_gateway](ike_gateway.md) - Configure IKE gateways that use IPSec Crypto profiles
-- [ipsec_tunnel](ipsec_tunnel.md) - Configure IPsec tunnels that reference IPSec Crypto profiles
-- [remote_networks](remote_networks.md) - Configure remote networks that use IPSec tunnels
+- [cdot65.scm.ipsec_crypto_profile_info](ipsec_crypto_profile_info.md) - Gather information about IPsec crypto profiles
+- [cdot65.scm.ike_crypto_profile](ike_crypto_profile.md) - Manage IKE crypto profiles
+- [cdot65.scm.ike_gateway](ike_gateway.md) - Manage IKE gateways
+- [cdot65.scm.ipsec_tunnel](ipsec_tunnel.md) - Manage IPsec tunnels
