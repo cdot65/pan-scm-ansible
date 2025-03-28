@@ -167,11 +167,11 @@ EXAMPLES = r"""
         provider: "{{ provider }}"
         name: "ikev2-aes256-sha256"
         description: "IKEv2 AES-256 SHA-256 profile"
-        hash: 
+        hash:
           - "sha256"
-        encryption: 
+        encryption:
           - "aes-256-cbc"
-        dh_group: 
+        dh_group:
           - "group14"
         lifetime_hours: 8
         authentication_multiple: 0
@@ -183,14 +183,14 @@ EXAMPLES = r"""
         provider: "{{ provider }}"
         name: "ikev2-multi-algo"
         description: "IKEv2 with multiple algorithm options"
-        hash: 
+        hash:
           - "sha256"
           - "sha384"
           - "sha512"
-        encryption: 
+        encryption:
           - "aes-256-cbc"
           - "aes-256-gcm"
-        dh_group: 
+        dh_group:
           - "group14"
           - "group19"
           - "group20"
@@ -203,11 +203,11 @@ EXAMPLES = r"""
         provider: "{{ provider }}"
         name: "ikev2-aes256-sha256"
         description: "Updated IKEv2 AES-256 SHA-256 profile"
-        hash: 
+        hash:
           - "sha256"
-        encryption: 
+        encryption:
           - "aes-256-cbc"
-        dh_group: 
+        dh_group:
           - "group14"
           - "group19"  # Added a new DH group
         lifetime_hours: 24  # Changed lifetime
