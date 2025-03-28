@@ -176,62 +176,9 @@
         cert_gateway_name: "{{ create_cert_result.gateway.name }}"
 
     # ==========================================
-    # READ operations with info module
-    # ==========================================
-    
-    # Note: When ike_gateway_info module is created, uncomment these tasks
-    
-    #- name: Get information about PSK Gateway
-    #  cdot65.scm.ike_gateway_info:
-    #    provider: "{{ provider }}"
-    #    name: "{{ psk_gateway_name }}"
-    #    folder: "{{ test_folder }}"
-    #  register: info_psk_result
-    #  tags:
-    #    - dev-cicd
-    #
-    #- name: Debug read result for PSK Gateway
-    #  debug:
-    #    var: info_psk_result
-    #
-    #- name: Verify info module retrieves correct PSK Gateway
-    #  ansible.builtin.assert:
-    #    that:
-    #      - info_psk_result.gateway is defined
-    #      - info_psk_result.gateway.name == psk_gateway_name
-    #      - info_psk_result.gateway.peer_address.ip == "198.51.100.1"
-    #      - info_psk_result.gateway.folder == "Service Connections"
-    #    fail_msg: "Failed to retrieve PSK Gateway information"
-    #    success_msg: "Successfully retrieved PSK Gateway information"
-    #  tags:
-    #    - dev-cicd
-    #
-    #- name: List all IKE Gateways
-    #  cdot65.scm.ike_gateway_info:
-    #    provider: "{{ provider }}"
-    #    folder: "{{ test_folder }}"
-    #  register: list_gateways_result
-    #  tags:
-    #    - dev-cicd
-    #
-    #- name: Debug list result
-    #  debug:
-    #    var: list_gateways_result
-    #    verbosity: 1
-    #
-    #- name: Verify gateways list contains gateways
-    #  ansible.builtin.assert:
-    #    that:
-    #      - list_gateways_result.gateways is defined
-    #      - list_gateways_result.gateways | length >= 2
-    #    fail_msg: "Failed to list all gateways"
-    #    success_msg: "Successfully listed all gateways"
-    #  tags:
-    #    - dev-cicd
-
-    # ==========================================
     # UPDATE operation tests
     # ==========================================
+
     - name: Update the PSK Gateway
       cdot65.scm.ike_gateway:
         provider: "{{ provider }}"
@@ -261,7 +208,7 @@
       register: update_result
       tags:
         - dev-cicd
-
+    
     - name: Debug update result
       debug:
         var: update_result
@@ -270,7 +217,7 @@
     - name: Verify IKE Gateway update
       ansible.builtin.assert:
         that:
-          - update_result.gateway is defined
+          - update_result.changed is true
           - update_result.gateway.name == psk_gateway_name
           - update_result.gateway.peer_id.id == "updated-peer.example.com"
           - update_result.gateway.peer_address.ip == "198.51.100.100"
@@ -280,6 +227,65 @@
         success_msg: "Successfully updated IKE Gateway"
       tags:
         - dev-cicd
+
+    # ==========================================
+    # READ operations with info module
+    # ==========================================
+    
+    - name: Get information about PSK Gateway
+      cdot65.scm.ike_gateway_info:
+        provider: "{{ provider }}"
+        name: "{{ psk_gateway_name }}"
+        folder: "{{ test_folder }}"
+      register: info_psk_result
+      tags:
+        - dev-cicd
+    
+    - name: Debug read result for PSK Gateway
+      debug:
+        var: info_psk_result
+        verbosity: 1
+    
+    - name: Verify info module retrieves correct PSK Gateway
+      ansible.builtin.assert:
+        that:
+          - info_psk_result.gateway is defined
+          - info_psk_result.gateway.name == psk_gateway_name
+          - info_psk_result.gateway.peer_address.ip == "198.51.100.100"
+          - info_psk_result.gateway.folder == "Service Connections"
+        fail_msg: "Failed to retrieve PSK Gateway information"
+        success_msg: "Successfully retrieved PSK Gateway information"
+      tags:
+        - dev-cicd
+    
+    - name: List all IKE Gateways
+      cdot65.scm.ike_gateway_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+      register: list_gateways_result
+      tags:
+        - dev-cicd
+    
+    - name: Debug list result
+      debug:
+        var: list_gateways_result
+        verbosity: 1
+      
+    - name: Verify list operation returns all gateways
+      ansible.builtin.assert:
+        that:
+          - list_gateways_result.gateways is defined
+          - list_gateways_result.gateways | length >= 2
+          - list_gateways_result.gateways | selectattr('name', 'equalto', psk_gateway_name) | list | length == 1
+          - list_gateways_result.gateways | selectattr('name', 'equalto', cert_gateway_name) | list | length == 1
+        fail_msg: "Failed to list all IKE Gateways"
+        success_msg: "Successfully listed all IKE Gateways"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # IDEMPOTENCY tests
+    # ==========================================
 
     # Test idempotency
     - name: Test idempotency on the updated gateway (re-run same update)
