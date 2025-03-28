@@ -2,19 +2,16 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [Module Parameters](#module-parameters)
-4. [Requirements](#requirements)
-5. [Usage Examples](#usage-examples)
-   - [Creating Remote Networkss](#creating-remote_networkss)
-   - [Updating Remote Networkss](#updating-remote_networkss)
-   - [Deleting Remote Networkss](#deleting-remote_networkss)
-6. [Managing Configuration Changes](#managing-configuration-changes)
-7. [Return Values](#return-values)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
-10. [Related Modules](#related-modules)
+- [Remote Networks Configuration Object](#remote-networks-configuration-object)
+  - [Table of Contents](#table-of-contents)
+  - [Synopsis](#synopsis)
+  - [Parameters](#parameters)
+    - [Parameter: ecmp\_tunnels](#parameter-ecmp_tunnels)
+    - [Parameter: protocol](#parameter-protocol)
+      - [Parameter: protocol bgp](#parameter-protocol-bgp)
+    - [Parameter: provider](#parameter-provider)
+  - [Examples](#examples)
+  - [Return Values](#return-values)
 
 
 Manage remote networks in SCM.
@@ -189,22 +186,3 @@ Manage remote networks in SCM.
     "subnets": ["10.1.0.0/16", "10.2.0.0/16"]
 }
 ```
-
-
-## Overview
-
-
-## Core Methods
-
-
-## Error Handling
-
-
-## Best Practices
-
-
-## Related Modules
-
-
-## Managing Configuration Changes
-

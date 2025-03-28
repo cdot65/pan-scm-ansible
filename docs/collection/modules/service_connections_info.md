@@ -104,17 +104,3 @@ Gather information about service connection objects in SCM.
 ## Authors
 
 - Calvin Remsburg (@cdot65)
-## Overview
-
-
-## Core Methods
-
-
-## Error Handling
-
-
-## Best Practices
-
-
-## Related Modules
-

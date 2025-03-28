@@ -2,19 +2,14 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [Module Parameters](#module-parameters)
-4. [Requirements](#requirements)
-5. [Usage Examples](#usage-examples)
-   - [Creating Agent Versionss](#creating-agent_versionss)
-   - [Updating Agent Versionss](#updating-agent_versionss)
-   - [Deleting Agent Versionss](#deleting-agent_versionss)
-6. [Managing Configuration Changes](#managing-configuration-changes)
-7. [Return Values](#return-values)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
-10. [Related Modules](#related-modules)
+- [Agent Versions Configuration Object](#agent-versions-configuration-object)
+  - [Table of Contents](#table-of-contents)
+  - [Synopsis](#synopsis)
+  - [Requirements (on host that executes module)](#requirements-on-host-that-executes-module)
+  - [Parameters](#parameters)
+  - [Examples](#examples)
+  - [Return Values](#return-values)
+  - [Authors](#authors)
 
 
 Manage agent versions in Strata Cloud Manager (SCM).
@@ -177,20 +172,3 @@ Example return value:
 ## Authors
 
 - Calvin Remsburg (@cdot65)
-## Overview
-
-
-## Core Methods
-
-
-## Error Handling
-
-
-## Best Practices
-
-
-## Related Modules
-
-
-## Managing Configuration Changes
-

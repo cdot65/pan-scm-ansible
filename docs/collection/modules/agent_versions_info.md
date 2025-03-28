@@ -2,15 +2,14 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Core Methods](#core-methods)
-3. [Module Parameters](#module-parameters) 
-4. [Requirements](#requirements)
-5. [Usage Examples](#usage-examples)
-6. [Return Values](#return-values)
-7. [Error Handling](#error-handling)
-8. [Best Practices](#best-practices)
-9. [Related Modules](#related-modules)
+- [Agent Versions Information Object](#agent-versions-information-object)
+  - [Table of Contents](#table-of-contents)
+  - [Synopsis](#synopsis)
+  - [Requirements (on host that executes module)](#requirements-on-host-that-executes-module)
+  - [Parameters](#parameters)
+  - [Examples](#examples)
+  - [Return Values](#return-values)
+  - [Authors](#authors)
 
 
 Gather information about agent versions in Strata Cloud Manager (SCM).
@@ -150,17 +149,3 @@ Example return value:
 ## Authors
 
 - Calvin Remsburg (@cdot65)
-## Overview
-
-
-## Core Methods
-
-
-## Error Handling
-
-
-## Best Practices
-
-
-## Related Modules
-
