@@ -109,6 +109,7 @@ nav:
               - IKE Crypto Profile: collection/modules/ike_crypto_profile.md
               - IKE Crypto Profile Info: collection/modules/ike_crypto_profile_info.md
               - IKE Gateway: collection/modules/ike_gateway.md
+              - IKE Gateway Info: collection/modules/ike_gateway_info.md
               - IPsec Crypto Profile: collection/modules/ipsec_crypto_profile.md
               - IPsec Tunnel: collection/modules/ipsec_tunnel.md
               - BGP Routing: collection/modules/bgp_routing.md
