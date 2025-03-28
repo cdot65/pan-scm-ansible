@@ -267,7 +267,7 @@ def main():
                         allocation = matching_allocations[0]
                     else:
                         # TEMPORARY MOCK MODE FOR TESTING
-                        module.log(f"*** MOCK MODE: Creating mock allocation object for testing ***")
+                        module.log("*** MOCK MODE: Creating mock allocation object for testing ***")
                         
                         # Create a mock allocation object from the known parameters
                         mock_data = {

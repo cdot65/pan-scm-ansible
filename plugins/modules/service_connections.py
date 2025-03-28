@@ -407,7 +407,7 @@ def get_existing_connection(client, connection_data):
                 name=connection_data["name"]
             )
             return True, existing
-        except InvalidObjectError as e:
+        except InvalidObjectError:
             # For testing, if we're getting InvalidObjectError but need to simulate
             # a service connection object, let's create a simulated one
             from types import SimpleNamespace
