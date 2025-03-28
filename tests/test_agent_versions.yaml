@@ -1,0 +1,434 @@
+---
+# test_agent_versions.yaml
+# This playbook tests the agent_versions and agent_versions_info modules
+# Tests operations to manage and retrieve information about agent versions in the Strata Cloud Manager
+
+- name: Test agent_versions modules in the Strata Cloud Manager
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  
+  vars_files:
+    - vault.yaml
+  
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    testmode: true  # Enable test mode for CI/CD environments (no API calls)
+    test_timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
+  
+  tasks:
+    # =========================================================================
+    # Initial setup - clean up any potential leftover test data
+    # =========================================================================
+    - name: Remove test agent version if it exists (initial cleanup)
+      cdot65.scm.agent_versions:
+        provider: "{{ provider }}"
+        name: "Test GlobalProtect Agent"
+        version: "5.3.0-test"
+        state: absent
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: initial_cleanup
+      ignore_errors: true
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - cleanup
+    
+    # =========================================================================
+    # Create tests
+    # =========================================================================
+    - name: Create a test agent version
+      cdot65.scm.agent_versions:
+        provider: "{{ provider }}"
+        name: "Test GlobalProtect Agent"
+        version: "5.3.0-test"
+        type: "prisma_access"
+        status: "recommended"
+        platform: "linux_x86_64"
+        features_enabled:
+          - ipsec
+          - ssl_vpn
+          - globalprotect
+        release_date: "2023-06-15"
+        end_of_support_date: "2024-06-15"
+        release_notes_url: "https://example.com/release-notes/5.3.0-test"
+        state: present
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: create_result
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - create
+    
+    - name: Verify that agent version was created
+      assert:
+        that:
+          - create_result.changed == true
+          - create_result.agent_version is defined
+          - create_result.agent_version.name == "Test GlobalProtect Agent"
+          - create_result.agent_version.version == "5.3.0-test"
+          - create_result.agent_version.type == "prisma_access"
+          - create_result.agent_version.status == "recommended"
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - create
+    
+    - name: Try to create the same agent version again (should not change)
+      cdot65.scm.agent_versions:
+        provider: "{{ provider }}"
+        name: "Test GlobalProtect Agent"
+        version: "5.3.0-test"
+        type: "prisma_access"
+        status: "recommended"
+        platform: "linux_x86_64"
+        features_enabled:
+          - ipsec
+          - ssl_vpn
+          - globalprotect
+        release_date: "2023-06-15"
+        end_of_support_date: "2024-06-15"
+        release_notes_url: "https://example.com/release-notes/5.3.0-test"
+        state: present
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: create_idempotent
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - idempotency
+    
+    - name: Verify create operation is idempotent
+      assert:
+        that:
+          - create_idempotent.changed == false
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - idempotency
+    
+    # =========================================================================
+    # Read tests using agent_versions (present state for reads)
+    # =========================================================================
+    - name: Get information about the specific test agent version
+      cdot65.scm.agent_versions:
+        provider: "{{ provider }}"
+        name: "Test GlobalProtect Agent"
+        version: "5.3.0-test"
+        state: present
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: read_specific
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - read
+    
+    - name: Verify that specific agent version info was retrieved
+      assert:
+        that:
+          - read_specific.changed == false
+          - read_specific.agent_version is defined
+          - read_specific.agent_version.name == "Test GlobalProtect Agent"
+          - read_specific.agent_version.version == "5.3.0-test"
+          - read_specific.agent_version.status == "recommended"
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - read
+    
+    - name: List all agent versions
+      cdot65.scm.agent_versions:
+        provider: "{{ provider }}"
+        state: present
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: list_all
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - read
+    
+    - name: Verify that all agent versions were retrieved
+      assert:
+        that:
+          - list_all.changed == false
+          - list_all.agent_versions is defined
+          - list_all.agent_versions | length > 0
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - read
+    
+    # =========================================================================
+    # Read tests using agent_versions_info module
+    # =========================================================================
+    - name: Get information about the specific test agent version using info module
+      cdot65.scm.agent_versions_info:
+        provider: "{{ provider }}"
+        version: "5.3.0-test"
+        exact_version: true
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: info_specific
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - read
+        - info
+    
+    - name: Verify that specific agent version info was retrieved with info module
+      assert:
+        that:
+          - info_specific.agent_version is defined
+          - info_specific.agent_version.name == "Test GlobalProtect Agent"
+          - info_specific.agent_version.version == "5.3.0-test"
+          - info_specific.agent_version.status == "recommended"
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - read
+        - info
+    
+    - name: List all agent versions using info module
+      cdot65.scm.agent_versions_info:
+        provider: "{{ provider }}"
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: info_all
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - read
+        - info
+    
+    - name: Verify that all agent versions were retrieved with info module
+      assert:
+        that:
+          - info_all.agent_versions is defined
+          - info_all.agent_versions | length > 0
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - read
+        - info
+    
+    - name: Filter agent versions by type using info module
+      cdot65.scm.agent_versions_info:
+        provider: "{{ provider }}"
+        type: ["prisma_access"]
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: info_filtered
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - read
+        - info
+    
+    - name: Verify that filtered agent versions were retrieved with info module
+      assert:
+        that:
+          - info_filtered.agent_versions is defined
+          - info_filtered.agent_versions | length > 0
+          - info_filtered.agent_versions | selectattr('type', 'equalto', 'prisma_access') | list | length == info_filtered.agent_versions | length
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - read
+        - info
+    
+    # =========================================================================
+    # Update tests
+    # =========================================================================
+    - name: Update test agent version
+      cdot65.scm.agent_versions:
+        provider: "{{ provider }}"
+        name: "Test GlobalProtect Agent"
+        version: "5.3.0-test"
+        status: "current"  # Changed from recommended to current
+        platform: "linux_x86_64"
+        features_enabled:
+          - ipsec
+          - ssl_vpn
+          - globalprotect
+          - mobile_security  # Added a new feature
+        release_date: "2023-06-15"
+        end_of_support_date: "2024-06-15"
+        release_notes_url: "https://example.com/release-notes/5.3.0-test-updated"  # Updated URL
+        state: present
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: update_result
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - update
+    
+    - name: Verify that agent version was updated
+      assert:
+        that:
+          - update_result.changed == true
+          - update_result.agent_version is defined
+          - update_result.agent_version.name == "Test GlobalProtect Agent"
+          - update_result.agent_version.version == "5.3.0-test"
+          - update_result.agent_version.status == "current"  # Changed from recommended to current
+          - "'mobile_security' in update_result.agent_version.features_enabled"  # Added feature
+          - update_result.agent_version.release_notes_url == "https://example.com/release-notes/5.3.0-test-updated"  # Updated URL
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - update
+    
+    - name: Try to update with the same values (should not change)
+      cdot65.scm.agent_versions:
+        provider: "{{ provider }}"
+        name: "Test GlobalProtect Agent"
+        version: "5.3.0-test"
+        status: "current"
+        platform: "linux_x86_64"
+        features_enabled:
+          - ipsec
+          - ssl_vpn
+          - globalprotect
+          - mobile_security
+        release_date: "2023-06-15"
+        end_of_support_date: "2024-06-15"
+        release_notes_url: "https://example.com/release-notes/5.3.0-test-updated"
+        state: present
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: update_idempotent
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - idempotency
+    
+    - name: Verify update operation is idempotent
+      assert:
+        that:
+          - update_idempotent.changed == false
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - idempotency
+    
+    # =========================================================================
+    # Delete tests
+    # =========================================================================
+    - name: Delete test agent version
+      cdot65.scm.agent_versions:
+        provider: "{{ provider }}"
+        name: "Test GlobalProtect Agent"
+        version: "5.3.0-test"
+        state: absent
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: delete_result
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - delete
+    
+    - name: Verify that agent version was deleted
+      assert:
+        that:
+          - delete_result.changed == true
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - delete
+    
+    - name: Try to delete the same agent version again (should not change)
+      cdot65.scm.agent_versions:
+        provider: "{{ provider }}"
+        name: "Test GlobalProtect Agent"
+        version: "5.3.0-test"
+        state: absent
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: delete_idempotent
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - idempotency
+    
+    - name: Verify delete operation is idempotent
+      assert:
+        that:
+          - delete_idempotent.changed == false
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - idempotency
+    
+    # =========================================================================
+    # Final verification - try to get the deleted agent version (should fail)
+    # =========================================================================
+    - name: Verify that agent version no longer exists
+      cdot65.scm.agent_versions_info:
+        provider: "{{ provider }}"
+        version: "5.3.0-test"
+        exact_version: true
+        testmode: "{{ testmode }}"
+        test_timestamp: "{{ test_timestamp }}"
+      register: verify_deleted
+      failed_when: verify_deleted.agent_version is defined
+      tags:
+        - dev-ansible
+        - dev-automation
+        - dev-test
+        - dev-cicd
+        - verify
