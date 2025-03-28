@@ -244,7 +244,7 @@ EXAMPLES = r"""
           hours: 24
         folder: "Shared"
         state: "present"
-        
+
     - name: Update an existing IPsec crypto profile
       cdot65.scm.ipsec_crypto_profile:
         provider: "{{ provider }}"
