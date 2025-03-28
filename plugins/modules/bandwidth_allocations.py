@@ -358,7 +358,7 @@ def get_existing_bandwidth_allocation(client, params):
 
         existing = client.bandwidth_allocation.get(name=params["name"])
         return existing is not None, existing
-    except Exception as e:
+    except Exception:
         # Handle any error as "object not found" during the get operation
         return False, None
 

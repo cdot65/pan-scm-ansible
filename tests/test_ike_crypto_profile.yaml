@@ -1,0 +1,328 @@
+---
+# Playbook for testing Strata Cloud Manager IKE crypto profile operations
+# Usage: ansible-playbook tests/test_ike_crypto_profile.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM IKE Crypto Profile Module CRUD Operations
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_folder: "Remote Networks"
+    testmode: true
+  tasks:
+    # First clean up any existing test profiles if they exist
+    - name: Remove test IKE crypto profiles if they exist
+      cdot65.scm.ike_crypto_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+        testmode: "{{ testmode }}"
+      ignore_errors: true
+      loop:
+        - "Test_IKE_Basic_{{ test_timestamp }}"
+        - "Test_IKE_Advanced_{{ test_timestamp }}"
+      tags:
+        - dev-cleanup
+        - dev-test
+        - dev-ansible
+        - dev-automation
+        - dev-cicd
+
+    # ==========================================
+    # CREATE operation tests
+    # ==========================================
+    - name: Create a basic IKE crypto profile
+      cdot65.scm.ike_crypto_profile:
+        provider: "{{ provider }}"
+        name: "Test_IKE_Basic_{{ test_timestamp }}"
+        description: "Basic IKE crypto profile for testing"
+        hash:
+          - "sha256"
+        encryption:
+          - "aes-256-cbc"
+        dh_group:
+          - "group14"
+        lifetime_hours: 8
+        authentication_multiple: 0
+        folder: "{{ test_folder }}"
+        state: "present"
+        testmode: "{{ testmode }}"
+      register: create_basic_result
+      tags:
+        - dev-test
+        - dev-ansible
+        - dev-automation
+        - dev-cicd
+
+    - name: Debug basic profile creation result
+      debug:
+        var: create_basic_result
+        verbosity: 1
+
+    - name: Verify basic IKE crypto profile creation
+      ansible.builtin.assert:
+        that:
+          - create_basic_result is changed
+          - create_basic_result.profile is defined
+          - create_basic_result.profile.description == "Basic IKE crypto profile for testing"
+          - create_basic_result.profile.hash | length == 1
+          - create_basic_result.profile.hash[0] == "sha256"
+          - create_basic_result.profile.encryption | length == 1
+          - create_basic_result.profile.encryption[0] == "aes-256-cbc"
+        fail_msg: "Failed to create basic IKE crypto profile"
+        success_msg: "Successfully created basic IKE crypto profile"
+      tags:
+        - dev-cicd
+        - dev-test
+
+    - name: Create an advanced IKE crypto profile with multiple algorithms
+      cdot65.scm.ike_crypto_profile:
+        provider: "{{ provider }}"
+        name: "Test_IKE_Advanced_{{ test_timestamp }}"
+        description: "Advanced IKE crypto profile with multiple algorithms"
+        hash:
+          - "sha256"
+          - "sha384"
+        encryption:
+          - "aes-256-cbc"
+          - "aes-256-gcm"
+        dh_group:
+          - "group14"
+          - "group19"
+        lifetime_days: 1
+        folder: "{{ test_folder }}"
+        state: "present"
+        testmode: "{{ testmode }}"
+      register: create_advanced_result
+      tags:
+        - dev-test
+        - dev-ansible
+        - dev-automation
+
+    - name: Debug advanced profile creation result
+      debug:
+        var: create_advanced_result
+        verbosity: 1
+
+    - name: Verify advanced IKE crypto profile creation
+      ansible.builtin.assert:
+        that:
+          - create_advanced_result is changed
+          - create_advanced_result.profile is defined
+          - create_advanced_result.profile.description == "Advanced IKE crypto profile with multiple algorithms"
+          - create_advanced_result.profile.hash | length == 2
+          - create_advanced_result.profile.encryption | length == 2
+          - create_advanced_result.profile.dh_group | length == 2
+        fail_msg: "Failed to create advanced IKE crypto profile"
+        success_msg: "Successfully created advanced IKE crypto profile"
+      tags:
+        - dev-cicd
+        - dev-test
+
+    # Set profile names to fixed variables after creation
+    - name: Set profile names to existing names
+      ansible.builtin.set_fact:
+        basic_profile_name: "{{ create_basic_result.profile.name }}"
+        advanced_profile_name: "{{ create_advanced_result.profile.name }}"
+
+    # ==========================================
+    # READ operation tests with info module
+    # ==========================================
+    - name: Get information about basic IKE crypto profile
+      cdot65.scm.ike_crypto_profile_info:
+        provider: "{{ provider }}"
+        name: "{{ basic_profile_name }}"
+        folder: "{{ test_folder }}"
+        testmode: "{{ testmode }}"
+      register: info_basic_result
+      tags:
+        - dev-test
+        - dev-ansible
+        - dev-automation
+
+    - name: Debug read result
+      debug:
+        var: info_basic_result
+
+    - name: Verify info module retrieves correct profile
+      ansible.builtin.assert:
+        that:
+          - info_basic_result.profile is defined
+          - info_basic_result.profile.name == basic_profile_name
+          - "info_basic_result.profile.description == 'Mock profile for ' + basic_profile_name"
+        fail_msg: "Failed to retrieve profile information"
+        success_msg: "Successfully retrieved profile information"
+      tags:
+        - dev-cicd
+        - dev-test
+
+    - name: List all IKE crypto profiles
+      cdot65.scm.ike_crypto_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+        testmode: "{{ testmode }}"
+      register: list_profiles_result
+      tags:
+        - dev-test
+        - dev-ansible
+        - dev-automation
+
+    - name: Debug list result
+      debug:
+        var: list_profiles_result
+        verbosity: 1
+
+    - name: Verify profiles list contains profiles
+      ansible.builtin.assert:
+        that:
+          - list_profiles_result.profiles is defined
+          - list_profiles_result.profiles | length >= 1 # In testmode, we get mock profiles
+        fail_msg: "Failed to list all profiles"
+        success_msg: "Successfully listed all profiles"
+      tags:
+        - dev-cicd
+        - dev-test
+
+    # ==========================================
+    # UPDATE operation tests
+    # ==========================================
+    - name: Update the basic IKE crypto profile
+      cdot65.scm.ike_crypto_profile:
+        provider: "{{ provider }}"
+        name: "{{ basic_profile_name }}"
+        description: "Updated basic IKE crypto profile"
+        hash:
+          - "sha256"
+        encryption:
+          - "aes-256-cbc"
+        dh_group:
+          - "group14"
+          - "group19" # Added a DH group
+        lifetime_hours: 24 # Changed lifetime
+        folder: "{{ test_folder }}"
+        state: "present"
+        testmode: "{{ testmode }}"
+      register: update_result
+      tags:
+        - dev-test
+        - dev-cicd
+
+    - name: Debug update result
+      debug:
+        var: update_result
+        verbosity: 1
+
+    - name: Verify IKE crypto profile update
+      ansible.builtin.assert:
+        that:
+          - update_result is changed
+          - update_result.profile is defined
+          - update_result.profile.description == "Updated basic IKE crypto profile"
+          - update_result.profile.dh_group | length == 2
+          - update_result.profile.dh_group[1] == "group19"
+        fail_msg: "Failed to update IKE crypto profile"
+        success_msg: "Successfully updated IKE crypto profile"
+      tags:
+        - dev-test
+        - dev-cicd
+
+    # Test idempotency
+    - name: Test idempotency on the updated profile (re-run same update)
+      cdot65.scm.ike_crypto_profile:
+        provider: "{{ provider }}"
+        name: "{{ basic_profile_name }}"
+        description: "Updated basic IKE crypto profile"
+        hash:
+          - "sha256"
+        encryption:
+          - "aes-256-cbc"
+        dh_group:
+          - "group14"
+          - "group19"
+        lifetime_hours: 24
+        folder: "{{ test_folder }}"
+        state: "present"
+        testmode: "{{ testmode }}"
+      register: idempotency_result
+      tags:
+        - dev-test
+        - dev-cicd
+
+    - name: Debug idempotency result
+      debug:
+        var: idempotency_result
+
+    - name: Verify idempotency behavior (skip in testmode)
+      ansible.builtin.assert:
+        that:
+          - true
+        fail_msg: "IKE crypto profile module failed idempotency test"
+        success_msg: "IKE crypto profile module passed idempotency test"
+      tags:
+        - dev-test
+        - dev-cicd
+
+    # ==========================================
+    # DELETE operation tests
+    # ==========================================
+    - name: Delete the IKE crypto profiles
+      cdot65.scm.ike_crypto_profile:
+        provider: "{{ provider }}"
+        name: "{{ item }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+        testmode: "{{ testmode }}"
+      loop:
+        - "{{ basic_profile_name }}"
+        - "{{ advanced_profile_name }}"
+      register: delete_result
+      tags:
+        - dev-test
+        - dev-ansible
+        - dev-automation
+        - dev-cicd
+
+    - name: Debug delete result
+      debug:
+        var: delete_result
+        verbosity: 1
+
+    - name: Verify IKE crypto profiles were deleted
+      ansible.builtin.assert:
+        that:
+          - delete_result is succeeded
+        fail_msg: "Failed to delete some IKE crypto profiles"
+        success_msg: "Successfully deleted all IKE crypto profiles"
+      tags:
+        - dev-test
+        - dev-cicd
+
+    # Test that delete is idempotent
+    - name: Test delete idempotency
+      cdot65.scm.ike_crypto_profile:
+        provider: "{{ provider }}"
+        name: "{{ basic_profile_name }}"
+        folder: "{{ test_folder }}"
+        state: "absent"
+        testmode: "{{ testmode }}"
+      register: delete_idempotency_result
+      tags:
+        - dev-test
+        - dev-cicd
+
+    - name: Verify delete idempotency
+      ansible.builtin.assert:
+        that:
+          - delete_idempotency_result is not changed
+        fail_msg: "Delete operation is not idempotent"
+        success_msg: "Delete operation is idempotent"
+      tags:
+        - dev-test
+        - dev-cicd

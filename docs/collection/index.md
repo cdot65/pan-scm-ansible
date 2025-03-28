@@ -121,14 +121,14 @@ The collection includes modules for managing various SCM configuration objects:
 
 #### Network Configuration
 
-| Module                                                  | Description                      |
-| ------------------------------------------------------- | -------------------------------- |
-| [Security Zone](modules/security_zone.md)               | Manage security zones            |
-| [IKE Crypto Profile](modules/ike_crypto_profile.md)     | Manage IKE crypto profiles       |
-| [IKE Gateway](modules/ike_gateway.md)                   | Manage IKE gateways              |
-| [IPsec Crypto Profile](modules/ipsec_crypto_profile.md) | Manage IPsec crypto profiles     |
-| [IPsec Tunnel](modules/ipsec_tunnel.md)                 | Manage IPsec tunnels             |
-| [BGP Routing](modules/bgp_routing.md)                   | Manage BGP routing configuration |
+| Module                                                  | Description                      | Info Module                                                      |
+| ------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------- |
+| [Security Zone](modules/security_zone.md)               | Manage security zones            |                                                                  |
+| [IKE Crypto Profile](modules/ike_crypto_profile.md)     | Manage IKE crypto profiles       | [IKE Crypto Profile Info](modules/ike_crypto_profile_info.md)     |
+| [IKE Gateway](modules/ike_gateway.md)                   | Manage IKE gateways              |                                                                  |
+| [IPsec Crypto Profile](modules/ipsec_crypto_profile.md) | Manage IPsec crypto profiles     |                                                                  |
+| [IPsec Tunnel](modules/ipsec_tunnel.md)                 | Manage IPsec tunnels             |                                                                  |
+| [BGP Routing](modules/bgp_routing.md)                   | Manage BGP routing configuration | [BGP Routing Info](modules/bgp_routing_info.md)                   |
 
 #### Deployment
 

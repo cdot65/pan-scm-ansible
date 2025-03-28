@@ -95,6 +95,8 @@ nav:
       - Modules:
           - Overview: collection/modules/index.md
           - Deployment:
+              - Agent Versions: collection/modules/agent_versions.md
+              - Agent Versions Info: collection/modules/agent_versions_info.md
               - Bandwidth Allocations: collection/modules/bandwidth_allocations.md
               - Bandwidth Allocations Info: collection/modules/bandwidth_allocations_info.md
               - Internal DNS Servers: collection/modules/internal_dns_servers.md
@@ -105,6 +107,7 @@ nav:
           - Network Configuration:
               - Security Zone: collection/modules/security_zone.md
               - IKE Crypto Profile: collection/modules/ike_crypto_profile.md
+              - IKE Crypto Profile Info: collection/modules/ike_crypto_profile_info.md
               - IKE Gateway: collection/modules/ike_gateway.md
               - IPsec Crypto Profile: collection/modules/ipsec_crypto_profile.md
               - IPsec Tunnel: collection/modules/ipsec_tunnel.md

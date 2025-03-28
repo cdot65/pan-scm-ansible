@@ -1,0 +1,97 @@
+---
+# Playbook for testing Strata Cloud Manager IKE crypto profile info operations
+# Usage: ansible-playbook tests/test_ike_crypto_profile_info.yaml --vault-password-file=tests/.vault_password
+
+- name: Test SCM IKE Crypto Profile Info Module Operations
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vault.yaml
+  vars:
+    provider:
+      client_id: "{{ client_id }}"
+      client_secret: "{{ client_secret }}"
+      tsg_id: "{{ tsg_id }}"
+      log_level: "INFO"
+    test_folder: "Service Connections"
+  tasks:
+    # ==========================================
+    # GET info about a specific profile
+    # ==========================================
+    - name: Get information about a specific IKE crypto profile
+      cdot65.scm.ike_crypto_profile_info:
+        provider: "{{ provider }}"
+        name: "PaloAlto-Networks-IKE-Crypto"
+        folder: "{{ test_folder }}"
+      register: specific_info_result
+
+    - name: Debug specific profile info result
+      debug:
+        var: specific_info_result
+
+    - name: Verify specific profile info
+      ansible.builtin.assert:
+        that:
+          - specific_info_result.profile is defined
+          - specific_info_result.profile.name == "PaloAlto-Networks-IKE-Crypto"
+          - specific_info_result.profile.hash == "sha256"
+          - specific_info_result.profile.encryption == "aes-128-cbc"
+        fail_msg: "Failed to get info about specific IKE crypto profile"
+        success_msg: "Successfully retrieved info about specific IKE crypto profile"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # LIST all profiles
+    # ==========================================
+    - name: List all IKE crypto profiles in the folder
+      cdot65.scm.ike_crypto_profile_info:
+        provider: "{{ provider }}"
+        folder: "{{ test_folder }}"
+      register: list_info_result
+      tags:
+        - dev-cicd
+
+    - name: Debug list info result
+      debug:
+        var: list_info_result
+        verbosity: 1
+
+    - name: Verify list profiles info
+      ansible.builtin.assert:
+        that:
+          - list_info_result.profiles is defined
+          - list_info_result.profiles | length >= 1 # In test mode we get mock profiles
+        fail_msg: "Failed to list all IKE crypto profiles"
+        success_msg: "Successfully listed all IKE crypto profiles"
+      tags:
+        - dev-cicd
+
+    # ==========================================
+    # Test profile that doesn't exist
+    # ==========================================
+    - name: Try to get info about a non-existent profile
+      cdot65.scm.ike_crypto_profile_info:
+        provider: "{{ provider }}"
+        name: "Non_Existent_Profile"
+        folder: "{{ test_folder }}"
+      register: nonexistent_result
+      failed_when: false
+      tags:
+        - dev-cicd
+
+    - name: Debug non-existent profile result
+      debug:
+        var: nonexistent_result
+        verbosity: 0
+
+    - name: Verify non-existent profile returns appropriate error
+      ansible.builtin.assert:
+        that:
+          - nonexistent_result is defined
+          - nonexistent_result.msg is defined
+          - "'not found' in nonexistent_result.msg"
+        fail_msg: "Failed to handle non-existent profile appropriately"
+        success_msg: "Successfully handled non-existent profile"
+      tags:
+        - dev-cicd
