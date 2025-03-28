@@ -11,9 +11,9 @@
 # All rights reserved.
 
 """
-Ansible module for gathering information about IKE gateways in SCM.
+Ansible module for gathering information about IPsec crypto profiles in SCM.
 
-This module provides functionality to retrieve information about IKE gateways
+This module provides functionality to retrieve information about IPsec crypto profiles
 in the SCM (Strata Cloud Manager) system with various filtering options.
 """
 
@@ -32,27 +32,27 @@ from scm.exceptions import InvalidObjectError, MissingQueryParameterError, Objec
 
 DOCUMENTATION = r"""
 ---
-module: ike_gateway_info
+module: ipsec_crypto_profile_info
 
-short_description: Gather information about IKE gateways in SCM.
+short_description: Gather information about IPsec crypto profiles in SCM.
 
-version_added: "0.2.0"
+version_added: "0.1.0"
 
 description:
-    - Gather information about IKE gateways within Strata Cloud Manager (SCM).
-    - Supports retrieving a specific gateway by name or listing gateways with various filters.
+    - Gather information about IPsec crypto profiles within Strata Cloud Manager (SCM).
+    - Supports retrieving a specific profile by name or listing profiles with various filters.
     - Provides additional client-side filtering capabilities for exact matches and exclusions.
-    - Returns detailed information about each IKE gateway including authentication, protocol, and peer details.
+    - Returns detailed information about each IPsec crypto profile.
     - This is an info module that only retrieves information and does not modify anything.
 
 options:
     name:
-        description: The name of a specific IKE gateway to retrieve.
+        description: The name of a specific IPsec crypto profile to retrieve.
         required: false
         type: str
     gather_subset:
         description:
-            - Determines which information to gather about IKE gateways.
+            - Determines which information to gather about IPsec crypto profiles.
             - C(all) gathers everything.
             - C(config) is the default which retrieves basic configuration.
         type: list
@@ -60,15 +60,15 @@ options:
         default: ['config']
         choices: ['all', 'config']
     folder:
-        description: Filter IKE gateways by folder container.
+        description: Filter IPsec crypto profiles by folder container.
         required: false
         type: str
     snippet:
-        description: Filter IKE gateways by snippet container.
+        description: Filter IPsec crypto profiles by snippet container.
         required: false
         type: str
     device:
-        description: Filter IKE gateways by device container.
+        description: Filter IPsec crypto profiles by device container.
         required: false
         type: str
     exact_match:
@@ -120,7 +120,7 @@ author:
 
 EXAMPLES = r"""
 ---
-- name: Gather IKE Gateway Information in Strata Cloud Manager
+- name: Gather IPsec Crypto Profile Information in Strata Cloud Manager
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -133,78 +133,65 @@ EXAMPLES = r"""
       log_level: "INFO"
   tasks:
 
-    - name: Get information about a specific IKE gateway
-      cdot65.scm.ike_gateway_info:
+    - name: Get information about a specific IPsec crypto profile
+      cdot65.scm.ipsec_crypto_profile_info:
         provider: "{{ provider }}"
-        name: "branch-office-gateway"
-        folder: "Service Connections"
-      register: gateway_info
+        name: "ipsec-esp-aes256-sha256"
+        folder: "SharedFolder"
+      register: profile_info
 
-    - name: List all IKE gateways in a folder
-      cdot65.scm.ike_gateway_info:
+    - name: List all IPsec crypto profiles in a folder
+      cdot65.scm.ipsec_crypto_profile_info:
         provider: "{{ provider }}"
-        folder: "Service Connections"
-      register: all_gateways
+        folder: "SharedFolder"
+      register: all_profiles
 
-    - name: List gateways with exact match and exclusions
-      cdot65.scm.ike_gateway_info:
+    - name: List profiles with exact match and exclusions
+      cdot65.scm.ipsec_crypto_profile_info:
         provider: "{{ provider }}"
-        folder: "Service Connections"
+        folder: "SharedFolder"
         exact_match: true
         exclude_folders: ["All"]
         exclude_snippets: ["default"]
-      register: filtered_gateways
+      register: filtered_profiles
 """
 
 RETURN = r"""
-gateways:
-    description: List of IKE gateway objects matching the filter criteria (returned when name is not specified).
+profiles:
+    description: List of IPsec crypto profile objects matching the filter criteria (returned when name is not specified).
     returned: success, when name is not specified
     type: list
     elements: dict
     sample:
       - id: "123e4567-e89b-12d3-a456-426655440000"
-        name: "branch-office-gateway"
-        folder: "Service Connections"
-        authentication:
-          pre_shared_key: {}
-        peer_id:
-          type: "fqdn"
-          id: "peer.example.com"
-        protocol:
-          version: "ikev2"
-          ikev2:
-            ike_crypto_profile: "default-profile"
-        peer_address:
-          ip: "198.51.100.1"
+        name: "ipsec-esp-aes256-sha256"
+        folder: "SharedFolder"
+        esp:
+          encryption: ["aes-256-cbc"]
+          authentication: ["sha256"]
+        dh_group: "group14"
       - id: "234e5678-e89b-12d3-a456-426655440001"
-        name: "hq-gateway"
-        folder: "Service Connections"
-        authentication:
-          pre_shared_key: {}
-        protocol:
-          version: "ikev2-preferred"
-        peer_address:
-          fqdn: "hq.example.com"
-gateway:
-    description: Information about the requested IKE gateway (returned when name is specified).
+        name: "ipsec-ah-sha512"
+        folder: "SharedFolder"
+        ah:
+          authentication: ["sha512"]
+        dh_group: "group2"
+    notes:
+        - The SCM API does not return the description field even if it was set when creating the profile.
+profile:
+    description: Information about the requested IPsec crypto profile (returned when name is specified).
     returned: success, when name is specified
     type: dict
     sample:
         id: "123e4567-e89b-12d3-a456-426655440000"
-        name: "branch-office-gateway"
-        folder: "Service Connections"
-        authentication:
-          pre_shared_key: {}
-        peer_id:
-          type: "fqdn"
-          id: "peer.example.com"
-        protocol:
-          version: "ikev2"
-          ikev2:
-            ike_crypto_profile: "default-profile"
-        peer_address:
-          ip: "198.51.100.1"
+        name: "ipsec-esp-aes256-sha256"
+        folder: "SharedFolder"
+        esp:
+          encryption: ["aes-256-cbc"]
+          authentication: ["sha256"]
+        dh_group: "group14"
+    notes:
+        - The SCM API does not return the description field even if it was set when creating the profile.
 """
 
 
@@ -235,9 +222,9 @@ def build_filter_params(module_params):
 
 def main():
     """
-    Main execution path for the ike_gateway_info module.
+    Main execution path for the ipsec_crypto_profile_info module.
 
-    This module provides functionality to gather information about IKE gateways
+    This module provides functionality to gather information about IPsec crypto profiles
     in the SCM (Strata Cloud Manager) system with various filtering options.
 
     :return: Ansible module exit data
@@ -281,13 +268,13 @@ def main():
         required_if=[["name", None, ["folder", "snippet", "device"], True]],
     )
 
-    # Initialize result with changed=False and no gateway info yet
+    # Initialize result with changed=False and no profile info yet
     result = {"changed": False}
 
     try:
         client = get_scm_client(module)
 
-        # Check if we're fetching a specific gateway by name
+        # Check if we're fetching a specific profile by name
         if module.params.get("name"):
             name = module.params["name"]
             container_params = {}
@@ -297,14 +284,14 @@ def main():
                 if module.params.get(container):
                     container_params[container] = module.params[container]
 
-            # If no container param is specified, try to find the gateway without container filters
+            # If no container param is specified, try to find the profile without container filters
             try:
-                gateway = client.ike_gateway.fetch(name=name, **container_params)
-                # Add gateway to result dictionary as a separate key
-                result["gateway"] = serialize_response(gateway)
+                profile = client.ipsec_crypto_profile.fetch(name=name, **container_params)
+                # Add profile to result dictionary as a separate key
+                result["profile"] = serialize_response(profile)
             except ObjectNotPresentError:
                 module.fail_json(
-                    msg=f"IKE gateway with name '{name}' not found"
+                    msg=f"IPsec crypto profile with name '{name}' not found"
                     + (
                         f" in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
                         if container_params
@@ -312,24 +299,41 @@ def main():
                     )
                 )
             except Exception as e:
-                module.fail_json(msg=f"Error retrieving IKE gateway information: {str(e)}")
+                module.fail_json(msg=f"Error retrieving IPsec crypto profile information: {str(e)}")
         else:
-            # Check if at least one container filter is provided when listing gateways
+            # Check if at least one container filter is provided when listing profiles
             container_params, filter_params = build_filter_params(module.params)
             if not any(key in container_params for key in ["folder", "snippet", "device"]):
                 module.fail_json(
                     msg="One of 'folder', 'snippet', or 'device' must be provided when 'name' is not specified."
                 )
 
-            # List gateways with filters
+            # List profiles with filters
             try:
                 # Call the list method with filter params
-                gateways = client.ike_gateway.list(**container_params, **filter_params)
+                profiles = client.ipsec_crypto_profile.list(**container_params, **filter_params)
 
-                # Add gateways list to result dictionary as a separate key
-                result["gateways"] = [serialize_response(gateway) for gateway in gateways]
+                # Add profiles list to result dictionary as a separate key
+                # Use a try-except block to handle profiles that may be missing required fields
+                result["profiles"] = []
+                for profile in profiles:
+                    try:
+                        result["profiles"].append(serialize_response(profile))
+                    except Exception as serialization_error:
+                        # Log the error but continue with other profiles
+                        module.debug(
+                            f"Skipping profile due to serialization error: {str(serialization_error)}"
+                        )
+                        # If possible, try to include at least basic info about the profile
+                        if hasattr(profile, "name"):
+                            result["profiles"].append(
+                                {
+                                    "name": profile.name,
+                                    "_error": "Profile could not be fully serialized",
+                                }
+                            )
             except Exception as e:
-                module.fail_json(msg=f"Error listing IKE gateways: {str(e)}")
+                module.fail_json(msg=f"Error listing IPsec crypto profiles: {str(e)}")
 
         module.exit_json(**result)
     except Exception as e:

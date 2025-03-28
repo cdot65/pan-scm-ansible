@@ -23,11 +23,11 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError
 
 DOCUMENTATION = r"""
@@ -180,10 +180,10 @@ def main():
         try:
             # Get BGP routing configuration
             bgp_routing = client.bgp_routing.get()
-            
+
             # Serialize response for Ansible output
             result["bgp_routing"] = serialize_response(bgp_routing)
-            
+
         except InvalidObjectError as e:
             module.fail_json(msg=f"Failed to retrieve BGP routing configuration: {str(e)}")
         except Exception as e:

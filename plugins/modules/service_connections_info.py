@@ -23,12 +23,14 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.service_connections_info import ServiceConnectionsInfoSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.service_connections_info import (
+    ServiceConnectionsInfoSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
@@ -277,24 +279,28 @@ def main():
     )
 
     result = {}
-    
+
     # Check if we're in test mode immediately
     testmode = module.params.get("testmode", False)
-    
+
     # Handle test mode separately to avoid API client initialization
     if testmode:
         try:
             # Get the test timestamp if provided
             test_timestamp = module.params.get("test_timestamp") or "test"
-            
+
             # Check if we're fetching a specific service connection by name
             if module.params.get("name"):
                 name = module.params["name"]
-                
+
                 # Create mock service connection for the specific name
                 # Use the correct description based on the name pattern
-                description = "Updated description for test connection" if name.startswith("Test_SC_") else "Test service connection"
-                
+                description = (
+                    "Updated description for test connection"
+                    if name.startswith("Test_SC_")
+                    else "Test service connection"
+                )
+
                 mock_service_connection = {
                     "id": "12345678-1234-5678-1234-567812345678",  # Mock ID
                     "name": name,
@@ -305,16 +311,13 @@ def main():
                     "tag": ["dev-ansible", "dev-automation", "dev-test"],
                     "ipsec_tunnel": "test-tunnel-updated",
                     "region": "us-west-1",
-                    "qos": {
-                        "enabled": True,
-                        "profile": "default"
-                    }
+                    "qos": {"enabled": True, "profile": "default"},
                 }
                 result["service_connection"] = mock_service_connection
             else:
                 # List service connections with mock data
                 filter_params = build_filter_params(module.params)
-                
+
                 # Create several mock connection objects for testing
                 mock_connections = [
                     {
@@ -327,10 +330,7 @@ def main():
                         "tag": ["dev-ansible", "dev-automation", "dev-test"],
                         "ipsec_tunnel": "test-tunnel-updated",
                         "region": "us-west-1",
-                        "qos": {
-                            "enabled": True,
-                            "profile": "default"
-                        }
+                        "qos": {"enabled": True, "profile": "default"},
                     },
                     {
                         "id": "23456789-2345-6789-2345-678923456789",
@@ -342,10 +342,7 @@ def main():
                         "tag": ["dev-test", "dev-cicd"],
                         "ipsec_tunnel": "qos-tunnel",
                         "region": "us-west-1",
-                        "qos": {
-                            "enabled": True,
-                            "profile": "default"
-                        }
+                        "qos": {"enabled": True, "profile": "default"},
                     },
                     {
                         "id": "34567890-3456-7890-3456-789034567890",
@@ -360,45 +357,48 @@ def main():
                         "auto_key_rotation": True,
                         "backup_connection": {
                             "connection_name": f"QoS_SC_{test_timestamp}",
-                            "folder": "Service Connections"
-                        }
-                    }
+                            "folder": "Service Connections",
+                        },
+                    },
                 ]
-                
+
                 # Apply basic filtering based on the filter parameters
                 if filter_params.get("connection_types"):
                     mock_connections = [
-                        conn for conn in mock_connections 
+                        conn
+                        for conn in mock_connections
                         if conn["connection_type"] in filter_params["connection_types"]
                     ]
-                    
+
                 if filter_params.get("status"):
                     mock_connections = [
-                        conn for conn in mock_connections 
+                        conn
+                        for conn in mock_connections
                         if conn["status"] in filter_params["status"]
                     ]
-                    
+
                 if filter_params.get("tags"):
                     mock_connections = [
-                        conn for conn in mock_connections 
+                        conn
+                        for conn in mock_connections
                         if any(tag in conn.get("tag", []) for tag in filter_params["tags"])
                     ]
-                
+
                 result["service_connections"] = mock_connections
-            
+
             module.exit_json(**result)
-            
+
         except Exception as e:
             module.fail_json(msg=f"Error in test mode: {to_text(e)}")
-    
+
     # Normal mode using the API client
     try:
         client = get_scm_client(module)
-        
+
         # Check if we're fetching a specific service connection by name
         if module.params.get("name"):
             name = module.params["name"]
-            
+
             try:
                 service_connection = client.service_connection.fetch(name=name)
                 result["service_connection"] = serialize_response(service_connection)
@@ -411,10 +411,12 @@ def main():
         else:
             # List service connections
             filter_params = build_filter_params(module.params)
-            
+
             try:
                 service_connections = client.service_connection.list(**filter_params)
-                result["service_connections"] = [serialize_response(conn) for conn in service_connections]
+                result["service_connections"] = [
+                    serialize_response(conn) for conn in service_connections
+                ]
             except MissingQueryParameterError as e:
                 module.fail_json(msg=f"Missing required parameter: {str(e)}")
             except InvalidObjectError as e:

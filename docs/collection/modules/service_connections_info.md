@@ -1,4 +1,17 @@
-# service_connections_info
+# Service Connections Information Object
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Core Methods](#core-methods)
+3. [Module Parameters](#module-parameters) 
+4. [Requirements](#requirements)
+5. [Usage Examples](#usage-examples)
+6. [Return Values](#return-values)
+7. [Error Handling](#error-handling)
+8. [Best Practices](#best-practices)
+9. [Related Modules](#related-modules)
+
 
 Gather information about service connection objects in SCM.
 
@@ -91,3 +104,17 @@ Gather information about service connection objects in SCM.
 ## Authors
 
 - Calvin Remsburg (@cdot65)
+## Overview
+
+
+## Core Methods
+
+
+## Error Handling
+
+
+## Best Practices
+
+
+## Related Modules
+

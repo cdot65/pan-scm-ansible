@@ -14,7 +14,7 @@
 Ansible module for managing remote networks in SCM.
 
 This module provides functionality to create, update, and delete remote networks
-in the SCM (Strata Cloud Manager) system. It manages site-to-site VPN 
+in the SCM (Strata Cloud Manager) system. It manages site-to-site VPN
 connections between Strata Cloud Manager and external networks.
 """
 
@@ -24,12 +24,14 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.remote_networks import RemoteNetworksSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.remote_networks import (
+    RemoteNetworksSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, NameNotUniqueError, ObjectNotPresentError
 from scm.models.deployment import RemoteNetworkUpdateModel
 
@@ -314,7 +316,9 @@ def validate_remote_network_data(module, remote_network_data):
         None
     """
     # Validate that FWAAS-AGGREGATE license type requires spn_name
-    if remote_network_data.get("license_type") == "FWAAS-AGGREGATE" and not remote_network_data.get("spn_name"):
+    if remote_network_data.get("license_type") == "FWAAS-AGGREGATE" and not remote_network_data.get(
+        "spn_name"
+    ):
         module.fail_json(msg="spn_name is required when license_type is FWAAS-AGGREGATE")
 
     # Validate that ECMP load balancing configuration is correct
@@ -401,7 +405,7 @@ def needs_update(existing, params):
     if existing.ecmp_load_balancing == "enable":
         # ECMP is enabled, check tunnels
         update_data["ecmp_tunnels"] = getattr(existing, "ecmp_tunnels", [])
-        
+
         if "ecmp_tunnels" in params and params["ecmp_tunnels"] is not None:
             # Compare tunnels by converting to a comparable format
             existing_tunnels = [
@@ -409,11 +413,11 @@ def needs_update(existing, params):
                 for tunnel in (existing.ecmp_tunnels or [])
             ]
             new_tunnels = params["ecmp_tunnels"]
-            
+
             if existing_tunnels != new_tunnels:
                 update_data["ecmp_tunnels"] = new_tunnels
                 changed = True
-                
+
         # Check if ecmp_load_balancing is being changed to disable
         if "ecmp_load_balancing" in params and params["ecmp_load_balancing"] == "disable":
             update_data["ecmp_load_balancing"] = "disable"
@@ -426,12 +430,12 @@ def needs_update(existing, params):
     else:
         # ECMP is disabled, check ipsec_tunnel
         update_data["ipsec_tunnel"] = getattr(existing, "ipsec_tunnel", None)
-        
+
         if "ipsec_tunnel" in params and params["ipsec_tunnel"] is not None:
             if update_data["ipsec_tunnel"] != params["ipsec_tunnel"]:
                 update_data["ipsec_tunnel"] = params["ipsec_tunnel"]
                 changed = True
-                
+
         # Check if ecmp_load_balancing is being changed to enable
         if "ecmp_load_balancing" in params and params["ecmp_load_balancing"] == "enable":
             update_data["ecmp_load_balancing"] = "enable"
@@ -446,7 +450,7 @@ def needs_update(existing, params):
     current_protocol = getattr(existing, "protocol", None)
     if current_protocol is not None:
         update_data["protocol"] = current_protocol.dict()
-    
+
     if "protocol" in params and params["protocol"] is not None:
         if current_protocol is None or current_protocol.dict() != params["protocol"]:
             update_data["protocol"] = params["protocol"]
@@ -471,7 +475,7 @@ def main():
         supports_check_mode=True,
         required_if=[
             ["state", "present", ["name", "folder", "region", "ecmp_load_balancing"]],
-            ["state", "absent", ["name", "folder"]]
+            ["state", "absent", ["name", "folder"]],
         ],
     )
 
@@ -509,7 +513,9 @@ def main():
                     result["changed"] = True
             else:
                 # Compare and update if needed
-                need_update, update_data = needs_update(existing_remote_network, remote_network_data)
+                need_update, update_data = needs_update(
+                    existing_remote_network, remote_network_data
+                )
 
                 if need_update:
                     if not module.check_mode:

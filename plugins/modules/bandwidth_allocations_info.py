@@ -23,11 +23,11 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError
 
 DOCUMENTATION = r"""
@@ -203,7 +203,7 @@ def build_filter_params(module_params):
         dict: Filtered dictionary containing only relevant filter parameters
     """
     filter_params = {}
-    
+
     # Add filter parameters
     for param in ["allocated_bandwidth", "spn_name_list", "qos_enabled"]:
         if module_params.get(param) is not None:
@@ -261,30 +261,29 @@ def main():
                     # First attempt normal lookup
                     all_allocations = client.bandwidth_allocation.list()
                     matching_allocations = [a for a in all_allocations if a.name == name]
-                    
+
                     if matching_allocations:
                         # Found via list method
                         allocation = matching_allocations[0]
                     else:
                         # TEMPORARY MOCK MODE FOR TESTING
                         module.log("*** MOCK MODE: Creating mock allocation object for testing ***")
-                        
+
                         # Create a mock allocation object from the known parameters
                         mock_data = {
                             "name": name,
                             "allocated_bandwidth": 500.0,  # Default value
                             "spn_name_list": ["test_spn1", "test_spn2"],  # Default values
                         }
-                        
+
                         # Import the response model dynamically
                         from scm.models.deployment import BandwidthAllocationResponseModel
+
                         allocation = BandwidthAllocationResponseModel(**mock_data)
-                        
+
                         module.log(f"Created mock allocation with name: {allocation.name}")
                 except Exception as e:
-                    module.fail_json(
-                        msg=f"Error looking up bandwidth allocation: {str(e)}"
-                    )
+                    module.fail_json(msg=f"Error looking up bandwidth allocation: {str(e)}")
 
                 # Serialize response for Ansible output
                 result["bandwidth_allocation"] = serialize_response(allocation)
@@ -292,9 +291,7 @@ def main():
             except Exception as e:
                 # Handle the error in a more friendly way for bandwidth allocation not found
                 if "Object Not Present" in str(e) or "not found" in str(e).lower():
-                    module.fail_json(
-                        msg=f"Bandwidth allocation with name '{name}' not found"
-                    )
+                    module.fail_json(msg=f"Bandwidth allocation with name '{name}' not found")
                 else:
                     module.fail_json(msg=str(e))
 
@@ -306,7 +303,9 @@ def main():
                 allocations = client.bandwidth_allocation.list(**filter_params)
 
                 # Serialize response for Ansible output
-                result["bandwidth_allocations"] = [serialize_response(alloc) for alloc in allocations]
+                result["bandwidth_allocations"] = [
+                    serialize_response(alloc) for alloc in allocations
+                ]
 
             except Exception as e:
                 # Provide a more friendly error message based on the error type

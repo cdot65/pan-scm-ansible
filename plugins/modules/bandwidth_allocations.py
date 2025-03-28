@@ -24,7 +24,6 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
 from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.bandwidth_allocations import (
     BandwidthAllocationsSpec,
 )
@@ -32,6 +31,7 @@ from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError
 
 DOCUMENTATION = r"""
@@ -387,16 +387,20 @@ def main():
     try:
         client = get_scm_client(module)
         bandwidth_allocation_data = build_bandwidth_allocation_data(module.params)
-        
+
         # Get existing bandwidth allocation
-        exists, existing_allocation = get_existing_bandwidth_allocation(client, bandwidth_allocation_data)
+        exists, existing_allocation = get_existing_bandwidth_allocation(
+            client, bandwidth_allocation_data
+        )
 
         if module.params["state"] == "present":
             if not exists:
                 # Create new bandwidth allocation
                 if not module.check_mode:
                     try:
-                        new_allocation = client.bandwidth_allocation.create(data=bandwidth_allocation_data)
+                        new_allocation = client.bandwidth_allocation.create(
+                            data=bandwidth_allocation_data
+                        )
                         result["bandwidth_allocation"] = serialize_response(new_allocation)
                         result["changed"] = True
                     except Exception as e:
@@ -404,14 +408,19 @@ def main():
                         error_details = {
                             "error_message": str(e),
                             "error_type": type(e).__name__,
-                            "request_data": bandwidth_allocation_data
+                            "request_data": bandwidth_allocation_data,
                         }
-                        module.fail_json(msg=f"Failed to create bandwidth allocation: {str(e)}", error_details=error_details)
+                        module.fail_json(
+                            msg=f"Failed to create bandwidth allocation: {str(e)}",
+                            error_details=error_details,
+                        )
                 else:
                     result["changed"] = True
             else:
                 # Compare and update if needed
-                need_update, update_data = needs_update(existing_allocation, bandwidth_allocation_data)
+                need_update, update_data = needs_update(
+                    existing_allocation, bandwidth_allocation_data
+                )
 
                 if need_update:
                     if not module.check_mode:
@@ -431,16 +440,18 @@ def main():
                     # For delete, we need name and spn_name_list
                     name = bandwidth_allocation_data["name"]
                     spn_name_list = bandwidth_allocation_data["spn_name_list"]
-                    
+
                     # Convert list to comma-separated string as required by the API
                     spn_name_string = ",".join(spn_name_list)
-                    
+
                     try:
                         client.bandwidth_allocation.delete(name=name, spn_name_list=spn_name_string)
                     except Exception as e:
                         # If we get an error that suggests the object doesn't exist, we can ignore it
                         if "Object Not Present" in str(e) or "not found" in str(e).lower():
-                            module.warn(f"Bandwidth allocation '{name}' may already be deleted or doesn't exist")
+                            module.warn(
+                                f"Bandwidth allocation '{name}' may already be deleted or doesn't exist"
+                            )
                         else:
                             # For other errors, we should raise them
                             raise e

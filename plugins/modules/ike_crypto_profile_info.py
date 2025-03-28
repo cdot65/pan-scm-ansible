@@ -23,11 +23,11 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
@@ -292,16 +292,18 @@ def main():
             except ObjectNotPresentError:
                 module.fail_json(
                     msg=f"IKE crypto profile with name '{name}' not found"
-                    + (f" in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'" if container_params else "")
+                    + (
+                        f" in {list(container_params.keys())[0]} '{list(container_params.values())[0]}'"
+                        if container_params
+                        else ""
+                    )
                 )
             except Exception as e:
                 module.fail_json(msg=f"Error retrieving IKE crypto profile information: {str(e)}")
         else:
             # Check if at least one container filter is provided when listing profiles
             container_params, filter_params = build_filter_params(module.params)
-            if not any(
-                key in container_params for key in ["folder", "snippet", "device"]
-            ):
+            if not any(key in container_params for key in ["folder", "snippet", "device"]):
                 module.fail_json(
                     msg="One of 'folder', 'snippet', or 'device' must be provided when 'name' is not specified."
                 )
@@ -309,8 +311,10 @@ def main():
             # List profiles with filters
             try:
                 # Call the list method with filter params
-                profiles = client.network.ike_crypto_profiles.list(**container_params, **filter_params)
-                
+                profiles = client.network.ike_crypto_profiles.list(
+                    **container_params, **filter_params
+                )
+
                 # Add profiles list to result dictionary as a separate key
                 result["profiles"] = [serialize_response(profile) for profile in profiles]
             except Exception as e:

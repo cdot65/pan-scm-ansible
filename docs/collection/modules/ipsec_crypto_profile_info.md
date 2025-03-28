@@ -1,5 +1,4 @@
-# Ike Crypto Profile Information Object
-
+# Ipsec Crypto Profile Information Object
 
 01. [Overview](#overview)
 02. [Core Methods](#core-methods)

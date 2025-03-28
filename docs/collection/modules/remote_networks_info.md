@@ -1,4 +1,17 @@
-# remote_networks_info
+# Remote Networks Information Object
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Core Methods](#core-methods)
+3. [Module Parameters](#module-parameters) 
+4. [Requirements](#requirements)
+5. [Usage Examples](#usage-examples)
+6. [Return Values](#return-values)
+7. [Error Handling](#error-handling)
+8. [Best Practices](#best-practices)
+9. [Related Modules](#related-modules)
+
 
 Gather information about remote networks in SCM.
 
@@ -33,7 +46,7 @@ Gather information about remote networks in SCM.
 
 ## Examples
 
-<div class="termy">
+
 
 ```yaml
 - name: Gather Remote Network Information in Strata Cloud Manager
@@ -84,7 +97,7 @@ Gather information about remote networks in SCM.
       register: subnet_networks
 ```
 
-</div>
+
 
 ## Return Values
 
@@ -95,7 +108,7 @@ Gather information about remote networks in SCM.
 
 ### Return Value: remote_networks
 
-<div class="termy">
+
 
 ```json
 [
@@ -125,11 +138,11 @@ Gather information about remote networks in SCM.
 ]
 ```
 
-</div>
+
 
 ### Return Value: remote_network
 
-<div class="termy">
+
 
 ```json
 {
@@ -146,4 +159,18 @@ Gather information about remote networks in SCM.
 }
 ```
 
-</div>
+
+## Overview
+
+
+## Core Methods
+
+
+## Error Handling
+
+
+## Best Practices
+
+
+## Related Modules
+

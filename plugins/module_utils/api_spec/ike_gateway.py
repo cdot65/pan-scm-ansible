@@ -13,7 +13,7 @@ __metaclass__ = type
 class IKEGatewaySpec:
     """
     Class for defining the module parameter specifications for IKE Gateways.
-    
+
     This specification aligns with the SCM SDK's IKE Gateway module parameters
     and follows Ansible module parameter standards.
     """
@@ -33,7 +33,6 @@ class IKEGatewaySpec:
                 "required": True,
                 "description": "The name of the IKE Gateway",
             },
-            
             # Authentication configuration
             "authentication": {
                 "type": "dict",
@@ -47,7 +46,7 @@ class IKEGatewaySpec:
                         "options": {
                             "key": {
                                 "type": "str",
-                                "required": True, 
+                                "required": True,
                                 "no_log": True,
                                 "description": "Pre-shared key for authentication",
                             },
@@ -87,7 +86,6 @@ class IKEGatewaySpec:
                     },
                 },
             },
-            
             # Peer identification
             "peer_id": {
                 "type": "dict",
@@ -107,7 +105,6 @@ class IKEGatewaySpec:
                     },
                 },
             },
-            
             # Local identification
             "local_id": {
                 "type": "dict",
@@ -127,7 +124,6 @@ class IKEGatewaySpec:
                     },
                 },
             },
-            
             # Protocol configuration
             "protocol": {
                 "type": "dict",
@@ -191,7 +187,6 @@ class IKEGatewaySpec:
                     },
                 },
             },
-            
             # Protocol common settings
             "protocol_common": {
                 "type": "dict",
@@ -229,7 +224,6 @@ class IKEGatewaySpec:
                     },
                 },
             },
-            
             # Peer address configuration
             "peer_address": {
                 "type": "dict",
@@ -253,7 +247,6 @@ class IKEGatewaySpec:
                     },
                 },
             },
-            
             # Container parameters (mutually exclusive)
             "folder": {
                 "type": "str",
@@ -270,7 +263,6 @@ class IKEGatewaySpec:
                 "required": False,
                 "description": "The device in which the resource is defined",
             },
-            
             # Provider authentication
             "provider": {
                 "type": "dict",
@@ -301,7 +293,6 @@ class IKEGatewaySpec:
                 },
                 "description": "Authentication credentials for SCM",
             },
-            
             # State parameter
             "state": {
                 "type": "str",
@@ -315,7 +306,7 @@ class IKEGatewaySpec:
 class IKEGatewayInfoSpec:
     """
     Class for defining the module parameter specifications for IKE Gateway info.
-    
+
     This specification is designed for the info module that retrieves information about
     IKE Gateways.
     """
@@ -335,7 +326,6 @@ class IKEGatewayInfoSpec:
                 "required": False,
                 "description": "The name of the IKE Gateway to retrieve",
             },
-            
             # Information gathering control
             "gather_subset": {
                 "type": "list",
@@ -344,7 +334,6 @@ class IKEGatewayInfoSpec:
                 "choices": ["all", "config"],
                 "description": "Determines which information to gather",
             },
-
             # Container parameters (mutually exclusive)
             "folder": {
                 "type": "str",
@@ -361,7 +350,6 @@ class IKEGatewayInfoSpec:
                 "required": False,
                 "description": "Filter gateways by device container",
             },
-            
             # Provider authentication
             "provider": {
                 "type": "dict",

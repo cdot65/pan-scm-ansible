@@ -23,12 +23,14 @@ __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_text
-
-from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.remote_networks_info import RemoteNetworksInfoSpec
+from ansible_collections.cdot65.scm.plugins.module_utils.api_spec.remote_networks_info import (
+    RemoteNetworksInfoSpec,
+)
 from ansible_collections.cdot65.scm.plugins.module_utils.authenticate import get_scm_client
 from ansible_collections.cdot65.scm.plugins.module_utils.serialize_response import (
     serialize_response,
 )
+
 from scm.exceptions import InvalidObjectError, MissingQueryParameterError, ObjectNotPresentError
 
 DOCUMENTATION = r"""
@@ -248,11 +250,11 @@ def main():
         # Check if we're fetching a specific remote network by name
         if module.params.get("name"):
             name = module.params["name"]
-            
+
             # Ensure folder is provided
             if not module.params.get("folder"):
                 module.fail_json(msg="folder parameter is required when specifying name")
-                
+
             folder = module.params["folder"]
 
             try:
@@ -272,7 +274,7 @@ def main():
         else:
             # List remote networks with filtering
             container_params, filter_params = build_filter_params(module.params)
-            
+
             # Ensure folder is provided for list operation
             if not container_params.get("folder"):
                 module.fail_json(msg="folder parameter is required")
@@ -281,7 +283,9 @@ def main():
                 remote_networks = client.remote_network.list(**container_params, **filter_params)
 
                 # Serialize response for Ansible output
-                result["remote_networks"] = [serialize_response(network) for network in remote_networks]
+                result["remote_networks"] = [
+                    serialize_response(network) for network in remote_networks
+                ]
 
             except MissingQueryParameterError as e:
                 module.fail_json(msg=f"Missing required parameter: {str(e)}")

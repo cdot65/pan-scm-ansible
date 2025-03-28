@@ -28,18 +28,15 @@ class RemoteNetworksInfoSpec:
         return dict(
             name=dict(type="str", required=False),
             gather_subset=dict(
-                type="list", 
-                elements="str", 
-                default=["config"], 
-                choices=["all", "config"]
+                type="list", elements="str", default=["config"], choices=["all", "config"]
             ),
             folder=dict(type="str", required=False),
             regions=dict(type="list", elements="str", required=False),
             license_types=dict(
-                type="list", 
-                elements="str", 
+                type="list",
+                elements="str",
                 required=False,
-                choices=["FWAAS-AGGREGATE", "FWAAS-BYOL", "CN-SERIES", "FWAAS-PAYG"]
+                choices=["FWAAS-AGGREGATE", "FWAAS-BYOL", "CN-SERIES", "FWAAS-PAYG"],
             ),
             subnets=dict(type="list", elements="str", required=False),
             provider=dict(
